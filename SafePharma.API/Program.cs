@@ -1,4 +1,6 @@
 
+using Scalar.AspNetCore;
+
 namespace SafePharma.API
 {
 
@@ -21,15 +23,16 @@ namespace SafePharma.API
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.MapScalarApiReference();
             }
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
             app.MapControllers();
-
             app.Run();
         }
     }
