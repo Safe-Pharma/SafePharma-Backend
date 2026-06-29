@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SafePharma.API/SafePharma.API.csproj" />
+  <Project Path="SafePharma.BLL/SafePharma.BLL.csproj" />
+  <Project Path="SafePharma.Common/SafePharma.Common.csproj" />
+  <Project Path="SafePharma.DAL/SafePharma.DAL.csproj" />
+</Solution>

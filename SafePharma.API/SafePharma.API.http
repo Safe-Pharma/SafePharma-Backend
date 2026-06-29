@@ -1,0 +1,6 @@
+@SafePharma.API_HostAddress = http://localhost:5257
+
+GET {{SafePharma.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
