@@ -16,6 +16,7 @@ namespace SafePharma.DAL
             base.OnModelCreating(modelBuilder);
         }
         public DbSet<Audit> Audit => Set<Audit>();
+        public DbSet<PharmacySettings> PharmacySettings => Set<PharmacySettings>();
 
     }
 }
