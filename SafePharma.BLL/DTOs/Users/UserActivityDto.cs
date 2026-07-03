@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SafePharma.BLL.DTOs.Users
+﻿namespace SafePharma.BLL
 {
-    internal class UserActivityDto
+    public class UserActivityDto
     {
+        public Guid Id { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
     }
 }
