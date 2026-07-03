@@ -1,6 +1,6 @@
 ﻿namespace SafePharma.DAL
 {
-    public class PrimaryContact
+    public class PrimaryContact:IAuditableEntity
     {
         public Guid Id { get; set; }
         public string FullName { get; set; }
@@ -11,5 +11,7 @@
 
         public Guid PharmacyId { get; set; }
         public Pharmacy Pharmacy { get; set; }
+        public DateTime CreatedAt { get ; set ; }
+        public DateTime? UpdatedAt { get ; set; }
     }
 }
