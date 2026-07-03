@@ -12,14 +12,11 @@ namespace SafePharma.BLL
             services.AddScoped<IPharmacySettingManager, PharmacySettingManager>();
             services.AddValidatorsFromAssemblyContaining<PharmacySettingsUpdateDtoValidator>();
             services.AddScoped<IAuditManager, AuditManager>();
-<<<<<<< HEAD
             services.AddScoped<ICloudinaryService, CloudinaryService>();
-=======
             services.AddScoped<ISubscriptionManager, SubscriptionManager>();
             services.AddScoped<IPasswordHasher<PrimaryContact>, PasswordHasher<PrimaryContact>>();
             services.AddScoped<ITaxManager, TaxManager>();
->>>>>>> main
-
+            services.AddScoped<IUserLanguageManager, UserLanguageManager>();
         }
     }
 }

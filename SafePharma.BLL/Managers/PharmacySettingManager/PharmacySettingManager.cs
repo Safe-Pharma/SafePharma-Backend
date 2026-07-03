@@ -1,4 +1,5 @@
-﻿using SafePharma.DAL;
+﻿using SafePharma.Common;
+using SafePharma.DAL;
 
 namespace SafePharma.BLL
 {
@@ -12,11 +13,11 @@ namespace SafePharma.BLL
             _cloudinary = cloudinary;
         }
 
-        public async Task<PharmacySettingsReadDto?> GetSettings()
+        public async Task<GeneralResult<PharmacySettingsReadDto?>> GetSettings()
         {
             var settings = await _unitOfWork.PharmacySettingRepository.GetSettings();
 
-            if (settings is null) return null;
+            if (settings is null) return GeneralResult<PharmacySettingsReadDto?>.NotFound();
 
             PharmacySettingsReadDto settingsDto = new PharmacySettingsReadDto()
             {
@@ -28,14 +29,14 @@ namespace SafePharma.BLL
                 Phone = settings.Phone,
                 TaxRegistrationNumber = settings.TaxRegistrationNumber
             };
-            return settingsDto;
+            return GeneralResult<PharmacySettingsReadDto?>.SuccessResult(settingsDto);
         }
 
-        public async Task<PharmacySettingsUpdateDto?> updatePharamcySettings(PharmacySettingsUpdateDto dto)
+        public async Task<GeneralResult<PharmacySettingsUpdateDto?>> updatePharamcySettings(PharmacySettingsUpdateDto dto)
         {
             var entity = await _unitOfWork.PharmacySettingRepository.GetSettings();
 
-            if (entity is null) return null;
+            if (entity is null) return GeneralResult<PharmacySettingsUpdateDto?>.NotFound();
 
             entity.Name = dto.Name;
             entity.Street = dto.Street;
@@ -53,7 +54,8 @@ namespace SafePharma.BLL
 
             await _unitOfWork.SaveAsync();
 
-            return dto;
+            return GeneralResult<PharmacySettingsUpdateDto?>.SuccessResult(dto);
+
         }
     }
 }

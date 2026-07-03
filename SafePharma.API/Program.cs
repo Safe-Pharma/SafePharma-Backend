@@ -17,7 +17,11 @@ namespace SafePharma.API
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .ConfigureApiBehaviorOptions(options =>
+                {
+                    options.SuppressModelStateInvalidFilter = true;
+                });
             builder.Services.AddOpenApi();
             builder.Services.AddDALServices(builder.Configuration);
             builder.Services.AddBLLServices();
