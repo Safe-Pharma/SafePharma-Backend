@@ -3,7 +3,7 @@
     public class UnitOfWork : IUnitOfWork
     {
 
-
+        public ITaxRepository TaxRepository { get; }
         private AppDbContext _db;
         public IPharmacySettingRepository PharmacySettingRepository { get; }
         public IAuditRepository _auditRepository { get; }
