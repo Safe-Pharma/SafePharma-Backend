@@ -273,7 +273,13 @@ namespace SafePharma.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Audit");
                 });
@@ -369,6 +375,22 @@ namespace SafePharma.DAL.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.Audit", b =>
+                {
+                    b.HasOne("SafePharma.DAL.ApplicationUser", "User")
+                        .WithMany("OrdersProducts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.ApplicationUser", b =>
+                {
+                    b.Navigation("OrdersProducts");
                 });
 #pragma warning restore 612, 618
         }
