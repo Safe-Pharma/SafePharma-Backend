@@ -8,8 +8,8 @@ namespace SafePharma.DAL
     {
         public static List<ApplicationUser> GetUsers()
         {
-            var u1 = "99999999-9999-9999-9999-999999999999";
-            var u2 = "88888888-8888-8888-8888-888888888888";
+            var u1 = Guid.Parse("99999999-9999-9999-9999-999999999999");
+            var u2 = Guid.Parse("88888888-8888-8888-8888-888888888888");
 
             return new List<ApplicationUser>
             {
