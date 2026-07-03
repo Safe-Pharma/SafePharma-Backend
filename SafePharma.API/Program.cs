@@ -1,8 +1,12 @@
-using Scalar.AspNetCore;
-using SafePharma.DAL;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using SafePharma.BLL;
-using Microsoft.Extensions.DependencyInjection;
+using SafePharma.DAL;
+using Scalar.AspNetCore;
+using System.Text;
 namespace SafePharma.API
+
 {
 
     public class Program
@@ -17,7 +21,29 @@ namespace SafePharma.API
             builder.Services.AddOpenApi();
             builder.Services.AddDALServices(builder.Configuration);
             builder.Services.AddBLLServices();
-            
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+                    )
+                };
+            });
+
+
 
             var app = builder.Build();
 

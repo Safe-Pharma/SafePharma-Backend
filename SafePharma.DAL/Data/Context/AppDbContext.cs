@@ -1,12 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SafePharma.DAL;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace SafePharma.DAL
 {
-    public class AppDbContext:DbContext
+    public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
