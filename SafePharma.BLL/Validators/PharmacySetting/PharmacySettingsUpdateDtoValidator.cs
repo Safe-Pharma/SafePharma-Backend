@@ -10,15 +10,18 @@ namespace SafePharma.BLL
                 .NotEmpty().WithMessage("Name is required.")
                 .MaximumLength(100).WithMessage("Name must not exceed 100 characters.");
 
-            RuleFor(x => x.LogoUrl)
-                .NotEmpty().WithMessage("LogoUrl is required.");
+            RuleFor(x => x.LogoFile)
+                .Must(file =>
+                    file == null ||
+                    file.ContentType.StartsWith("image/"))
+                .WithMessage("Only image files are allowed.");
 
             RuleFor(x => x.Street)
                 .NotEmpty().WithMessage("Street is required.")
                 .MaximumLength(200);
 
-            RuleFor(x => x.City).NotEmpty()
-                .WithMessage("City is required.")
+            RuleFor(x => x.City)
+                .NotEmpty().WithMessage("City is required.")
                 .MaximumLength(100);
 
             RuleFor(x => x.Governorate)
