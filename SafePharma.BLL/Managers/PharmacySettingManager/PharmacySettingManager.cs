@@ -5,26 +5,44 @@ namespace SafePharma.BLL
     public class PharmacySettingManager : IPharmacySettingManager
     {
         private readonly IUnitOfWork _unitOfWork;
-        //private readonly IMapper _mapper;
 
-        public PharmacySettingManager(IUnitOfWork unitOfWork
-            //IMapper mapper
-            )
+        public PharmacySettingManager(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            //_mapper = mapper;
         }
 
-        public async Task<PharmacySettings?> GetSettings()
+        public async Task<PharmacySettingsReadDto?> GetSettings()
         {
-            return await _unitOfWork.PharmacySettingRepository.GetSettings();
+            var settings = await _unitOfWork.PharmacySettingRepository.GetSettings();
+
+            if (settings is null) return null;
+
+            PharmacySettingsReadDto settingsDto = new PharmacySettingsReadDto()
+            {
+                Name = settings.Name,
+                LogoUrl = settings.LogoUrl,
+                Street = settings.Street,
+                City = settings.City,
+                Governorate = settings.Governorate,
+                Phone = settings.Phone,
+                TaxRegistrationNumber = settings.TaxRegistrationNumber
+            };
+            return settingsDto;
         }
 
-        public async Task<PharmacySettingsUpdateDto> updatePharamcySettings(PharmacySettingsUpdateDto dto)
+        public async Task<PharmacySettingsUpdateDto?> updatePharamcySettings(PharmacySettingsUpdateDto dto)
         {
             var entity = await _unitOfWork.PharmacySettingRepository.GetSettings();
 
-            //_mapper.Map(dto, entity);
+            if (entity is null) return null;
+
+            entity.Name = dto.Name;
+            entity.LogoUrl = dto.LogoUrl;
+            entity.Street = dto.Street;
+            entity.City = dto.City;
+            entity.Governorate = dto.Governorate;
+            entity.Phone = dto.Phone;
+            entity.TaxRegistrationNumber = dto.TaxRegistrationNumber;
             entity.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.SaveAsync();
 
