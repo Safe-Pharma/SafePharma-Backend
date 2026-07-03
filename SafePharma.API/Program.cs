@@ -21,9 +21,9 @@ namespace SafePharma.API
             builder.Services.AddOpenApi();
             builder.Services.AddDALServices(builder.Configuration);
             builder.Services.AddBLLServices();
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-            .AddEntityFrameworkStores<AppDbContext>()
-            .AddDefaultTokenProviders();
+            builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+                            .AddEntityFrameworkStores<AppDbContext>()
+                            .AddDefaultTokenProviders();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

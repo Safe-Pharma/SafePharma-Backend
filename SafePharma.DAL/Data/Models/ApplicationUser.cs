@@ -2,7 +2,7 @@
 
 namespace SafePharma.DAL;
 
-public class ApplicationUser : IdentityUser
+public class ApplicationUser : IdentityUser<Guid> , IAuditableEntity
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;

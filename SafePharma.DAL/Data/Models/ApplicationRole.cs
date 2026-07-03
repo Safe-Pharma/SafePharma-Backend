@@ -2,9 +2,8 @@
 
 namespace SafePharma.DAL
 {
-    public class ApplicationRole : IdentityRole
+    public class ApplicationRole : IdentityRole<Guid>
     {
-        public string Name { get; set; }
         public string? Description { get; set; }
         
     }

@@ -16,8 +16,8 @@ namespace SafePharma.DAL
         public string Entity { get; set; } = string.Empty;
         public string Device { get; set; } = string.Empty;
         [ForeignKey("User")]
-        public String UserId {  get; set; }
-        public ApplicationUser User {  get; set; }
+        public Guid UserId { get; set; }
+        public ApplicationUser User { get; set; } = null!;
 
 
     }
