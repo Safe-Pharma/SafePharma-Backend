@@ -14,6 +14,7 @@ namespace SafePharma.BLL
             services.AddScoped<IAuditManager, AuditManager>();
             services.AddScoped<ISubscriptionManager, SubscriptionManager>();
             services.AddScoped<IPasswordHasher<PrimaryContact>, PasswordHasher<PrimaryContact>>();
+            services.AddScoped<ITaxManager, TaxManager>();
 
         }
     }

@@ -12,7 +12,7 @@
         public IPrimaryContactRepository PrimaryContactRepository { get; }
         public UnitOfWork(AppDbContext db, IAuditRepository auditRepository, IPharmacySettingRepository pharmacySettingRepository, ISubscriptionRepository subscriptionRepository,
             IPharmacyRepository pharmacyRepository,
-            IPrimaryContactRepository primaryContactRepository)
+            IPrimaryContactRepository primaryContactRepository , ITaxRepository taxRepository)
         {
             _db = db;
             PharmacySettingRepository = pharmacySettingRepository;
@@ -20,6 +20,7 @@
             SubscriptionRepository = subscriptionRepository;
             PharmacyRepository = pharmacyRepository;
             PrimaryContactRepository = primaryContactRepository;
+            TaxRepository = taxRepository;
         }
         public async Task SaveAsync()
         {
