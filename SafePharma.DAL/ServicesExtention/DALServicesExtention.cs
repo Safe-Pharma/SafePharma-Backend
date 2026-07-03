@@ -31,6 +31,7 @@ namespace SafePharma.DAL
                 );
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IPharmacySettingRepository, PharmacySettingRepository>();
+            services.AddScoped<ITaxRepository, TaxRepository>();
         }
     }
 }
