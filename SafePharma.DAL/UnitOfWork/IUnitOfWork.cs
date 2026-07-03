@@ -2,8 +2,9 @@
 {
     public interface IUnitOfWork
     {
+
         public IPharmacySettingRepository PharmacySettingRepository { get; }
-        public ITaxRepository TaxRepository { get; }
+        public IAuditRepository _auditRepository { get; }
         Task SaveAsync();
     }
 }
