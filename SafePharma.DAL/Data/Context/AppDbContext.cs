@@ -41,6 +41,11 @@ namespace SafePharma.DAL
 
                 entity.HasIndex(pc => pc.Email).IsUnique();
             });
+
+            modelBuilder.Entity<Pharmacy>(entity =>
+            {
+                entity.HasIndex(p => p.BusinessEmail).IsUnique();
+            });
         }
         public override int SaveChanges()
         {

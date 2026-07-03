@@ -1,6 +1,6 @@
 ﻿namespace SafePharma.DAL
 {
-    public class Pharmacy
+    public class Pharmacy : IAuditableEntity
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
@@ -19,5 +19,6 @@
 
         public Guid SubscriptionId { get; set; }
         public Subscription Subscription { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
