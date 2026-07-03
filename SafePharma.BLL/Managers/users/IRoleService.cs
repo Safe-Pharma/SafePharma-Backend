@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using SafePharma.Common;
 
-namespace SafePharma.BLL.Managers.users
+namespace SafePharma.BLL
 {
-    internal interface IRoleService
+    public interface IRoleService
     {
+        Task<IReadOnlyList<RoleDto>> GetRolesAsync();
     }
 }

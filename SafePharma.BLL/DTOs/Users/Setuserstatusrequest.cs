@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace SafePharma.BLL.DTOs.Users
+namespace SafePharma.BLL
 {
-    internal class Setuserstatusrequest
+    public class SetuserStatusRequest
     {
+        [Required]
+        public bool IsActive { get; set; }
     }
 }

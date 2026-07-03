@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SafePharma.Common.Pagination
+﻿namespace SafePharma.Common
 {
-    internal class PagedResult
+    public class PagedResult<T>
     {
+        public IEnumerable<T> Items { get; set; } = [];
+        public PaginationMetaData Metadata { get; set; } = new();
     }
 }
