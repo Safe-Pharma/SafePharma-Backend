@@ -14,7 +14,9 @@
 
     public enum SubscriptionStatus
     {
-        PendingPayment,
-        Approved
+        PendingReview,    // just submitted, waiting on admin
+        AwaitingPayment,  // admin approved, payment email sent
+        Active,           // payment confirmed, account can log in
+        Rejected
     }
 }

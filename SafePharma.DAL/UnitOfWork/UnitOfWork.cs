@@ -7,11 +7,19 @@
         private AppDbContext _db;
         public IPharmacySettingRepository PharmacySettingRepository { get; }
         public IAuditRepository _auditRepository { get; }
-        public UnitOfWork(AppDbContext db, IAuditRepository auditRepository, IPharmacySettingRepository pharmacySettingRepository)
+        public ISubscriptionRepository SubscriptionRepository { get; }
+        public IPharmacyRepository PharmacyRepository { get; }
+        public IPrimaryContactRepository PrimaryContactRepository { get; }
+        public UnitOfWork(AppDbContext db, IAuditRepository auditRepository, IPharmacySettingRepository pharmacySettingRepository, ISubscriptionRepository subscriptionRepository,
+            IPharmacyRepository pharmacyRepository,
+            IPrimaryContactRepository primaryContactRepository)
         {
             _db = db;
             PharmacySettingRepository = pharmacySettingRepository;
             _auditRepository = auditRepository;
+            SubscriptionRepository = subscriptionRepository;
+            PharmacyRepository = pharmacyRepository;
+            PrimaryContactRepository = primaryContactRepository;
         }
         public async Task SaveAsync()
         {
