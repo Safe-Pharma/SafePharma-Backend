@@ -4,7 +4,7 @@ namespace SafePharma.BLL
 {
     public interface IPharmacySettingManager
     {
-        Task<PharmacySettings?> GetSettings();
-        Task<PharmacySettingsUpdateDto> updatePharamcySettings(PharmacySettingsUpdateDto dto);
+        Task<PharmacySettingsReadDto?> GetSettings();
+        Task<PharmacySettingsUpdateDto?> updatePharamcySettings(PharmacySettingsUpdateDto dto);
     }
 }
