@@ -25,7 +25,7 @@ namespace SafePharma.API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateSettings([FromBody] PharmacySettingsUpdateDto dto)
+        public async Task<IActionResult> UpdateSettings([FromForm] PharmacySettingsUpdateDto dto)
         {
             var validationResult = await _validator.ValidateAsync(dto);
 

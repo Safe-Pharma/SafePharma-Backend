@@ -10,6 +10,7 @@ namespace SafePharma.BLL
             services.AddScoped<IPharmacySettingManager, PharmacySettingManager>();
             services.AddValidatorsFromAssemblyContaining<PharmacySettingsUpdateDtoValidator>();
             services.AddScoped<IAuditManager, AuditManager>();
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
 
         }
     }

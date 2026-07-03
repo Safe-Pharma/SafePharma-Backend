@@ -43,7 +43,16 @@ namespace SafePharma.API
                 };
             });
 
-
+            // CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+                });
+            });
 
             var app = builder.Build();
 
@@ -56,7 +65,7 @@ namespace SafePharma.API
 
             app.UseHttpsRedirection();
             app.UseRouting();
-
+            app.UseCors("AllowAll");
             app.UseAuthentication();
             app.UseAuthorization();
 

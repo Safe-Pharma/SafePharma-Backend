@@ -5,10 +5,11 @@ namespace SafePharma.BLL
     public class PharmacySettingManager : IPharmacySettingManager
     {
         private readonly IUnitOfWork _unitOfWork;
-
-        public PharmacySettingManager(IUnitOfWork unitOfWork)
+        private readonly ICloudinaryService _cloudinary;
+        public PharmacySettingManager(IUnitOfWork unitOfWork, ICloudinaryService cloudinary)
         {
             _unitOfWork = unitOfWork;
+            _cloudinary = cloudinary;
         }
 
         public async Task<PharmacySettingsReadDto?> GetSettings()
@@ -37,13 +38,19 @@ namespace SafePharma.BLL
             if (entity is null) return null;
 
             entity.Name = dto.Name;
-            entity.LogoUrl = dto.LogoUrl;
             entity.Street = dto.Street;
             entity.City = dto.City;
             entity.Governorate = dto.Governorate;
             entity.Phone = dto.Phone;
             entity.TaxRegistrationNumber = dto.TaxRegistrationNumber;
             entity.UpdatedAt = DateTime.UtcNow;
+
+            if (dto.LogoFile != null)
+            {
+                var imageUrl = await _cloudinary.UploadImageAsync(dto.LogoFile);
+                entity.LogoUrl = imageUrl;
+            }
+
             await _unitOfWork.SaveAsync();
 
             return dto;
