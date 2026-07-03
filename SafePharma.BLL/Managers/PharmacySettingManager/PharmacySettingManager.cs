@@ -1,17 +1,18 @@
-﻿using AutoMapper;
-using SafePharma.DAL;
+﻿using SafePharma.DAL;
 
 namespace SafePharma.BLL
 {
     public class PharmacySettingManager : IPharmacySettingManager
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+        //private readonly IMapper _mapper;
 
-        public PharmacySettingManager(IUnitOfWork unitOfWork, IMapper mapper)
+        public PharmacySettingManager(IUnitOfWork unitOfWork
+            //IMapper mapper
+            )
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
+            //_mapper = mapper;
         }
 
         public async Task<PharmacySettings?> GetSettings()
@@ -23,11 +24,11 @@ namespace SafePharma.BLL
         {
             var entity = await _unitOfWork.PharmacySettingRepository.GetSettings();
 
-            _mapper.Map(dto, entity);
+            //_mapper.Map(dto, entity);
             entity.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.SaveAsync();
 
-            return _mapper.Map<PharmacySettingsUpdateDto>(entity);
+            return dto;
         }
     }
 }

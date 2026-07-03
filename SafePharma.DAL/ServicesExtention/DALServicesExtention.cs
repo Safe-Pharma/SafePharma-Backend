@@ -9,29 +9,59 @@ namespace SafePharma.DAL
     {
         public static void AddDALServices(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("GP_TEST");
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString)
                 .UseAsyncSeeding(async (context, _, _) =>
                 {
+                    if (await context.Set<ApplicationUser>().AnyAsync())
+                        return;
+                    var user = UserSeedingProvider.GetUsers();
+                    await context.AddRangeAsync(user);
+                    await context.SaveChangesAsync();
+
                     if (await context.Set<PharmacySettings>().AnyAsync())
                         return;
                     var defaultSettings = PharmacySettingsSeedingProvider.GetDefaultPharmacySettings();
                     await context.AddAsync(defaultSettings);
                     await context.SaveChangesAsync();
+
+                    if (await context.Set<Audit>().AnyAsync())
+                        return;
+                    var audit = AuditSeeding.GetAudits();
+                    await context.AddRangeAsync(audit);
+                    await context.SaveChangesAsync();
                 })
                 .UseSeeding((context, _) =>
                 {
+                    if ( context.Set<ApplicationUser>().Any())
+                        return;
+                    var user = UserSeedingProvider.GetUsers();
+                     context.AddRange(user);
+                     context.SaveChanges();
+
                     if (context.Set<PharmacySettings>().Any())
                         return;
                     var defaultSettings = PharmacySettingsSeedingProvider.GetDefaultPharmacySettings();
                     context.Add(defaultSettings);
                     context.SaveChanges();
+
+                    if (context.Set<Audit>().Any())
+                        return;
+                    var audit = AuditSeeding.GetAudits();
+                    context.AddRange(audit);
+                    context.SaveChanges();
                 })
                 );
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IPharmacySettingRepository, PharmacySettingRepository>();
-            services.AddScoped<ITaxRepository, TaxRepository>();
+            services.AddScoped<IAuditRepository, AuditRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
         }
+
+
+
     }
+
 }
+
