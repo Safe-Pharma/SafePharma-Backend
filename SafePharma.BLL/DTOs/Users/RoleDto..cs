@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SafePharma.BLL.DTOs.Users
+﻿namespace SafePharma.BLL
 {
-    internal class RoleDto
+    public class RoleDto
     {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
     }
 }
