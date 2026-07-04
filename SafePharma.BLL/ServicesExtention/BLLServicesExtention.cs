@@ -1,8 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using SafePharma.BLL.Managers.users;
-using SafePharma.Common;
 using SafePharma.DAL;
 
 namespace SafePharma.BLL
@@ -18,9 +16,6 @@ namespace SafePharma.BLL
             services.AddScoped<ISubscriptionManager, SubscriptionManager>();
             services.AddScoped<IPasswordHasher<PrimaryContact>, PasswordHasher<PrimaryContact>>();
             services.AddScoped<ITaxManager, TaxManager>();
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
-
             services.AddScoped<IUserLanguageManager, UserLanguageManager>();
         }
     }
