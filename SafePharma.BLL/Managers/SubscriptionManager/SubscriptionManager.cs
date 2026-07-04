@@ -40,6 +40,31 @@ namespace SafePharma.BLL
                 };
                 return GeneralResult<SubscriptionReadDto>.FailResult(errors);
             }
+            if (!string.IsNullOrWhiteSpace(dto.Pharmacy.TaxNumber) &&
+    await _unitOfWork.PharmacyRepository.TaxNumberExists(dto.Pharmacy.TaxNumber))
+            {
+                var errors = new Dictionary<string, List<Error>>
+                {
+                    ["Pharmacy.TaxNumber"] = new List<Error>
+        {
+            new Error { ErrorCode = "DUPLICATE_TAX_NUMBER", ErrorMessage = "This tax number is already registered to another pharmacy." }
+        }
+                };
+                return GeneralResult<SubscriptionReadDto>.FailResult(errors);
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.Pharmacy.CommercialRegistration) &&
+                await _unitOfWork.PharmacyRepository.CommercialRegistrationExists(dto.Pharmacy.CommercialRegistration))
+            {
+                var errors = new Dictionary<string, List<Error>>
+                {
+                    ["Pharmacy.CommercialRegistration"] = new List<Error>
+        {
+            new Error { ErrorCode = "DUPLICATE_COMMERCIAL_REGISTRATION", ErrorMessage = "This commercial registration is already registered to another pharmacy." }
+        }
+                };
+                return GeneralResult<SubscriptionReadDto>.FailResult(errors);
+            }
 
             var subscription = new Subscription
             {

@@ -45,6 +45,29 @@ namespace SafePharma.DAL
             modelBuilder.Entity<Pharmacy>(entity =>
             {
                 entity.HasIndex(p => p.BusinessEmail).IsUnique();
+
+                entity.HasIndex(p => p.TaxNumber)
+                      .IsUnique()
+                      .HasFilter("[TaxNumber] IS NOT NULL");
+
+                entity.HasIndex(p => p.CommercialRegistration)
+                      .IsUnique()
+                      .HasFilter("[CommercialRegistration] IS NOT NULL");
+            });
+            modelBuilder.Entity<Country>(entity =>
+            {
+                entity.HasIndex(c => c.Code).IsUnique();
+                entity.HasIndex(c => c.Name).IsUnique();
+            });
+
+            modelBuilder.Entity<City>(entity =>
+            {
+                entity.HasOne(c => c.Country)
+                      .WithMany(country => country.Cities)
+                      .HasForeignKey(c => c.CountryId);
+
+                // Same city name can exist in different countries, just not duplicated within one country
+                entity.HasIndex(c => new { c.CountryId, c.Name }).IsUnique();
             });
         }
         public override int SaveChanges()
@@ -75,6 +98,8 @@ namespace SafePharma.DAL
         public DbSet<Subscription> Subscriptions => Set<Subscription>();
         public DbSet<Pharmacy> Pharmacies => Set<Pharmacy>();
         public DbSet<PrimaryContact> PrimaryContacts => Set<PrimaryContact>();
+        public DbSet<Country> Countries => Set<Country>();
+        public DbSet<City> Cities => Set<City>();
 
     }
 }

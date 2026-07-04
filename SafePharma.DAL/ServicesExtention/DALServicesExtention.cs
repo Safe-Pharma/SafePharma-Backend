@@ -25,7 +25,14 @@ namespace SafePharma.DAL
                     }
 
                     // ❌ REMOVE Audit from here
+
+                    if (await context.Set<Country>().AnyAsync())
+                        return;
+                    var countries = CountrySeeding.GetCountries();
+                    await context.AddRangeAsync(countries);
+                    await context.SaveChangesAsync();
                 })
+
                 .UseSeeding((context, _) =>
                 {
                     if (!context.Set<PharmacySettings>().Any())
@@ -36,6 +43,12 @@ namespace SafePharma.DAL
                     }
 
                     // ❌ REMOVE Audit from here
+
+                    if (context.Set<Country>().Any())
+                        return;
+                    var countries = CountrySeeding.GetCountries();
+                    context.AddRange(countries);
+                    context.SaveChanges();
                 })
             );
 
@@ -46,6 +59,7 @@ namespace SafePharma.DAL
             services.AddScoped<IPrimaryContactRepository, PrimaryContactRepository>();
             services.AddScoped<ITaxRepository, TaxRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<ICountryRepository, CountryRepository>();
 
             // NOTE: Seeding that requires application services (UserManager/RoleManager)
             // must run after the DI container is fully built (after AddIdentity and app build).
