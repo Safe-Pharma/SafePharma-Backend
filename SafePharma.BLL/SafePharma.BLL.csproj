@@ -5,9 +5,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
+  <ItemGroup>
+    <!-- Required for IHttpContextAccessor and other ASP.NET Core types when used in class library -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+	
 
 	<ItemGroup>
     <PackageReference Include="CloudinaryDotNet" Version="1.29.2" />
