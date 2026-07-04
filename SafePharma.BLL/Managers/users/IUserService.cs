@@ -12,7 +12,7 @@ namespace SafePharma.BLL
 
         Task<GeneralResult<UserDetailDto>> UpdateUserAsync(Guid id, UpdateUserRequest request);
 
-        /// <summary>Explicit Active/Inactive toggle — used by the row action menu's quick toggle.</summary>
+        ///<summary>Explicit Active/Inactive toggle — used by the row action menu's quick toggle.</summary>
         Task<GeneralResult> SetUserStatusAsync(Guid id, bool isActive);
 
         /// <summary>

@@ -12,16 +12,23 @@ namespace SafePharma.API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IRoleService _roleService;
 
-        public UsersController(IUserService userService)
+
+        public UsersController(IUserService userService, IRoleService roleService)
         {
             _userService = userService;
+            _roleService = roleService;
         }
 
-        /// <summary>
-        /// GET /api/users?search=&role=&isActive=&page=&pageSize=&sortBy=&sortDescending=
-        /// Backs the Users list page: search bar, role filter, status filter, pagination, sort.
-        /// </summary>
+        [HttpGet("roles")]
+        public async Task<ActionResult<IReadOnlyList<RoleDto>>> GetRoles()
+        {
+            var roles = await _roleService.GetRolesAsync();
+            return Ok(roles);
+        }
+
+        
         [HttpGet]
         //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<PagedResult<UserListItemDto>>> GetUsers([FromQuery] UserQueryParams query)
@@ -32,7 +39,7 @@ namespace SafePharma.API.Controllers
             return BadRequest(result);
         }
 
-        /// <summary>GET /api/users/{id} — backs the user detail page.</summary>
+        
         [HttpGet("{id:guid}")]
         //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<UserDetailDto>> GetUser(Guid id)
@@ -55,7 +62,7 @@ namespace SafePharma.API.Controllers
 
         /// <summary>POST /api/users — backs the "Create new user" dialog.</summary>
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<UserDetailDto>> CreateUser([FromBody] CreateUserRequest request)
         {
             var result = await _userService.CreateUserAsync(request);
@@ -66,20 +73,23 @@ namespace SafePharma.API.Controllers
 
         /// <summary>PUT /api/users/{id} — backs the "Edit user" dialog.</summary>
         [HttpPut("{id:guid}")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<UserDetailDto>> UpdateUser(Guid id, [FromBody] UpdateUserRequest request)
         {
             return Ok(await _userService.UpdateUserAsync(id, request));
         }
 
         /// <summary>PATCH /api/users/{id}/status — quick Active/Inactive toggle from the row action menu.</summary>
-        //[HttpPatch("{id:guid}/status")]
+        [HttpPatch("{id:guid}/status")]
         //[Authorize(Roles = "Admin")]
-        //public async Task<IActionResult> SetUserStatus(Guid id, [FromBody] SetUserStatusRequest request)
-        //{
-        //    await _userService.SetUserStatusAsync(id);
-        //    return NoContent();
-        //}
+        public async Task<IActionResult> SetUserStatus(Guid id, [FromBody] SetuserStatusRequest request)
+        {
+            var result = await _userService.SetUserStatusAsync(id, request.IsActive);
+            if (result.Success) return NoContent();
+            if (result.Message?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true)
+                return NotFound(result.Message);
+            return BadRequest(result);
+        }
 
         /// <summary>
         /// DELETE /api/users/{id} — "Delete user" row action.

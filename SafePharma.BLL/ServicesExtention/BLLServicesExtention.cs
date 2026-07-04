@@ -24,6 +24,7 @@ namespace SafePharma.BLL
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
+            services.AddScoped<IRoleService, RoleService>();
 
             services.AddScoped<IUserLanguageManager, UserLanguageManager>();
         }
