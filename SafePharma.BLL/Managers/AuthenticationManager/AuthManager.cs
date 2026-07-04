@@ -58,6 +58,7 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email!),
             new Claim("FullName", user.FullName),
+            new Claim("PharmacyId", user.PharmacyId.ToString())
         };
 
             var roles = await _userManager.GetRolesAsync(user);

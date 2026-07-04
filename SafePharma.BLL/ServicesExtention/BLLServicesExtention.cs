@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using SafePharma.BLL.Managers;
 using SafePharma.BLL.Managers.AuthenticationManager;
+using SafePharma.BLL.Managers.users;
+using SafePharma.Common;
 using SafePharma.DAL;
 
 namespace SafePharma.BLL
@@ -14,12 +16,16 @@ namespace SafePharma.BLL
             services.AddScoped<IPharmacySettingManager, PharmacySettingManager>();
             services.AddValidatorsFromAssemblyContaining<PharmacySettingsUpdateDtoValidator>();
             services.AddScoped<IAuditManager, AuditManager>();
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<ISubscriptionManager, SubscriptionManager>();
             services.AddScoped<IPasswordHasher<PrimaryContact>, PasswordHasher<PrimaryContact>>();
             services.AddScoped<ITaxManager, TaxManager>();
             services.AddScoped<IAuthManager, AuthManager>();
 
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
 
+            services.AddScoped<IUserLanguageManager, UserLanguageManager>();
         }
     }
 }

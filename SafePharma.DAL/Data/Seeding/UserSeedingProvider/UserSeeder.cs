@@ -66,7 +66,8 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                     NormalizedEmail = "ADMIN@SAFEPHARMA.COM",
                     FirstName = "Admin",
                     LastName = "User",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    //PharmacyId = Guid.Parse("11111111-1111-1111-1111-111111111111")
                 },
                 new ApplicationUser
                 {
