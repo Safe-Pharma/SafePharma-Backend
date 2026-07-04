@@ -19,7 +19,11 @@ namespace SafePharma.API
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .ConfigureApiBehaviorOptions(options =>
+                {
+                    options.SuppressModelStateInvalidFilter = true;
+                });
             builder.Services.AddOpenApi();
             builder.Services.AddDALServices(builder.Configuration);
             builder.Services.AddBLLServices();
@@ -45,6 +49,7 @@ namespace SafePharma.API
                 };
             });
 
+<<<<<<< HEAD
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAngularDev", policy =>
@@ -56,6 +61,18 @@ namespace SafePharma.API
             });
 
 
+=======
+            // CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+                });
+            });
+>>>>>>> 80cd4dd169e678d1b3734e80dab4af4c28e06139
 
             var app = builder.Build();
 
@@ -75,7 +92,11 @@ namespace SafePharma.API
 
             app.UseHttpsRedirection();
             app.UseRouting();
+<<<<<<< HEAD
             app.UseCors("AllowAngularDev");
+=======
+            app.UseCors("AllowAll");
+>>>>>>> 80cd4dd169e678d1b3734e80dab4af4c28e06139
             app.UseAuthentication();
             app.UseAuthorization();
 

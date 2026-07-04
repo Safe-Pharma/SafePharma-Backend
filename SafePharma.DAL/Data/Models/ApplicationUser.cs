@@ -22,10 +22,9 @@ public class ApplicationUser : IdentityUser<Guid> , IAuditableEntity
 
 
     //tenant should be done (required)
-    //public Guid PharmacyId { get; set; }
-    //public Pharmacy Pharmacy { get; set; } = null!;
+    public Guid? PharmacyId { get; set; }
+    public Pharmacy? Pharmacy { get; set; } = null!;
     public virtual ICollection<Audit> AuditList { get; set; } = new HashSet<Audit>();
-
-
+    public string PreferredLanguage { get; set; } = "en";
     public string FullName => $"{FirstName} {LastName}".Trim();
 }

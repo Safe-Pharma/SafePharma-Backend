@@ -15,7 +15,11 @@
 
         public UnitOfWork(AppDbContext db, IAuditRepository auditRepository, IPharmacySettingRepository pharmacySettingRepository, ISubscriptionRepository subscriptionRepository,
             IPharmacyRepository pharmacyRepository,
+<<<<<<< HEAD
             IPrimaryContactRepository primaryContactRepository, ICountryRepository countryRepository)
+=======
+            IPrimaryContactRepository primaryContactRepository , ITaxRepository taxRepository)
+>>>>>>> 80cd4dd169e678d1b3734e80dab4af4c28e06139
         {
             _db = db;
             PharmacySettingRepository = pharmacySettingRepository;
@@ -23,7 +27,11 @@
             SubscriptionRepository = subscriptionRepository;
             PharmacyRepository = pharmacyRepository;
             PrimaryContactRepository = primaryContactRepository;
+<<<<<<< HEAD
             CountryRepository = countryRepository;
+=======
+            TaxRepository = taxRepository;
+>>>>>>> 80cd4dd169e678d1b3734e80dab4af4c28e06139
         }
         public async Task SaveAsync()
         {

@@ -74,6 +74,7 @@ namespace SafePharma.DAL
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<IPharmacyRepository, PharmacyRepository>();
             services.AddScoped<IPrimaryContactRepository, PrimaryContactRepository>();
+            services.AddScoped<ITaxRepository, TaxRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ICountryRepository, CountryRepository>();
 

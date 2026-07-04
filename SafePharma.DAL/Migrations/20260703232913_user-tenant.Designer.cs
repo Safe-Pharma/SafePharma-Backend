@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SafePharma.DAL;
 
@@ -11,9 +12,11 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260703232913_user-tenant")]
+    partial class usertenant
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -231,10 +234,6 @@ namespace SafePharma.DAL.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("PreferredLanguage")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -292,52 +291,6 @@ namespace SafePharma.DAL.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Audit");
-                });
-
-            modelBuilder.Entity("SafePharma.DAL.City", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CountryId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CountryId", "Name")
-                        .IsUnique();
-
-                    b.ToTable("Cities");
-                });
-
-            modelBuilder.Entity("SafePharma.DAL.Country", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Countries");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.Pharmacy", b =>
@@ -635,17 +588,6 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SafePharma.DAL.City", b =>
-                {
-                    b.HasOne("SafePharma.DAL.Country", "Country")
-                        .WithMany("Cities")
-                        .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Country");
-                });
-
             modelBuilder.Entity("SafePharma.DAL.Pharmacy", b =>
                 {
                     b.HasOne("SafePharma.DAL.Subscription", "Subscription")
@@ -671,11 +613,6 @@ namespace SafePharma.DAL.Migrations
             modelBuilder.Entity("SafePharma.DAL.ApplicationUser", b =>
                 {
                     b.Navigation("AuditList");
-                });
-
-            modelBuilder.Entity("SafePharma.DAL.Country", b =>
-                {
-                    b.Navigation("Cities");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.Subscription", b =>
