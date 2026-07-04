@@ -23,6 +23,8 @@ namespace SafePharma.BLL
             services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
 
             services.AddScoped<IUserLanguageManager, UserLanguageManager>();
+            services.AddScoped<ILocationManager, LocationManager>();
+
         }
     }
 }

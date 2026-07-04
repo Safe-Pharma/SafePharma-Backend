@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
+namespace SafePharma.DAL
 {
     public static class UserSeeder
     {

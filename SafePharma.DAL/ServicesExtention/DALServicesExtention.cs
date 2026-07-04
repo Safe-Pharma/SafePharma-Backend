@@ -26,9 +26,37 @@ namespace SafePharma.DAL
                     }
 
                     // ❌ REMOVE Audit from here
+                    Console.WriteLine("=== UseAsyncSeeding is running ===");
+                    if (!await context.Set<Country>().AnyAsync())
+                    {
+                        var countries = CountrySeeding.GetCountries();
+                        await context.AddRangeAsync(countries);
+                        await context.SaveChangesAsync();
+                    }
+
+                    //if (await context.Set<ApplicationUser>().AnyAsync())
+                    //    return;
+                    //var user = UserSeedingProvider.GetUsers();
+                    //await context.AddRangeAsync(user);
+                    //await context.SaveChangesAsync();
+
                 })
                 .UseSeeding((context, _) =>
                 {
+                    Console.WriteLine("=== UseSeeding is running ===");
+                    if (!context.Set<Country>().Any())
+                    {
+                        var countries = CountrySeeding.GetCountries();
+                        context.AddRange(countries);
+                        context.SaveChanges();
+                    }
+
+                    //if (context.Set<ApplicationUser>().Any())
+                    //    return;
+                    //var user = UserSeedingProvider.GetUsers();
+                    //context.AddRange(user);
+                    //context.SaveChanges();
+
                     if (!context.Set<PharmacySettings>().Any())
                     {
                         var defaultSettings = PharmacySettingsSeedingProvider.GetDefaultPharmacySettings();
