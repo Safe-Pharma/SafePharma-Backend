@@ -31,6 +31,14 @@ namespace SafePharma.DAL
                     var countries = CountrySeeding.GetCountries();
                     await context.AddRangeAsync(countries);
                     await context.SaveChangesAsync();
+
+                    // UseAsyncSeeding block:
+                    if (!await context.Set<Pharmacy>().AnyAsync())
+                    {
+                        var subscriptions = PharmacySeeding.GetSubscriptionsWithPharmacies();
+                        await context.AddRangeAsync(subscriptions);
+                        await context.SaveChangesAsync();
+                    }
                 })
 
                 .UseSeeding((context, _) =>
@@ -49,6 +57,14 @@ namespace SafePharma.DAL
                     var countries = CountrySeeding.GetCountries();
                     context.AddRange(countries);
                     context.SaveChanges();
+
+                    // UseSeeding block:
+                    if (!context.Set<Pharmacy>().Any())
+                    {
+                        var subscriptions = PharmacySeeding.GetSubscriptionsWithPharmacies();
+                        context.AddRange(subscriptions);
+                        context.SaveChanges();
+                    }
                 })
             );
 

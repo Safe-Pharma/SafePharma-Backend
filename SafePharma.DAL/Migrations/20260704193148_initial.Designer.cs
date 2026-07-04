@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260704085919_latest changes")]
-    partial class latestchanges
+    [Migration("20260704193148_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -297,6 +297,52 @@ namespace SafePharma.DAL.Migrations
                     b.ToTable("Audit");
                 });
 
+            modelBuilder.Entity("SafePharma.DAL.City", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CountryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CountryId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Cities");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.Country", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Countries");
+                });
+
             modelBuilder.Entity("SafePharma.DAL.Pharmacy", b =>
                 {
                     b.Property<Guid>("Id")
@@ -316,7 +362,7 @@ namespace SafePharma.DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CommercialRegistration")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Country")
                         .IsRequired()
@@ -347,7 +393,7 @@ namespace SafePharma.DAL.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TaxNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("TimeZone")
                         .IsRequired()
@@ -361,8 +407,16 @@ namespace SafePharma.DAL.Migrations
                     b.HasIndex("BusinessEmail")
                         .IsUnique();
 
+                    b.HasIndex("CommercialRegistration")
+                        .IsUnique()
+                        .HasFilter("[CommercialRegistration] IS NOT NULL");
+
                     b.HasIndex("SubscriptionId")
                         .IsUnique();
+
+                    b.HasIndex("TaxNumber")
+                        .IsUnique()
+                        .HasFilter("[TaxNumber] IS NOT NULL");
 
                     b.ToTable("Pharmacies");
                 });
@@ -592,6 +646,17 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SafePharma.DAL.City", b =>
+                {
+                    b.HasOne("SafePharma.DAL.Country", "Country")
+                        .WithMany("Cities")
+                        .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Country");
+                });
+
             modelBuilder.Entity("SafePharma.DAL.Pharmacy", b =>
                 {
                     b.HasOne("SafePharma.DAL.Subscription", "Subscription")
@@ -617,6 +682,11 @@ namespace SafePharma.DAL.Migrations
             modelBuilder.Entity("SafePharma.DAL.ApplicationUser", b =>
                 {
                     b.Navigation("AuditList");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.Country", b =>
+                {
+                    b.Navigation("Cities");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.Subscription", b =>

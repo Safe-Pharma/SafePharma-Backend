@@ -5,7 +5,7 @@
 namespace SafePharma.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class latestchanges : Migration
+    public partial class SeedingPharmacies : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

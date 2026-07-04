@@ -11,6 +11,26 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
             UserManager<ApplicationUser> userManager,
             RoleManager<ApplicationRole> roleManager)
         {
+            // Seed required roles
+            var roles = new[] { "admin", "Manager", "assistant", "cashier", "pharmassist", "accountant" };
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    var r = new ApplicationRole
+                    {
+                        Name = role,
+                        NormalizedName = role.ToUpper()
+                    };
+
+                    var roleResult = await roleManager.CreateAsync(r);
+                    if (!roleResult.Succeeded)
+                    {
+                        throw new Exception($"Failed to create role '{role}': {string.Join(", ", roleResult.Errors)}");
+                    }
+                }
+            }
+
             var users = GetUsers();
 
             foreach (var user in users)
@@ -48,36 +68,107 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                     }
                 }
             }
+
+            // Ensure admin user is assigned to 'admin' role
+            var adminUser = await userManager.FindByNameAsync("admin");
+            if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "admin"))
+            {
+                var addToRoleResult = await userManager.AddToRoleAsync(adminUser, "admin");
+                if (!addToRoleResult.Succeeded)
+                {
+                    throw new Exception($"Failed to add 'admin' user to role 'admin': {string.Join(", ", addToRoleResult.Errors)}");
+                }
+            }
         }
 
         private static List<ApplicationUser> GetUsers()
         {
-            var u1 = Guid.Parse("99999999-9999-9999-9999-999999999999");
-            var u2 = Guid.Parse("88888888-8888-8888-8888-888888888888");
+            // Preserve original seeded users' IDs and add new role users
+            var adminId = Guid.Parse("99999999-9999-9999-9999-999999999999");
+            var userId = Guid.Parse("88888888-8888-8888-8888-888888888888");
+            var managerId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var assistantId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+            var cashierId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+            var pharmassistId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+            var accountantId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
 
             return new List<ApplicationUser>
             {
                 new ApplicationUser
                 {
-                    Id = u1,
+                    Id = adminId,
                     UserName = "admin",
                     NormalizedUserName = "ADMIN",
                     Email = "admin@safepharma.com",
                     NormalizedEmail = "ADMIN@SAFEPHARMA.COM",
                     FirstName = "Admin",
                     LastName = "User",
-                    EmailConfirmed = true,
-                    //PharmacyId = Guid.Parse("11111111-1111-1111-1111-111111111111")
+                    EmailConfirmed = true
                 },
                 new ApplicationUser
                 {
-                    Id = u2,
+                    Id = userId,
                     UserName = "user",
                     NormalizedUserName = "USER",
                     Email = "user@safepharma.com",
                     NormalizedEmail = "USER@SAFEPHARMA.COM",
                     FirstName = "Normal",
                     LastName = "User",
+                    EmailConfirmed = true
+                },
+                new ApplicationUser
+                {
+                    Id = managerId,
+                    UserName = "Manager",
+                    NormalizedUserName = "MANAGER",
+                    Email = "manager@safepharma.com",
+                    NormalizedEmail = "MANAGER@SAFEPHARMA.COM",
+                    FirstName = "Store",
+                    LastName = "Manager",
+                    EmailConfirmed = true
+                },
+                new ApplicationUser
+                {
+                    Id = assistantId,
+                    UserName = "assistant",
+                    NormalizedUserName = "ASSISTANT",
+                    Email = "assistant@safepharma.com",
+                    NormalizedEmail = "ASSISTANT@SAFEPHARMA.COM",
+                    FirstName = "Pharmacy",
+                    LastName = "Assistant",
+                    EmailConfirmed = true
+                },
+                new ApplicationUser
+                {
+                    Id = cashierId,
+                    UserName = "cashier",
+                    NormalizedUserName = "CASHIER",
+                    Email = "cashier@safepharma.com",
+                    NormalizedEmail = "CASHIER@SAFEPHARMA.COM",
+                    FirstName = "Store",
+                    LastName = "Cashier",
+                    EmailConfirmed = true
+                },
+                new ApplicationUser
+                {
+                    Id = pharmassistId,
+                    UserName = "pharmassist",
+                    NormalizedUserName = "PHARMASSIST",
+                    Email = "pharmassist@safepharma.com",
+                    NormalizedEmail = "PHARMASSIST@SAFEPHARMA.COM",
+                    FirstName = "Pharmacy",
+                    LastName = "Assistant",
+                    EmailConfirmed = true
+                },
+                new ApplicationUser
+                {
+                    Id = accountantId,
+                    UserName = "accountant",
+                    NormalizedUserName = "ACCOUNTANT",
+                    Email = "accountant@safepharma.com",
+                    NormalizedEmail = "ACCOUNTANT@SAFEPHARMA.COM",
+                    FirstName = "Finance",
+                    LastName = "Accountant",
                     EmailConfirmed = true
                 }
             };
