@@ -19,8 +19,8 @@ namespace SafePharma.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetCountries()
         {
-            var result = await _locationManager.GetCountriesWithCities();
-            return Ok(result);
+            //var result = await _locationManager.GetCountriesWithCities();
+            return Ok();
         }
     }
 }

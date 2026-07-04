@@ -12,22 +12,22 @@ namespace SafePharma.BLL
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<GeneralResult<List<CountryWithCitiesDto>>> GetCountriesWithCities()
-        {
-            var countries = await _unitOfWork.CountryRepository.GetAllWithCitiesAsync();
+        //public async Task<GeneralResult<List<CountryWithCitiesDto>>> GetCountriesWithCities()
+        //{
+        //    //var countries = await _unitOfWork.CountryRepository.GetAllWithCitiesAsync();
 
-            var result = countries.Select(c => new CountryWithCitiesDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Code = c.Code,
-                Cities = c.Cities
-                    .OrderBy(city => city.Name)
-                    .Select(city => new CityDto { Id = city.Id, Name = city.Name })
-                    .ToList()
-            }).ToList();
+        //    //var result = countries.Select(c => new CountryWithCitiesDto
+        //    //{
+        //    //    Id = c.Id,
+        //    //    Name = c.Name,
+        //    //    Code = c.Code,
+        //    //    Cities = c.Cities
+        //    //        .OrderBy(city => city.Name)
+        //    //        .Select(city => new CityDto { Id = city.Id, Name = city.Name })
+        //    //        .ToList()
+        //    //}).ToList();
 
-            return GeneralResult<List<CountryWithCitiesDto>>.SuccessResult(result);
-        }
+        //    //return GeneralResult<List<CountryWithCitiesDto>>.SuccessResult(result);
+        //}
     }
 }

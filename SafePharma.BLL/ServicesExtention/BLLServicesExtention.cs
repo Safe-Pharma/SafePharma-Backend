@@ -17,13 +17,10 @@ namespace SafePharma.BLL
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<ISubscriptionManager, SubscriptionManager>();
             services.AddScoped<IPasswordHasher<PrimaryContact>, PasswordHasher<PrimaryContact>>();
-<<<<<<< HEAD
-            services.AddScoped<ILocationManager, LocationManager>();
-=======
+
             services.AddScoped<ITaxManager, TaxManager>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
->>>>>>> 80cd4dd169e678d1b3734e80dab4af4c28e06139
 
             services.AddScoped<IUserLanguageManager, UserLanguageManager>();
         }
