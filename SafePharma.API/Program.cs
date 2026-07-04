@@ -23,6 +23,8 @@ namespace SafePharma.API
                     options.SuppressModelStateInvalidFilter = true;
                 });
             builder.Services.AddOpenApi();
+            // Bind JwtSettings from configuration
+            builder.Services.Configure<SafePharma.Common.JwtSettings>(builder.Configuration.GetSection("JWT"));
             builder.Services.AddDALServices(builder.Configuration);
             builder.Services.AddBLLServices();
             builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
@@ -38,11 +40,12 @@ namespace SafePharma.API
                     ValidateAudience = true,
                     ValidateLifetime = true,
 
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    ValidIssuer = builder.Configuration["JWT:Issuer"],
+                    ValidAudience = builder.Configuration["JWT:Audience"],
 
+                    // Ensure the key is present to avoid ArgumentNullException in Encoding.GetBytes
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+                        Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"] ?? throw new InvalidOperationException("JWT:Key is not configured. Add 'JWT:Key' to appsettings.json."))
                     )
                 };
             });
@@ -59,6 +62,34 @@ namespace SafePharma.API
             });
 
             var app = builder.Build();
+
+            // Run data seeding that depends on Identity and the final service provider.
+            try
+            {
+                using var scope = app.Services.CreateScope();
+                var services = scope.ServiceProvider;
+
+                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
+                var context = services.GetRequiredService<AppDbContext>();
+
+                // Seed users (will create or reset passwords)
+                SafePharma.DAL.Data.Seeding.UserSeedingProvider.UserSeeder
+                    .SeedAsync(userManager, roleManager)
+                    .GetAwaiter().GetResult();
+
+                // Seed audit data if missing
+                if (!context.Set<Audit>().Any())
+                {
+                    var audit = AuditSeeding.GetAudits();
+                    context.AddRange(audit);
+                    context.SaveChanges();
+                }
+            }
+            catch
+            {
+                // ignore seeding errors at startup
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
