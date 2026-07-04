@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
 using SafePharma.Common;
@@ -20,16 +21,17 @@ namespace SafePharma.API
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetLanguage()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId is null) return Ok(new { language = "en" }); // need to be commented
 
             var result = await _manager.GetLanguageAsync(userId);
             return Ok(result);
         }
 
         [HttpPut]
+        [AllowAnonymous]
         public async Task<IActionResult> UpdateLanguage([FromBody] UpdateLanguageDto dto)
         {
             var validationResult = await _validator.ValidateAsync(dto);
@@ -49,7 +51,6 @@ namespace SafePharma.API
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId is null) return Ok(new { language = "en" });  // need to be commented
 
             var result = await _manager.UpdateLanguageAsync(userId, dto);
 
