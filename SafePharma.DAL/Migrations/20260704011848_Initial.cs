@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SafePharma.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -90,8 +90,10 @@ namespace SafePharma.DAL.Migrations
                     PlanTier = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     BillingCycle = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ApprovedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -255,12 +257,13 @@ namespace SafePharma.DAL.Migrations
                     Country = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BusinessEmail = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BusinessEmail = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     NumberOfBranches = table.Column<int>(type: "int", nullable: false),
                     PreferredLanguage = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TimeZone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    SubscriptionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    SubscriptionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -283,7 +286,9 @@ namespace SafePharma.DAL.Migrations
                     Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsApproved = table.Column<bool>(type: "bit", nullable: false),
-                    PharmacyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    PharmacyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -339,6 +344,12 @@ namespace SafePharma.DAL.Migrations
                 name: "IX_Audit_UserId",
                 table: "Audit",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Pharmacies_BusinessEmail",
+                table: "Pharmacies",
+                column: "BusinessEmail",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pharmacies_SubscriptionId",

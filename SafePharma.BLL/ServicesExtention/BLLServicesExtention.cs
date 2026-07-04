@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using SafePharma.BLL.Managers;
+using SafePharma.BLL.Managers.AuthenticationManager;
 using SafePharma.DAL;
 
 namespace SafePharma.BLL
@@ -15,6 +17,8 @@ namespace SafePharma.BLL
             services.AddScoped<ISubscriptionManager, SubscriptionManager>();
             services.AddScoped<IPasswordHasher<PrimaryContact>, PasswordHasher<PrimaryContact>>();
             services.AddScoped<ITaxManager, TaxManager>();
+            services.AddScoped<IAuthManager, AuthManager>();
+
 
         }
     }

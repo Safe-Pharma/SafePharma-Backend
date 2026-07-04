@@ -17,9 +17,12 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
 
     public AuthManager(
         UserManager<ApplicationUser> userManager,
-        IOptions<JwtSettings> jwtSettings)
+            IOptions<JwtSettings> jwtSettings)
         {
             _userManager = userManager;
+            if (jwtSettings == null || jwtSettings.Value == null)
+                throw new InvalidOperationException("JWT settings are not configured. Ensure JwtSettings are bound from configuration.");
+
             _jwtSettings = jwtSettings.Value;
         }
 
@@ -54,7 +57,7 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email!),
-            new Claim("FullName", user.FullName)
+            new Claim("FullName", user.FullName),
         };
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -69,13 +72,17 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
 
         private TokenDto GenerateJwtToken(List<Claim> claims)
         {
+            if (string.IsNullOrWhiteSpace(_jwtSettings.Key))
+                throw new InvalidOperationException("JWT signing key is missing. Set 'JWT:Key' in configuration.");
+
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_jwtSettings.Key)
             );
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var expires = DateTime.UtcNow.AddMinutes(_jwtSettings.DurationInMinutes);
+            var duration = _jwtSettings.DurationInMinutes > 0 ? _jwtSettings.DurationInMinutes : 60;
+            var expires = DateTime.UtcNow.AddMinutes(duration);
 
             var token = new JwtSecurityToken(
                 issuer: _jwtSettings.Issuer,
@@ -89,7 +96,7 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
 
             return new TokenDto(
                 tokenString,
-                _jwtSettings.DurationInMinutes
+                duration
             );
         }
     }
