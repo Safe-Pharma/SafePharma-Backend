@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+	
+
+	<ItemGroup>
+    <PackageReference Include="CloudinaryDotNet" Version="1.29.2" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
   </ItemGroup>
 

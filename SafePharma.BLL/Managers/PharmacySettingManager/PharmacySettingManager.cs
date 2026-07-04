@@ -1,21 +1,23 @@
-﻿using SafePharma.DAL;
+﻿using SafePharma.Common;
+using SafePharma.DAL;
 
 namespace SafePharma.BLL
 {
     public class PharmacySettingManager : IPharmacySettingManager
     {
         private readonly IUnitOfWork _unitOfWork;
-
-        public PharmacySettingManager(IUnitOfWork unitOfWork)
+        private readonly ICloudinaryService _cloudinary;
+        public PharmacySettingManager(IUnitOfWork unitOfWork, ICloudinaryService cloudinary)
         {
             _unitOfWork = unitOfWork;
+            _cloudinary = cloudinary;
         }
 
-        public async Task<PharmacySettingsReadDto?> GetSettings()
+        public async Task<GeneralResult<PharmacySettingsReadDto?>> GetSettings()
         {
             var settings = await _unitOfWork.PharmacySettingRepository.GetSettings();
 
-            if (settings is null) return null;
+            if (settings is null) return GeneralResult<PharmacySettingsReadDto?>.NotFound();
 
             PharmacySettingsReadDto settingsDto = new PharmacySettingsReadDto()
             {
@@ -27,26 +29,33 @@ namespace SafePharma.BLL
                 Phone = settings.Phone,
                 TaxRegistrationNumber = settings.TaxRegistrationNumber
             };
-            return settingsDto;
+            return GeneralResult<PharmacySettingsReadDto?>.SuccessResult(settingsDto);
         }
 
-        public async Task<PharmacySettingsUpdateDto?> updatePharamcySettings(PharmacySettingsUpdateDto dto)
+        public async Task<GeneralResult<PharmacySettingsUpdateDto?>> updatePharamcySettings(PharmacySettingsUpdateDto dto)
         {
             var entity = await _unitOfWork.PharmacySettingRepository.GetSettings();
 
-            if (entity is null) return null;
+            if (entity is null) return GeneralResult<PharmacySettingsUpdateDto?>.NotFound();
 
             entity.Name = dto.Name;
-            entity.LogoUrl = dto.LogoUrl;
             entity.Street = dto.Street;
             entity.City = dto.City;
             entity.Governorate = dto.Governorate;
             entity.Phone = dto.Phone;
             entity.TaxRegistrationNumber = dto.TaxRegistrationNumber;
             entity.UpdatedAt = DateTime.UtcNow;
+
+            if (dto.LogoFile != null)
+            {
+                var imageUrl = await _cloudinary.UploadImageAsync(dto.LogoFile);
+                entity.LogoUrl = imageUrl;
+            }
+
             await _unitOfWork.SaveAsync();
 
-            return dto;
+            return GeneralResult<PharmacySettingsUpdateDto?>.SuccessResult(dto);
+
         }
     }
 }

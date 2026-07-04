@@ -1,10 +1,11 @@
-﻿using SafePharma.DAL;
+﻿using SafePharma.Common;
+using SafePharma.DAL;
 
 namespace SafePharma.BLL
 {
     public interface IPharmacySettingManager
     {
-        Task<PharmacySettingsReadDto?> GetSettings();
-        Task<PharmacySettingsUpdateDto?> updatePharamcySettings(PharmacySettingsUpdateDto dto);
+        Task<GeneralResult<PharmacySettingsReadDto?>> GetSettings();
+        Task<GeneralResult<PharmacySettingsUpdateDto?>> updatePharamcySettings(PharmacySettingsUpdateDto dto);
     }
 }

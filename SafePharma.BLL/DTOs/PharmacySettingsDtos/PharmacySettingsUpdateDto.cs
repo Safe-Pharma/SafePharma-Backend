@@ -1,9 +1,11 @@
-﻿namespace SafePharma.BLL
+﻿using Microsoft.AspNetCore.Http;
+
+namespace SafePharma.BLL
 {
     public class PharmacySettingsUpdateDto
     {
         public string Name { get; set; }
-        public string? LogoUrl { get; set; }
+        public IFormFile? LogoFile { get; set; }
         public string? Street { get; set; }
         public string? City { get; set; }
         public string? Governorate { get; set; }
