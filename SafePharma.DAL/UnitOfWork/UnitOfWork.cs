@@ -1,20 +1,27 @@
-﻿using SafePharma.DAL;
-using System;
-
-namespace SafePharma.DAL
+﻿namespace SafePharma.DAL
 {
     public class UnitOfWork : IUnitOfWork
     {
-        public IPharmacySettingRepository PharmacySettingRepository { get; }
 
-
+        public ITaxRepository TaxRepository { get; }
         private AppDbContext _db;
-        public UnitOfWork(AppDbContext db, IPharmacySettingRepository pharmacySettingRepository)
+        public IPharmacySettingRepository PharmacySettingRepository { get; }
+        public IAuditRepository _auditRepository { get; }
+        public ISubscriptionRepository SubscriptionRepository { get; }
+        public IPharmacyRepository PharmacyRepository { get; }
+        public IPrimaryContactRepository PrimaryContactRepository { get; }
+        public UnitOfWork(AppDbContext db, IAuditRepository auditRepository, IPharmacySettingRepository pharmacySettingRepository, ISubscriptionRepository subscriptionRepository,
+            IPharmacyRepository pharmacyRepository,
+            IPrimaryContactRepository primaryContactRepository , ITaxRepository taxRepository)
         {
             _db = db;
             PharmacySettingRepository = pharmacySettingRepository;
+            _auditRepository = auditRepository;
+            SubscriptionRepository = subscriptionRepository;
+            PharmacyRepository = pharmacyRepository;
+            PrimaryContactRepository = primaryContactRepository;
+            TaxRepository = taxRepository;
         }
-
         public async Task SaveAsync()
         {
             await _db.SaveChangesAsync();
