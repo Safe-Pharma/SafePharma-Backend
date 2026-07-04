@@ -27,15 +27,25 @@ namespace SafePharma.API
             builder.Services.Configure<SafePharma.Common.JwtSettings>(builder.Configuration.GetSection("JWT"));
             builder.Services.AddDALServices(builder.Configuration);
             builder.Services.AddBLLServices();
-            builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
-                            .AddEntityFrameworkStores<AppDbContext>()
-                            .AddDefaultTokenProviders();
-
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+     
+                builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+                     .AddEntityFrameworkStores<AppDbContext>()
+                     .AddDefaultTokenProviders();
+            // Authentication configuration - use JWT Bearer
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
             .AddJwtBearer(options =>
             {
+                // for local development allow non-https tokens (adjust for production)
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
+                    ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
@@ -46,9 +56,20 @@ namespace SafePharma.API
                     // Ensure the key is present to avoid ArgumentNullException in Encoding.GetBytes
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"] ?? throw new InvalidOperationException("JWT:Key is not configured. Add 'JWT:Key' to appsettings.json."))
-                    )
+                    ),
+
+                    // Ensure role and name claims are mapped correctly
+                    NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier,
+                    RoleClaimType = System.Security.Claims.ClaimTypes.Role,
+
+                    // reduce clock skew for more deterministic tests
+                    ClockSkew = System.TimeSpan.FromMinutes(1)
                 };
             });
+
+            // Register authorization services
+            builder.Services.AddAuthorization();
+        
 
             // CORS
             builder.Services.AddCors(options =>
