@@ -14,6 +14,14 @@ namespace SafePharma.DAL
                 options.UseSqlServer(connectionString)
                 .UseAsyncSeeding(async (context, _, _) =>
                 {
+                    Console.WriteLine("=== UseAsyncSeeding is running ===");
+                    if (!await context.Set<Country>().AnyAsync())
+                    {
+                        var countries = CountrySeeding.GetCountries();
+                        await context.AddRangeAsync(countries);
+                        await context.SaveChangesAsync();
+                    }
+
                     if (await context.Set<ApplicationUser>().AnyAsync())
                         return;
                     var user = UserSeedingProvider.GetUsers();
@@ -34,6 +42,14 @@ namespace SafePharma.DAL
                 })
                 .UseSeeding((context, _) =>
                 {
+                    Console.WriteLine("=== UseSeeding is running ===");
+                    if (!context.Set<Country>().Any())
+                    {
+                        var countries = CountrySeeding.GetCountries();
+                        context.AddRange(countries);
+                        context.SaveChanges();
+                    }
+
                     if ( context.Set<ApplicationUser>().Any())
                         return;
                     var user = UserSeedingProvider.GetUsers();
@@ -59,6 +75,7 @@ namespace SafePharma.DAL
             services.AddScoped<IPharmacyRepository, PharmacyRepository>();
             services.AddScoped<IPrimaryContactRepository, PrimaryContactRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<ICountryRepository, CountryRepository>();
 
         }
 

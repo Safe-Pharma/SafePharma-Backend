@@ -8,6 +8,7 @@
         public ISubscriptionRepository SubscriptionRepository { get; }
         public IPharmacyRepository PharmacyRepository { get; }
         public IPrimaryContactRepository PrimaryContactRepository { get; }
+        ICountryRepository CountryRepository { get; }
         Task SaveAsync();
     }
 }

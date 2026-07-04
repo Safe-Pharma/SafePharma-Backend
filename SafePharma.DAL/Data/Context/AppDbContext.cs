@@ -46,7 +46,24 @@ namespace SafePharma.DAL
             {
                 entity.HasIndex(p => p.BusinessEmail).IsUnique();
             });
+
+            modelBuilder.Entity<Country>(entity =>
+            {
+                entity.HasIndex(c => c.Code).IsUnique();
+                entity.HasIndex(c => c.Name).IsUnique();
+            });
+
+            modelBuilder.Entity<City>(entity =>
+            {
+                entity.HasOne(c => c.Country)
+                      .WithMany(country => country.Cities)
+                      .HasForeignKey(c => c.CountryId);
+
+                entity.HasIndex(c => new { c.CountryId, c.Name }).IsUnique();
+            });
         }
+
+
         public override int SaveChanges()
         {
             AuditLog();
@@ -75,6 +92,8 @@ namespace SafePharma.DAL
         public DbSet<Subscription> Subscriptions => Set<Subscription>();
         public DbSet<Pharmacy> Pharmacies => Set<Pharmacy>();
         public DbSet<PrimaryContact> PrimaryContacts => Set<PrimaryContact>();
+        public DbSet<Country> Countries => Set<Country>();
+        public DbSet<City> Cities => Set<City>();
 
     }
 }

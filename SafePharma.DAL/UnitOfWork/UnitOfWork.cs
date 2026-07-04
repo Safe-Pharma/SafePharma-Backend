@@ -10,9 +10,12 @@
         public ISubscriptionRepository SubscriptionRepository { get; }
         public IPharmacyRepository PharmacyRepository { get; }
         public IPrimaryContactRepository PrimaryContactRepository { get; }
+
+        public ICountryRepository CountryRepository { get; }
+
         public UnitOfWork(AppDbContext db, IAuditRepository auditRepository, IPharmacySettingRepository pharmacySettingRepository, ISubscriptionRepository subscriptionRepository,
             IPharmacyRepository pharmacyRepository,
-            IPrimaryContactRepository primaryContactRepository)
+            IPrimaryContactRepository primaryContactRepository, ICountryRepository countryRepository)
         {
             _db = db;
             PharmacySettingRepository = pharmacySettingRepository;
@@ -20,6 +23,7 @@
             SubscriptionRepository = subscriptionRepository;
             PharmacyRepository = pharmacyRepository;
             PrimaryContactRepository = primaryContactRepository;
+            CountryRepository = countryRepository;
         }
         public async Task SaveAsync()
         {
