@@ -9,6 +9,7 @@
         public IPharmacyRepository PharmacyRepository { get; }
         public IPrimaryContactRepository PrimaryContactRepository { get; }
         public ITaxRepository TaxRepository { get; }
+        ICountryRepository CountryRepository { get; }
         Task SaveAsync();
     }
 }

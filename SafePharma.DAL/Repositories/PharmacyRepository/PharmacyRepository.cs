@@ -13,5 +13,16 @@ namespace SafePharma.DAL
             return await _db.Pharmacies
                 .AnyAsync(p => p.BusinessEmail.ToLower() == email.ToLower());
         }
+        public async Task<bool> TaxNumberExists(string taxNumber)
+        {
+            return await _db.Pharmacies
+                .AnyAsync(p => p.TaxNumber == taxNumber);
+        }
+
+        public async Task<bool> CommercialRegistrationExists(string commercialRegistration)
+        {
+            return await _db.Pharmacies
+                .AnyAsync(p => p.CommercialRegistration == commercialRegistration);
+        }
     }
 }
