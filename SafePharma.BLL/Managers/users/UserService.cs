@@ -19,11 +19,14 @@ public class UserService : IUserService
         _currentUser = currentUser;
     }
 
-    // ── GET LIST ────────────────────────────────────────────────────────────
-
+    
+    //if no edit return
+    //helper pharmacyID
+    //delete , deactivate
+    //role in azure db
     public async Task<GeneralResult<PagedResult<UserListItemDto>>> GetUsersAsync(UserQueryParams query)
     {
-        // Always scope to the caller's tenant first
+        // Must Uncomment the tenant
         var q = _userManager.Users;
             //.Where(u => u.PharmacyId == _currentUser.PharmacyId && !u.IsDeleted);
 
@@ -90,16 +93,18 @@ public class UserService : IUserService
         return GeneralResult<PagedResult<UserListItemDto>>.SuccessResult(result);
     }
 
-    // ── GET DETAIL ──────────────────────────────────────────────────────────
+
 
     public async Task<GeneralResult<UserDetailDto>> GetUserByIdAsync(Guid id)
     {
         var user = await _userManager.Users
             .Include(u => u.AuditList)
             .FirstOrDefaultAsync(u =>
-                u.Id == id &&
-                u.PharmacyId == _currentUser.PharmacyId &&
-                !u.IsDeleted);
+                u.Id == id 
+                //&&
+                //u.PharmacyId == _currentUser.PharmacyId &&
+                //!u.IsDeleted
+                );
 
         if (user is null) return GeneralResult<UserDetailDto>.NotFound();
 
@@ -156,7 +161,7 @@ public class UserService : IUserService
             Branch       = request.Branch,
             IsActive     = request.IsActive,
             // Scope new user to the caller's pharmacy — never take this from the request body
-            PharmacyId   = _currentUser.PharmacyId,
+            //PharmacyId   = _currentUser.PharmacyId,
             CreatedAt    = DateTime.UtcNow,
         };
 
@@ -242,7 +247,7 @@ public class UserService : IUserService
     }
 
     // ── STATUS TOGGLE ───────────────────────────────────────────────────────
-
+    //try it with frontend
     public async Task<GeneralResult> SetUserStatusAsync(Guid id, bool isActive)
     {
         var user = await GetOwnedUserAsync(id);
@@ -258,6 +263,8 @@ public class UserService : IUserService
 
     // ── DEACTIVATE (soft delete) ─────────────────────────────────────────────
 
+
+    //not include is deleteed in get
     public async Task<GeneralResult> DeactivateUserAsync(Guid id)
     {
         var user = await GetOwnedUserAsync(id);
@@ -312,7 +319,7 @@ public class UserService : IUserService
     {
         var user = await _userManager.Users.FirstOrDefaultAsync(u =>
             u.Id == id &&
-            u.PharmacyId == _currentUser.PharmacyId &&
+            //u.PharmacyId == _currentUser.PharmacyId &&
             !u.IsDeleted);
         return user;
     }
