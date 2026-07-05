@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
 
@@ -6,6 +7,7 @@ namespace SafePharma.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class TaxesController : ControllerBase
     {
         private readonly ITaxManager _manager;
@@ -26,7 +28,8 @@ namespace SafePharma.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string? search)
         {
-            var result = await _manager.GetAllTaxes(search);
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.GetAllTaxes(pharmacyId, search);
             return Ok(result);
         }
 
@@ -34,7 +37,8 @@ namespace SafePharma.API.Controllers
         [HttpGet("stats")]
         public async Task<IActionResult> GetStats()
         {
-            var result = await _manager.GetStats();
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.GetStats(pharmacyId);
             return Ok(result);
         }
 
@@ -42,7 +46,8 @@ namespace SafePharma.API.Controllers
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var result = await _manager.GetTaxById(id);
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.GetTaxById(pharmacyId, id);
             if (result is null)
             {
                 return NotFound();
@@ -60,7 +65,8 @@ namespace SafePharma.API.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var result = await _manager.CreateTax(dto);
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.CreateTax(pharmacyId, dto);
 
             if (result.DuplicateName)
             {
@@ -70,7 +76,6 @@ namespace SafePharma.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Tax!.Id }, result.Tax);
         }
 
-        // PUT api/taxes/{id}
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] TaxUpdateDto dto)
         {
@@ -80,7 +85,8 @@ namespace SafePharma.API.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var result = await _manager.UpdateTax(id, dto);
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.UpdateTax(pharmacyId, id, dto);
 
             if (result.NotFound)
             {
@@ -95,11 +101,11 @@ namespace SafePharma.API.Controllers
             return Ok(result.Tax);
         }
 
-        // PATCH api/taxes/{id}/status  -> toggles Active/Inactive (matches "Activate"/"Deactivate" menu item)
         [HttpPatch("{id:guid}/status")]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
-            var result = await _manager.ToggleStatus(id);
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.ToggleStatus(pharmacyId, id);
             if (result is null)
             {
                 return NotFound();
@@ -107,11 +113,11 @@ namespace SafePharma.API.Controllers
             return Ok(result);
         }
 
-        // DELETE api/taxes/{id}
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var deleted = await _manager.DeleteTax(id);
+            var pharmacyId = User.GetPharmacyId();
+            var deleted = await _manager.DeleteTax(pharmacyId, id);
             if (!deleted)
             {
                 return NotFound();

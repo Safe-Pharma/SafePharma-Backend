@@ -1,37 +1,31 @@
-using Microsoft.AspNetCore.Http;
-using SafePharma.BLL.DTOs.Audit;
-using SafePharma.Common.Enums;
 using SafePharma.DAL;
-using System.Text.Json;
 
 namespace SafePharma.BLL
 {
     public class TaxManager : ITaxManager
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IAuditManager _auditmanage;
 
-        public TaxManager(IUnitOfWork unitOfWork, IAuditManager auditmanage)
+        public TaxManager(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _auditmanage = auditmanage;
         }
 
-        public async Task<IEnumerable<TaxDto>> GetAllTaxes(string? search = null)
+        public async Task<IEnumerable<TaxDto>> GetAllTaxes(Guid pharmacyId, string? search = null)
         {
-            var taxes = await _unitOfWork.TaxRepository.Search(search);
+            var taxes = await _unitOfWork.TaxRepository.Search(pharmacyId, search);
             return taxes.Select(t => t.ToDto());
         }
 
-        public async Task<TaxDto?> GetTaxById(Guid id)
+        public async Task<TaxDto?> GetTaxById(Guid pharmacyId, Guid id)
         {
-            var tax = await _unitOfWork.TaxRepository.GetById(id);
+            var tax = await GetOwnedTax(pharmacyId, id);
             return tax?.ToDto();
         }
 
-        public async Task<TaxStatsDto> GetStats()
+        public async Task<TaxStatsDto> GetStats(Guid pharmacyId)
         {
-            var taxes = (await _unitOfWork.TaxRepository.GetAll()).ToList();
+            var taxes = (await _unitOfWork.TaxRepository.GetAllForPharmacy(pharmacyId)).ToList();
 
             var active = taxes.Count(t => t.Status == TaxStatus.Active);
 
@@ -44,38 +38,34 @@ namespace SafePharma.BLL
             };
         }
 
-        public async Task<TaxCreateResult> CreateTax(TaxCreateDto dto)
+        public async Task<TaxCreateResult> CreateTax(Guid pharmacyId, TaxCreateDto dto)
         {
-            if (await _unitOfWork.TaxRepository.NameExists(dto.Name))
+            if (await _unitOfWork.TaxRepository.NameExists(pharmacyId, dto.Name))
             {
                 return new TaxCreateResult { DuplicateName = true };
             }
 
             var entity = dto.ToEntity();
             entity.Id = Guid.NewGuid();
+            entity.PharmacyId = pharmacyId;
             entity.CreatedAt = DateTime.UtcNow;
             entity.UpdatedAt = DateTime.UtcNow;
-
-
 
             _unitOfWork.TaxRepository.Add(entity);
             await _unitOfWork.SaveAsync();
 
-            
-            await _auditmanage.CreateAudit(entity,null,ActionsEnum.Create);
-
             return new TaxCreateResult { Tax = entity.ToDto() };
         }
 
-        public async Task<TaxUpdateResult> UpdateTax(Guid id, TaxUpdateDto dto)
+        public async Task<TaxUpdateResult> UpdateTax(Guid pharmacyId, Guid id, TaxUpdateDto dto)
         {
-            var entity = await _unitOfWork.TaxRepository.GetById(id);
+            var entity = await GetOwnedTax(pharmacyId, id);
             if (entity is null)
             {
                 return new TaxUpdateResult { NotFound = true };
             }
 
-            if (await _unitOfWork.TaxRepository.NameExists(dto.Name, id))
+            if (await _unitOfWork.TaxRepository.NameExists(pharmacyId, dto.Name, id))
             {
                 return new TaxUpdateResult { DuplicateName = true };
             }
@@ -88,9 +78,9 @@ namespace SafePharma.BLL
             return new TaxUpdateResult { Tax = entity.ToDto() };
         }
 
-        public async Task<bool> DeleteTax(Guid id)
+        public async Task<bool> DeleteTax(Guid pharmacyId, Guid id)
         {
-            var entity = await _unitOfWork.TaxRepository.GetById(id);
+            var entity = await GetOwnedTax(pharmacyId, id);
             if (entity is null)
             {
                 return false;
@@ -101,9 +91,9 @@ namespace SafePharma.BLL
             return true;
         }
 
-        public async Task<TaxDto?> ToggleStatus(Guid id)
+        public async Task<TaxDto?> ToggleStatus(Guid pharmacyId, Guid id)
         {
-            var entity = await _unitOfWork.TaxRepository.GetById(id);
+            var entity = await GetOwnedTax(pharmacyId, id);
             if (entity is null)
             {
                 return null;
@@ -115,6 +105,13 @@ namespace SafePharma.BLL
             await _unitOfWork.SaveAsync();
 
             return entity.ToDto();
+        }
+
+        
+        private async Task<Tax?> GetOwnedTax(Guid pharmacyId, Guid id)
+        {
+            var entity = await _unitOfWork.TaxRepository.GetById(id);
+            return entity is null || entity.PharmacyId != pharmacyId ? null : entity;
         }
     }
 }

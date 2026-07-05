@@ -20,9 +20,17 @@ namespace SafePharma.DAL
 
                 entity.Property(t => t.Rate)
                     .HasColumnType("decimal(5,2)");
-            });
 
-            modelBuilder.Entity<Subscription>(entity =>
+                entity.HasOne(t => t.Pharmacy)
+                    .WithMany()
+                    .HasForeignKey(t => t.PharmacyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(t => new { t.PharmacyId, t.Name }).IsUnique();
+            });
+        
+
+        modelBuilder.Entity<Subscription>(entity =>
             {
                 entity.Property(s => s.Status).HasConversion<string>().HasMaxLength(20);
                 entity.Property(s => s.PlanTier).HasMaxLength(20);

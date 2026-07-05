@@ -45,6 +45,13 @@ namespace SafePharma.DAL
                             await context.AddRangeAsync(audits);
                             await context.SaveChangesAsync();
                         }
+                        // 5. Taxes 
+                        if (!await context.Set<Tax>().AnyAsync())
+                        {
+                            var taxes = TaxSeedingProvider.GetTaxes();
+                            await context.AddRangeAsync(taxes);
+                            await context.SaveChangesAsync();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -86,6 +93,13 @@ namespace SafePharma.DAL
                         {
                             var audits = AuditSeeding.GetAudits();
                             context.AddRange(audits);
+                            context.SaveChanges();
+                        }
+                        // 5. Taxes
+                        if (!context.Set<Tax>().Any())
+                        {
+                            var taxes = TaxSeedingProvider.GetTaxes();
+                            context.AddRange(taxes);
                             context.SaveChanges();
                         }
                     }

@@ -92,6 +92,10 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
             var pharmassistId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
             var accountantId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
 
+            var pharmacy1 = Guid.Parse("30000000-0000-0000-0000-000000000001");
+            var pharmacy2 = Guid.Parse("30000000-0000-0000-0000-000000000002");
+            var pharmacy3 = Guid.Parse("30000000-0000-0000-0000-000000000003");
+
             return new List<ApplicationUser>
             {
                 new ApplicationUser
@@ -103,7 +107,8 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                     NormalizedEmail = "ADMIN@SAFEPHARMA.COM",
                     FirstName = "Admin",
                     LastName = "User",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    PharmacyId = pharmacy1,
                 },
                 new ApplicationUser
                 {
@@ -114,7 +119,8 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                     NormalizedEmail = "USER@SAFEPHARMA.COM",
                     FirstName = "Normal",
                     LastName = "User",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    PharmacyId = pharmacy1,
                 },
                 new ApplicationUser
                 {
@@ -125,7 +131,8 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                     NormalizedEmail = "MANAGER@SAFEPHARMA.COM",
                     FirstName = "Store",
                     LastName = "Manager",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    PharmacyId = pharmacy1,
                 },
                 new ApplicationUser
                 {
@@ -136,7 +143,8 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                     NormalizedEmail = "ASSISTANT@SAFEPHARMA.COM",
                     FirstName = "Pharmacy",
                     LastName = "Assistant",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    PharmacyId = pharmacy2,
                 },
                 new ApplicationUser
                 {
@@ -147,7 +155,8 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                     NormalizedEmail = "CASHIER@SAFEPHARMA.COM",
                     FirstName = "Store",
                     LastName = "Cashier",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    PharmacyId = pharmacy2,
                 },
                 new ApplicationUser
                 {
@@ -158,7 +167,8 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                     NormalizedEmail = "PHARMASSIST@SAFEPHARMA.COM",
                     FirstName = "Pharmacy",
                     LastName = "Assistant",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    PharmacyId = pharmacy3,
                 },
                 new ApplicationUser
                 {
@@ -169,7 +179,8 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                     NormalizedEmail = "ACCOUNTANT@SAFEPHARMA.COM",
                     FirstName = "Finance",
                     LastName = "Accountant",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    PharmacyId = pharmacy3,
                 }
             };
         }
