@@ -7,7 +7,7 @@ namespace SafePharma.BLL
 {
     public class CloudinaryService : ICloudinaryService
     {
-        private readonly CloudinaryDotNet.Cloudinary _cloudinary;
+        private readonly Cloudinary _cloudinary;
 
         public CloudinaryService(IConfiguration config)
         {
@@ -17,7 +17,7 @@ namespace SafePharma.BLL
                 config["Cloudinary:ApiSecret"]
             );
 
-            _cloudinary = new CloudinaryDotNet.Cloudinary(account);
+            _cloudinary = new Cloudinary(account);
         }
 
         public async Task<string> UploadImageAsync(IFormFile file)

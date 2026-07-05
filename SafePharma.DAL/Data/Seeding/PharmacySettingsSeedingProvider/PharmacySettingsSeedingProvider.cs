@@ -1,25 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SafePharma.DAL
+﻿namespace SafePharma.DAL
 {
     public class PharmacySettingsSeedingProvider
     {
-        public static PharmacySettings GetDefaultPharmacySettings()
+        public static List<PharmacySettings> GetDefaultPharmacySettings()
         {
-            return new PharmacySettings
+            return new List<PharmacySettings>
             {
-                Name = "Default Pharmacy",
-                LogoUrl = null,
-                Street = null,
-                City = null,
-                Governorate = null,
-                Phone = null,
-                TaxRegistrationNumber = null,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                UpdatedBy = null
+                new PharmacySettings
+                {
+                    Id = Guid.Parse("40000000-0000-0000-0000-000000000001"),
+                    PharmacyId = Guid.Parse("30000000-0000-0000-0000-000000000001"),
+                    Name = "MediRx Pharmacy",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                },
+                new PharmacySettings
+                {
+                    Id = Guid.Parse("40000000-0000-0000-0000-000000000002"),
+                    PharmacyId = Guid.Parse("30000000-0000-0000-0000-000000000002"),
+                    Name = "Al Shifa Pharmacy",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                },
+                new PharmacySettings
+                {
+                    Id = Guid.Parse("40000000-0000-0000-0000-000000000003"),
+                    PharmacyId = Guid.Parse("30000000-0000-0000-0000-000000000003"),
+                    Name = "Nour Al Hayat Pharmacy Group",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                },
             };
         }
     }

@@ -13,14 +13,11 @@ namespace SafePharma.BLL
         {
             _unitOfWork = unitOfWork;
             _cloudinary = cloudinary;
-
-
-      
         }
 
-        public async Task<GeneralResult<PharmacySettingsReadDto?>> GetSettings()
+        public async Task<GeneralResult<PharmacySettingsReadDto?>> GetSettings(Guid pharmacyId)
         {
-            var settings = await _unitOfWork.PharmacySettingRepository.GetSettings();
+            var settings = await _unitOfWork.PharmacySettingRepository.GetSettingsByPharmacyId(pharmacyId);
 
             if (settings is null) return GeneralResult<PharmacySettingsReadDto?>.NotFound();
 
@@ -37,9 +34,9 @@ namespace SafePharma.BLL
             return GeneralResult<PharmacySettingsReadDto?>.SuccessResult(settingsDto);
         }
 
-        public async Task<GeneralResult<PharmacySettingsUpdateDto?>> updatePharamcySettings(PharmacySettingsUpdateDto dto)
+        public async Task<GeneralResult<PharmacySettingsUpdateDto?>> updatePharamcySettings(PharmacySettingsUpdateDto dto, Guid pharmacyId)
         {
-            var entity = await _unitOfWork.PharmacySettingRepository.GetSettings();
+            var entity = await _unitOfWork.PharmacySettingRepository.GetSettingsByPharmacyId(pharmacyId);
 
             if (entity is null) return GeneralResult<PharmacySettingsUpdateDto?>.NotFound();
 
