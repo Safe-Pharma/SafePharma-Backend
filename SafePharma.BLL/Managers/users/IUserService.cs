@@ -23,7 +23,7 @@ namespace SafePharma.BLL
         /// </summary>
         Task<GeneralResult> DeactivateUserAsync(Guid id);
 
-        Task<GeneralResult<IReadOnlyList<UserActivityDto>>> GetUserActivityAsync(Guid id);
+        //Task<GeneralResult<IReadOnlyList<UserActivityDto>>> GetUserActivityAsync(Guid id);
 
         /// <summary>Returns CSV/XLSX bytes for the "Export" button, honoring current filters.</summary>
         //Task<byte[]> ExportUsersAsync(UserQueryParams query);

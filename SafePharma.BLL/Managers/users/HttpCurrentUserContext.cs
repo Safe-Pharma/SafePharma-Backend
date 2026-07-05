@@ -27,8 +27,18 @@ namespace SafePharma.BLL.Managers.users
         /// <summary>
         /// This is the pharmacyId claim you put in the JWT at login
         /// </summary>
-        public Guid PharmacyId =>
-            Guid.Parse(User.FindFirstValue("PharmacyId")!);
+        public Guid PharmacyId
+        {
+            get
+            {
+                var claim = User.FindFirstValue("PharmacyId");
+
+                if (!Guid.TryParse(claim, out var pharmacyId))
+                    return Guid.Empty;
+
+                return pharmacyId;
+            }
+        }
 
         public IReadOnlyList<string> Roles =>
             User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();

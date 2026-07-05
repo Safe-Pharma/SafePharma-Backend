@@ -33,6 +33,10 @@ namespace SafePharma.BLL
             services.AddScoped<IUserLanguageManager, UserLanguageManager>();
             services.AddScoped<ILocationManager, LocationManager>();
 
+
+            services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
+            services.AddValidatorsFromAssemblyContaining<UpdateUserValidator>();
+
         }
     }
 }
