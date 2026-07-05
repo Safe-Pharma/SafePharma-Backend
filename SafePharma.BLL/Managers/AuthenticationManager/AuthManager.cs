@@ -16,11 +16,14 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly JwtSettings _jwtSettings;
         private readonly IValidator<LoginDTO> _loginValidator;
+        private readonly IValidator<ChangePasswordDTO> _changePasswordValidator;
 
         public AuthManager(
         UserManager<ApplicationUser> userManager,
             IOptions<JwtSettings> jwtSettings,
-            IValidator<LoginDTO> loginValidator
+            IValidator<LoginDTO> loginValidator,
+            IValidator<ChangePasswordDTO> changePasswordValidator
+
             )
         {
             _userManager = userManager;
@@ -29,6 +32,7 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
 
             _jwtSettings = jwtSettings.Value;
             _loginValidator = loginValidator;
+            _changePasswordValidator = changePasswordValidator;
         }
 
         public async Task<GeneralResult<TokenDto>> LoginAsync(LoginDTO dto)
@@ -78,7 +82,26 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
         {
 
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var validationResult = await _changePasswordValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors
+                   .GroupBy(e => e.PropertyName)
+                   .ToDictionary(
+                       g => g.Key,
+                       g => g.Select(e => new Error
+                       {
+                           ErrorCode = e.ErrorCode,
+                           ErrorMessage = e.ErrorMessage
+                       }).ToList()
+                   );
+
+                return GeneralResult<TokenDto>.FailResult(errors, "Validation failed");
+
+            }
+
+
+                var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
                 return GeneralResult.FailResult("User not found");
