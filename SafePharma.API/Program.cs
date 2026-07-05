@@ -81,7 +81,7 @@ namespace SafePharma.API
                     .AllowAnyHeader();
                 });
             });
-
+            builder.Services.AddHttpContextAccessor();
             var app = builder.Build();
 
             // Run data seeding that depends on Identity and the final service provider.

@@ -21,6 +21,10 @@ namespace SafePharma.BLL
             services.AddScoped<IPasswordHasher<PrimaryContact>, PasswordHasher<PrimaryContact>>();
             services.AddScoped<ITaxManager, TaxManager>();
             services.AddScoped<IAuthManager, AuthManager>();
+            services.AddValidatorsFromAssemblyContaining<LoginValidator>();
+            services.AddValidatorsFromAssemblyContaining<ChangePasswordValidator>();
+
+
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
@@ -28,7 +32,8 @@ namespace SafePharma.BLL
 
             services.AddScoped<IUserLanguageManager, UserLanguageManager>();
             services.AddScoped<ILocationManager, LocationManager>();
+
         }
     }
 }
-     
+

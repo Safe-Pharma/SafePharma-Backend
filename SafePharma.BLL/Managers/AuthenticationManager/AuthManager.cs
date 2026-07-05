@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SafePharma.BLL.DTOs;
@@ -14,20 +15,47 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly JwtSettings _jwtSettings;
+        private readonly IValidator<LoginDTO> _loginValidator;
+        private readonly IValidator<ChangePasswordDTO> _changePasswordValidator;
 
-    public AuthManager(
+        public AuthManager(
         UserManager<ApplicationUser> userManager,
-            IOptions<JwtSettings> jwtSettings)
+            IOptions<JwtSettings> jwtSettings,
+            IValidator<LoginDTO> loginValidator,
+            IValidator<ChangePasswordDTO> changePasswordValidator
+
+            )
         {
             _userManager = userManager;
             if (jwtSettings == null || jwtSettings.Value == null)
                 throw new InvalidOperationException("JWT settings are not configured. Ensure JwtSettings are bound from configuration.");
 
             _jwtSettings = jwtSettings.Value;
+            _loginValidator = loginValidator;
+            _changePasswordValidator = changePasswordValidator;
         }
 
         public async Task<GeneralResult<TokenDto>> LoginAsync(LoginDTO dto)
+
         {
+            var validationResult = await _loginValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => new Error
+                        {
+                            ErrorCode = e.ErrorCode,
+                            ErrorMessage = e.ErrorMessage
+                        }).ToList()
+                    );
+
+                return GeneralResult<TokenDto>.FailResult(errors, "Validation failed");
+            }
+
             var user = await _userManager.FindByEmailAsync(dto.Email);
 
             if (user == null)
@@ -50,6 +78,52 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
 
             return GeneralResult<TokenDto>.SuccessResult(token, "Login successful");
         }
+        public async Task<GeneralResult> ChangePasswordAsync(string userId, ChangePasswordDTO dto)
+        {
+
+
+            var validationResult = await _changePasswordValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors
+                   .GroupBy(e => e.PropertyName)
+                   .ToDictionary(
+                       g => g.Key,
+                       g => g.Select(e => new Error
+                       {
+                           ErrorCode = e.ErrorCode,
+                           ErrorMessage = e.ErrorMessage
+                       }).ToList()
+                   );
+
+                return GeneralResult<TokenDto>.FailResult(errors, "Validation failed");
+
+            }
+
+
+                var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                return GeneralResult.FailResult("User not found");
+
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors
+                    .GroupBy(e => e.Code)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => new Error { ErrorCode = e.Code, ErrorMessage = e.Description }).ToList()
+                    );
+
+                return GeneralResult.FailResult(errors, "Failed to change password");
+            }
+
+            return GeneralResult.SuccessResult("Password changed successfully");
+
+}
+
 
         private async Task<List<Claim>> GenerateClaims(ApplicationUser user)
         {

@@ -12,8 +12,13 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
+<<<<<<<< HEAD:SafePharma.DAL/Migrations/20260705130319_InitialCreate.Designer.cs
     [Migration("20260705130319_InitialCreate")]
     partial class InitialCreate
+========
+    [Migration("20260705003916_initial")]
+    partial class initial
+>>>>>>>> main:SafePharma.DAL/Migrations/20260705003916_initial.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -289,6 +294,14 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("newValues")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("oldValues")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

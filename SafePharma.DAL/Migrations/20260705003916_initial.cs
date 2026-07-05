@@ -333,7 +333,9 @@ namespace SafePharma.DAL.Migrations
                     Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Entity = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Device = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    oldValues = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    newValues = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
