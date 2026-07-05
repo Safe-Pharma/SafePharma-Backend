@@ -7,9 +7,10 @@ namespace SafePharma.DAL
         public PharmacySettingRepository(AppDbContext db) : base(db)
         {
         }
-        public async Task<PharmacySettings?> GetSettings()
+        public async Task<PharmacySettings?> GetSettingsByPharmacyId(Guid pharmacyId)
         {
-            return await _db.PharmacySettings.FirstOrDefaultAsync();
+            return await _db.PharmacySettings
+                .FirstOrDefaultAsync(x => x.PharmacyId == pharmacyId);
         }
     }
 }

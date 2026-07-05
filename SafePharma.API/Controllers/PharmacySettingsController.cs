@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
 using SafePharma.Common;
+using System.Security.Claims;
 
 namespace SafePharma.API.Controllers
 {
@@ -21,7 +22,12 @@ namespace SafePharma.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetSettings()
         {
-            var result = await _manager.GetSettings();
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+
+            if (string.IsNullOrEmpty(pharmacyIdClaim) || !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+                return Unauthorized();
+
+            var result = await _manager.GetSettings(pharmacyId);
             if (!result.Success) return NotFound(result);
             return Ok(result);
         }
@@ -46,7 +52,13 @@ namespace SafePharma.API.Controllers
                 return BadRequest(GeneralResult.FailResult(errors));
             }
 
-            var result = await _manager.updatePharamcySettings(dto);
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+
+            if (string.IsNullOrEmpty(pharmacyIdClaim) || !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+                return Unauthorized();
+
+            var result = await _manager.updatePharamcySettings(dto, pharmacyId);
+
             if (!result.Success) return NotFound(result);
             return Ok(result);
         }
