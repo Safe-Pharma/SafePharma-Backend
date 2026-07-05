@@ -16,15 +16,15 @@ namespace SafePharma.BLL
                     file.ContentType.StartsWith("image/"))
                 .WithMessage("Only image files are allowed.");
 
-            RuleFor(x => x.Street)
+            RuleFor(x => x.Address)
                 .NotEmpty().WithMessage("Street is required.")
-                .MaximumLength(200);
+                .MaximumLength(300);
 
             RuleFor(x => x.City)
                 .NotEmpty().WithMessage("City is required.")
                 .MaximumLength(100);
 
-            RuleFor(x => x.Governorate)
+            RuleFor(x => x.Country)
                 .NotEmpty().WithMessage("Governorate is required.")
                 .MaximumLength(100);
 
