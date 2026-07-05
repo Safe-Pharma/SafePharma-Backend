@@ -38,13 +38,13 @@ namespace SafePharma.DAL
                             await context.SaveChangesAsync();
                         }
 
-                        // 4. Audit
-                        if (!await context.Set<Audit>().AnyAsync())
-                        {
-                            var audits = AuditSeeding.GetAudits();
-                            await context.AddRangeAsync(audits);
-                            await context.SaveChangesAsync();
-                        }
+                        //// 4. Audit
+                        //if (!await context.Set<Audit>().AnyAsync())
+                        //{
+                        //    var audits = AuditSeeding.GetAudits();
+                        //    await context.AddRangeAsync(audits);
+                        //    await context.SaveChangesAsync();
+                        //}
                         // 5. Taxes 
                         if (!await context.Set<Tax>().AnyAsync())
                         {
@@ -88,13 +88,13 @@ namespace SafePharma.DAL
                             context.SaveChanges();
                         }
 
-                        // 4. Audit
-                        if (!context.Set<Audit>().Any())
-                        {
-                            var audits = AuditSeeding.GetAudits();
-                            context.AddRange(audits);
-                            context.SaveChanges();
-                        }
+                        //// 4. Audit
+                        //if (!context.Set<Audit>().Any())
+                        //{
+                        //    var audits = AuditSeeding.GetAudits();
+                        //    context.AddRange(audits);
+                        //    context.SaveChanges();
+                        //}
                         // 5. Taxes
                         if (!context.Set<Tax>().Any())
                         {
