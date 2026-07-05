@@ -3,6 +3,8 @@
     public class PharmacySettings
     {
         public Guid Id { get; set; }
+        public Guid? PharmacyId { get; set; }
+        public Pharmacy? Pharmacy { get; set; }
         public string Name { get; set; }
         public string? LogoUrl { get; set; }
         public string? Street { get; set; }

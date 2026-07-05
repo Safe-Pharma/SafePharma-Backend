@@ -19,6 +19,8 @@
 
         public Guid SubscriptionId { get; set; }
         public Subscription Subscription { get; set; }
+        public PharmacySettings? PharmacySettings { get; set; }
+
         public DateTime? UpdatedAt { get; set; }
     }
 }

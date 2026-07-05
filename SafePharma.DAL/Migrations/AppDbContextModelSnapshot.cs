@@ -440,6 +440,9 @@ namespace SafePharma.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("PharmacyId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
@@ -456,6 +459,10 @@ namespace SafePharma.DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PharmacyId")
+                        .IsUnique()
+                        .HasFilter("[PharmacyId] IS NOT NULL");
 
                     b.ToTable("PharmacySettings");
                 });
@@ -665,6 +672,15 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Subscription");
                 });
 
+            modelBuilder.Entity("SafePharma.DAL.PharmacySettings", b =>
+                {
+                    b.HasOne("SafePharma.DAL.Pharmacy", "Pharmacy")
+                        .WithOne("PharmacySettings")
+                        .HasForeignKey("SafePharma.DAL.PharmacySettings", "PharmacyId");
+
+                    b.Navigation("Pharmacy");
+                });
+
             modelBuilder.Entity("SafePharma.DAL.PrimaryContact", b =>
                 {
                     b.HasOne("SafePharma.DAL.Pharmacy", "Pharmacy")
@@ -684,6 +700,11 @@ namespace SafePharma.DAL.Migrations
             modelBuilder.Entity("SafePharma.DAL.Country", b =>
                 {
                     b.Navigation("Cities");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.Pharmacy", b =>
+                {
+                    b.Navigation("PharmacySettings");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.Subscription", b =>
