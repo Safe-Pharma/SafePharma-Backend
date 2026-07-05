@@ -9,6 +9,7 @@
         public string Branch { get; set; } = string.Empty;
         public string? Phone { get; set; }
         public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
         public DateTime? LastLoginAt { get; set; }
         public DateTime CreatedAt { get; set; }
     }
