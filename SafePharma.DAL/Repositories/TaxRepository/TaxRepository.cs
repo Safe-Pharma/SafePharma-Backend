@@ -8,9 +8,10 @@ namespace SafePharma.DAL
         {
         }
 
-        public async Task<bool> NameExists(string name, Guid? excludeId = null)
+        public async Task<bool> NameExists(Guid pharmacyId, string name, Guid? excludeId = null)
         {
-            var query = _db.Taxes.Where(t => t.Name.ToLower() == name.ToLower());
+            var query = _db.Taxes.Where(t =>
+                t.PharmacyId == pharmacyId && t.Name.ToLower() == name.ToLower());
 
             if (excludeId.HasValue)
             {
@@ -20,9 +21,9 @@ namespace SafePharma.DAL
             return await query.AnyAsync();
         }
 
-        public async Task<IEnumerable<Tax>> Search(string? query)
+        public async Task<IEnumerable<Tax>> Search(Guid pharmacyId, string? query)
         {
-            var taxes = _db.Taxes.AsNoTracking().AsQueryable();
+            var taxes = _db.Taxes.AsNoTracking().Where(t => t.PharmacyId == pharmacyId);
 
             if (!string.IsNullOrWhiteSpace(query))
             {
@@ -30,6 +31,14 @@ namespace SafePharma.DAL
             }
 
             return await taxes.OrderBy(t => t.Name).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Tax>> GetAllForPharmacy(Guid pharmacyId)
+        {
+            return await _db.Taxes
+                .AsNoTracking()
+                .Where(t => t.PharmacyId == pharmacyId)
+                .ToListAsync();
         }
     }
 }

@@ -2,13 +2,13 @@ namespace SafePharma.BLL
 {
     public interface ITaxManager
     {
-        Task<IEnumerable<TaxDto>> GetAllTaxes(string? search = null);
-        Task<TaxDto?> GetTaxById(Guid id);
-        Task<TaxStatsDto> GetStats();
-        Task<TaxCreateResult> CreateTax(TaxCreateDto dto);
-        Task<TaxUpdateResult> UpdateTax(Guid id, TaxUpdateDto dto);
-        Task<bool> DeleteTax(Guid id);
-        Task<TaxDto?> ToggleStatus(Guid id);
+        Task<IEnumerable<TaxDto>> GetAllTaxes(Guid pharmacyId, string? search = null);
+        Task<TaxDto?> GetTaxById(Guid pharmacyId, Guid id);
+        Task<TaxStatsDto> GetStats(Guid pharmacyId);
+        Task<TaxCreateResult> CreateTax(Guid pharmacyId, TaxCreateDto dto);
+        Task<TaxUpdateResult> UpdateTax(Guid pharmacyId, Guid id, TaxUpdateDto dto);
+        Task<bool> DeleteTax(Guid pharmacyId, Guid id);
+        Task<TaxDto?> ToggleStatus(Guid pharmacyId, Guid id);
     }
 
     public class TaxCreateResult
