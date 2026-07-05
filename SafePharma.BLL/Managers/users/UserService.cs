@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SafePharma.BLL;
 using SafePharma.Common;
@@ -11,15 +12,18 @@ public class UserService : IUserService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ICurrentUserContext _currentUser;
     private readonly RoleManager<ApplicationRole> _roleManager;
+    
 
     public UserService(
         UserManager<ApplicationUser> userManager,
         ICurrentUserContext currentUser,
-        RoleManager<ApplicationRole> roleManager)
+        RoleManager<ApplicationRole> roleManager
+        )
     {
         _userManager = userManager;
         _currentUser = currentUser;
         _roleManager = roleManager;
+        
     }
 
 
@@ -164,7 +168,6 @@ public class UserService : IUserService
 
     public async Task<GeneralResult<UserDetailDto>> CreateUserAsync(CreateUserRequest request)
     {
-
 
         if (_currentUser.PharmacyId == Guid.Empty)
         {

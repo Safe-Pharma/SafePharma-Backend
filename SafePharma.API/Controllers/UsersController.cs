@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
 using SafePharma.Common;
@@ -12,13 +13,20 @@ namespace SafePharma.API.Controllers
     {
         private readonly IUserService _userService;
         private readonly IRoleService _roleService;
+        private readonly IValidator<CreateUserRequest> _createValidator;
+        private readonly IValidator<UpdateUserRequest> _updateValidator;
 
         public UsersController(
             IUserService userService,
-            IRoleService roleService)
+            IRoleService roleService,
+            IValidator<CreateUserRequest> createValidator,
+            IValidator<UpdateUserRequest> updateValidator
+            )
         {
             _userService = userService;
             _roleService = roleService;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
         }
 
         [HttpGet("roles")]
@@ -63,9 +71,20 @@ namespace SafePharma.API.Controllers
             [FromBody] CreateUserRequest request)
         {
 
-            if (!ModelState.IsValid)
+            var validationResult = await _createValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
             {
-                return BadRequest(ModelState);
+                var errors = validationResult.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => new Error
+                        {
+                            ErrorCode = e.ErrorCode,
+                            ErrorMessage = e.ErrorMessage
+                        }).ToList()
+                    );
+                return BadRequest(GeneralResult<UserDetailDto>.FailResult(errors));
             }
             var result = await _userService.CreateUserAsync(request);
 
@@ -85,9 +104,20 @@ namespace SafePharma.API.Controllers
             Guid id,
             [FromBody] UpdateUserRequest request)
         {
-            if (!ModelState.IsValid)
+            var validationResult = await _updateValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
             {
-                return BadRequest(ModelState);
+                var errors = validationResult.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => new Error
+                        {
+                            ErrorCode = e.ErrorCode,
+                            ErrorMessage = e.ErrorMessage
+                        }).ToList()
+                    );
+                return BadRequest(GeneralResult<UserDetailDto>.FailResult(errors));
             }
             var result = await _userService.UpdateUserAsync(id, request);
 
