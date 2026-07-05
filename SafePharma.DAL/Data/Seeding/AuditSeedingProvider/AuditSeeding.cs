@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SafePharma.DAL
+﻿namespace SafePharma.DAL
 {
     public class AuditSeeding
     {
@@ -21,6 +17,7 @@ namespace SafePharma.DAL
             var u1 = Guid.Parse("99999999-9999-9999-9999-999999999999");
             var u2 = Guid.Parse("88888888-8888-8888-8888-888888888888");
 
+
             return new List<Audit>
     {
         new Audit
@@ -31,6 +28,9 @@ namespace SafePharma.DAL
             Entity = "Product",
             Device = "Chrome - Windows",
             UserId = u1
+            ,
+            newValues="",
+            oldValues=""
         },
         new Audit
         {
@@ -40,6 +40,9 @@ namespace SafePharma.DAL
             Entity = "Category",
             Device = "Edge - Windows",
             UserId = u2
+            ,
+            newValues="",
+            oldValues=""
         },
         new Audit
         {
@@ -49,6 +52,9 @@ namespace SafePharma.DAL
             Entity = "Order",
             Device = "Firefox - Windows",
             UserId = u1
+            ,
+            newValues="",
+            oldValues=""
         },
         new Audit
         {
@@ -58,6 +64,9 @@ namespace SafePharma.DAL
             Entity = "Account",
             Device = "Chrome - Android",
             UserId = u2
+            ,
+            newValues="",
+            oldValues=""
         },
         new Audit
         {
@@ -67,6 +76,9 @@ namespace SafePharma.DAL
             Entity = "Account",
             Device = "Safari - iPhone",
             UserId = u1
+            ,
+            newValues="",
+            oldValues=""
         },
         new Audit
         {
@@ -76,6 +88,9 @@ namespace SafePharma.DAL
             Entity = "Pharmacy",
             Device = "Edge - Windows",
             UserId = u2
+            ,
+            newValues="",
+            oldValues=""
         },
         new Audit
         {
@@ -84,7 +99,10 @@ namespace SafePharma.DAL
             Action = "Create",
             Entity = "User",
             Device = "Chrome - macOS",
-            UserId = u1
+            UserId = u1,
+            newValues="",
+            oldValues=""
+
         }
     };
         }

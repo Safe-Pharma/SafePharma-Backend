@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace SafePharma.DAL
 {
@@ -18,6 +15,10 @@ namespace SafePharma.DAL
         [ForeignKey("User")]
         public Guid UserId { get; set; }
         public ApplicationUser User { get; set; } = null!;
+
+        public string oldValues { get; set; } = string.Empty;
+        public string newValues { get; set; } = string.Empty;
+
 
 
     }

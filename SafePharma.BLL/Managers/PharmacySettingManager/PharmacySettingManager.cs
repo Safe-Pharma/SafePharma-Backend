@@ -1,16 +1,21 @@
 ﻿using SafePharma.Common;
 using SafePharma.DAL;
 
+
 namespace SafePharma.BLL
 {
     public class PharmacySettingManager : IPharmacySettingManager
     {
         private readonly IUnitOfWork _unitOfWork;
+
         private readonly ICloudinaryService _cloudinary;
         public PharmacySettingManager(IUnitOfWork unitOfWork, ICloudinaryService cloudinary)
         {
             _unitOfWork = unitOfWork;
             _cloudinary = cloudinary;
+
+
+      
         }
 
         public async Task<GeneralResult<PharmacySettingsReadDto?>> GetSettings()
@@ -44,6 +49,7 @@ namespace SafePharma.BLL
             entity.Governorate = dto.Governorate;
             entity.Phone = dto.Phone;
             entity.TaxRegistrationNumber = dto.TaxRegistrationNumber;
+
             entity.UpdatedAt = DateTime.UtcNow;
 
             if (dto.LogoFile != null)

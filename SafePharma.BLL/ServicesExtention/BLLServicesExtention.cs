@@ -6,6 +6,7 @@ using SafePharma.BLL.Managers.AuthenticationManager;
 using SafePharma.BLL.Managers.users;
 using SafePharma.Common;
 using SafePharma.DAL;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace SafePharma.BLL
 {
@@ -28,6 +29,7 @@ namespace SafePharma.BLL
 
             services.AddScoped<IUserLanguageManager, UserLanguageManager>();
             services.AddScoped<ILocationManager, LocationManager>();
+
         }
     }
 }

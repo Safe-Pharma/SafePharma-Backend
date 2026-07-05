@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,10 +12,9 @@ namespace SafePharma.DAL
 
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString)
+
                 .UseAsyncSeeding(async (context, _, _) =>
                 {
-                    // ✅ Keep ONLY safe seeding here (no FK dependencies)
-
                     if (!await context.Set<PharmacySettings>().AnyAsync())
                     {
                         var defaultSettings = PharmacySettingsSeedingProvider.GetDefaultPharmacySettings();
@@ -24,25 +22,39 @@ namespace SafePharma.DAL
                         await context.SaveChangesAsync();
                     }
 
-                    // ❌ REMOVE Audit from here
+                    if (!await context.Set<Country>().AnyAsync())
+                    {
+                        var countries = CountrySeeding.GetCountries();
+                        await context.AddRangeAsync(countries);
+                        await context.SaveChangesAsync();
+                    }
 
-                    if (await context.Set<Country>().AnyAsync())
-                        return;
-                    var countries = CountrySeeding.GetCountries();
-                    await context.AddRangeAsync(countries);
-                    await context.SaveChangesAsync();
-
-                    // UseAsyncSeeding block:
                     if (!await context.Set<Pharmacy>().AnyAsync())
                     {
                         var subscriptions = PharmacySeeding.GetSubscriptionsWithPharmacies();
                         await context.AddRangeAsync(subscriptions);
                         await context.SaveChangesAsync();
                     }
+
+                    if (!await context.Set<ApplicationUser>().AnyAsync())
+                    {
+                        var users = UserSeedingProvider.GetUsers();
+                        await context.AddRangeAsync(users);
+                        await context.SaveChangesAsync();
+                    }
+
+                    if (!await context.Set<Audit>().AnyAsync())
+                    {
+                        var audits = AuditSeeding.GetAudits();
+                        await context.AddRangeAsync(audits);
+                        await context.SaveChangesAsync();
+                    }
                 })
 
                 .UseSeeding((context, _) =>
                 {
+                    Console.WriteLine("=== UseSeeding is running ===");
+
                     if (!context.Set<PharmacySettings>().Any())
                     {
                         var defaultSettings = PharmacySettingsSeedingProvider.GetDefaultPharmacySettings();
@@ -50,19 +62,31 @@ namespace SafePharma.DAL
                         context.SaveChanges();
                     }
 
-                    // ❌ REMOVE Audit from here
+                    if (!context.Set<Country>().Any())
+                    {
+                        var countries = CountrySeeding.GetCountries();
+                        context.AddRange(countries);
+                        context.SaveChanges();
+                    }
 
-                    if (context.Set<Country>().Any())
-                        return;
-                    var countries = CountrySeeding.GetCountries();
-                    context.AddRange(countries);
-                    context.SaveChanges();
-
-                    // UseSeeding block:
                     if (!context.Set<Pharmacy>().Any())
                     {
                         var subscriptions = PharmacySeeding.GetSubscriptionsWithPharmacies();
                         context.AddRange(subscriptions);
+                        context.SaveChanges();
+                    }
+
+                    if (!context.Set<ApplicationUser>().Any())
+                    {
+                        var users = UserSeedingProvider.GetUsers();
+                        context.AddRange(users);
+                        context.SaveChanges();
+                    }
+
+                    if (!context.Set<Audit>().Any())
+                    {
+                        var audits = AuditSeeding.GetAudits();
+                        context.AddRange(audits);
                         context.SaveChanges();
                     }
                 })
@@ -74,13 +98,11 @@ namespace SafePharma.DAL
             services.AddScoped<IPharmacyRepository, PharmacyRepository>();
             services.AddScoped<IPrimaryContactRepository, PrimaryContactRepository>();
             services.AddScoped<ITaxRepository, TaxRepository>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ICountryRepository, CountryRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            // NOTE: Seeding that requires application services (UserManager/RoleManager)
-            // must run after the DI container is fully built (after AddIdentity and app build).
-            // Seeding is moved to the application's startup (Program.cs) to ensure
-            // Identity services are registered and available.
+            // NOTE: Seeding that requires UserManager/RoleManager
+            // should be executed in Program.cs after the application is built.
         }
     }
 }

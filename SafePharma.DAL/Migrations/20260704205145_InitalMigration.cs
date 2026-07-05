@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SafePharma.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class InitalMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -327,7 +327,9 @@ namespace SafePharma.DAL.Migrations
                     Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Entity = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Device = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    oldValues = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    newValues = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {

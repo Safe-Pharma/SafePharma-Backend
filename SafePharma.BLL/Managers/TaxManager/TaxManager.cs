@@ -1,14 +1,20 @@
+using Microsoft.AspNetCore.Http;
+using SafePharma.BLL.DTOs.Audit;
+using SafePharma.Common.Enums;
 using SafePharma.DAL;
+using System.Text.Json;
 
 namespace SafePharma.BLL
 {
     public class TaxManager : ITaxManager
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditManager _auditmanage;
 
-        public TaxManager(IUnitOfWork unitOfWork)
+        public TaxManager(IUnitOfWork unitOfWork, IAuditManager auditmanage)
         {
             _unitOfWork = unitOfWork;
+            _auditmanage = auditmanage;
         }
 
         public async Task<IEnumerable<TaxDto>> GetAllTaxes(string? search = null)
@@ -50,8 +56,13 @@ namespace SafePharma.BLL
             entity.CreatedAt = DateTime.UtcNow;
             entity.UpdatedAt = DateTime.UtcNow;
 
+
+
             _unitOfWork.TaxRepository.Add(entity);
             await _unitOfWork.SaveAsync();
+
+            
+            await _auditmanage.CreateAudit(entity,null,ActionsEnum.Create);
 
             return new TaxCreateResult { Tax = entity.ToDto() };
         }
