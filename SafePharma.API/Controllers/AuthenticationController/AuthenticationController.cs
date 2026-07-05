@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL.DTOs;
 using SafePharma.BLL.Managers;
+using System.Security.Claims;
 
 namespace SafePharma.API.Controllers
 {
@@ -22,8 +24,20 @@ namespace SafePharma.API.Controllers
                 return Unauthorized(result);
             return Ok(result);
 
+        }
 
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDTO dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            var result = await _authManager.ChangePasswordAsync(userId, dto);
+
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
         }
     }
 }
