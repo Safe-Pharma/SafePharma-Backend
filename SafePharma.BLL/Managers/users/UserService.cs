@@ -25,7 +25,8 @@ public class UserService : IUserService
     //delete , deactivate
     //role in azure db
     //condition if pharmacy id is null, return error
-    //Validators for create , edit front , backend
+    //Validators for create , edit  => front , backend
+    
     public async Task<GeneralResult<PagedResult<UserListItemDto>>> GetUsersAsync(UserQueryParams query)
     {
         // Must Uncomment the tenant
