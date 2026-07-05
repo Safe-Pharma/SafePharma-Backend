@@ -1,9 +1,13 @@
-﻿using SafePharma.Common;
+﻿using SafePharma.BLL.DTOs.Audit;
+using SafePharma.Common;
+using SafePharma.Common.Enums;
 
 namespace SafePharma.BLL
 {
     public interface IAuditManager
     {
         Task<GeneralResult<IEnumerable<AuditReadDto>>> GetAllAudit();
+        Task<GeneralResult<AuditCreateDto>> CreateAudit(object newValues,object oldValues, ActionsEnum actionsEnum);
+
     }
 }

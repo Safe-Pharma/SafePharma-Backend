@@ -3,29 +3,36 @@
     public class UnitOfWork : IUnitOfWork
     {
 
-        public ITaxRepository TaxRepository { get; }
         private AppDbContext _db;
+        public ITaxRepository TaxRepository { get; }
         public IPharmacySettingRepository PharmacySettingRepository { get; }
         public IAuditRepository _auditRepository { get; }
         public ISubscriptionRepository SubscriptionRepository { get; }
         public IPharmacyRepository PharmacyRepository { get; }
         public IPrimaryContactRepository PrimaryContactRepository { get; }
 
-        public ICountryRepository CountryRepository {  get; }
+        public ICountryRepository CountryRepository { get; }
 
-        public UnitOfWork(AppDbContext db, IAuditRepository auditRepository, IPharmacySettingRepository pharmacySettingRepository, ISubscriptionRepository subscriptionRepository,
+        public UnitOfWork(
+            AppDbContext db,
+            IAuditRepository auditRepository,
+            IPharmacySettingRepository pharmacySettingRepository,
+            ISubscriptionRepository subscriptionRepository,
             IPharmacyRepository pharmacyRepository,
-            IPrimaryContactRepository primaryContactRepository , ITaxRepository taxRepository, ICountryRepository countryRepository)
+            IPrimaryContactRepository primaryContactRepository,
+            ITaxRepository taxRepository,
+            ICountryRepository countryRepository)
         {
-            _db = db;
-            PharmacySettingRepository = pharmacySettingRepository;
             _auditRepository = auditRepository;
-            SubscriptionRepository = subscriptionRepository;
-            PharmacyRepository = pharmacyRepository;
-            PrimaryContactRepository = primaryContactRepository;
+            _db = db;
             TaxRepository = taxRepository;
-            CountryRepository = countryRepository;
+            PharmacySettingRepository = pharmacySettingRepository;
+            SubscriptionRepository=subscriptionRepository;
+            PharmacyRepository=pharmacyRepository;
+            PrimaryContactRepository=primaryContactRepository;
+            CountryRepository=countryRepository;
         }
+
         public async Task SaveAsync()
         {
             await _db.SaveChangesAsync();

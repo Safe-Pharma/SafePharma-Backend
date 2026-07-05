@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
+using SafePharma.BLL.DTOs.Audit;
 
 namespace SafePharma.API.Controllers
 {
@@ -21,5 +22,11 @@ namespace SafePharma.API.Controllers
             var res =await  _auditManager.GetAllAudit();
             return Ok(res);
         }
+        //[HttpPost]
+        //public async Task<ActionResult> CreateAudit([FromBody] AuditCreateDto auditCreateDto)
+        //{
+        //    var res = await _auditManager.CreateAudit(auditCreateDto);
+        //    return Ok(res);
+        //}
     }
 }
