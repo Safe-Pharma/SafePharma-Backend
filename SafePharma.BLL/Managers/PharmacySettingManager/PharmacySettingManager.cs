@@ -17,42 +17,42 @@ namespace SafePharma.BLL
 
         public async Task<GeneralResult<PharmacySettingsReadDto?>> GetSettings(Guid pharmacyId)
         {
-            var settings = await _unitOfWork.PharmacySettingRepository.GetSettingsByPharmacyId(pharmacyId);
+            var pharmacy = await _unitOfWork.PharmacyRepository.GetById(pharmacyId);
 
-            if (settings is null) return GeneralResult<PharmacySettingsReadDto?>.NotFound();
+            if (pharmacy is null) return GeneralResult<PharmacySettingsReadDto?>.NotFound();
 
             PharmacySettingsReadDto settingsDto = new PharmacySettingsReadDto()
             {
-                Name = settings.Name,
-                LogoUrl = settings.LogoUrl,
-                Street = settings.Street,
-                City = settings.City,
-                Governorate = settings.Governorate,
-                Phone = settings.Phone,
-                TaxRegistrationNumber = settings.TaxRegistrationNumber
+                Name = pharmacy.Name,
+                LogoUrl = pharmacy.LogoUrl,
+                Address = pharmacy.Address,
+                City = pharmacy.City,
+                Country = pharmacy.Country,
+                Phone = pharmacy.Phone,
+                TaxRegistrationNumber = pharmacy.TaxNumber
             };
             return GeneralResult<PharmacySettingsReadDto?>.SuccessResult(settingsDto);
         }
 
         public async Task<GeneralResult<PharmacySettingsUpdateDto?>> updatePharamcySettings(PharmacySettingsUpdateDto dto, Guid pharmacyId)
         {
-            var entity = await _unitOfWork.PharmacySettingRepository.GetSettingsByPharmacyId(pharmacyId);
+            var pharmacy = await _unitOfWork.PharmacyRepository.GetById(pharmacyId);
 
-            if (entity is null) return GeneralResult<PharmacySettingsUpdateDto?>.NotFound();
+            if (pharmacy is null) return GeneralResult<PharmacySettingsUpdateDto?>.NotFound();
 
-            entity.Name = dto.Name;
-            entity.Street = dto.Street;
-            entity.City = dto.City;
-            entity.Governorate = dto.Governorate;
-            entity.Phone = dto.Phone;
-            entity.TaxRegistrationNumber = dto.TaxRegistrationNumber;
+            pharmacy.Name = dto.Name;
+            pharmacy.Address = dto.Address;
+            pharmacy.City = dto.City;
+            pharmacy.Country = dto.Country;
+            pharmacy.Phone = dto.Phone;
+            pharmacy.TaxNumber = dto.TaxRegistrationNumber;
 
-            entity.UpdatedAt = DateTime.UtcNow;
+            pharmacy.UpdatedAt = DateTime.UtcNow;
 
             if (dto.LogoFile != null)
             {
                 var imageUrl = await _cloudinary.UploadImageAsync(dto.LogoFile);
-                entity.LogoUrl = imageUrl;
+                pharmacy.LogoUrl = imageUrl;
             }
 
             await _unitOfWork.SaveAsync();
