@@ -50,6 +50,31 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
 
             return GeneralResult<TokenDto>.SuccessResult(token, "Login successful");
         }
+        public async Task<GeneralResult> ChangePasswordAsync(string userId, ChangePasswordDTO dto)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                return GeneralResult.FailResult("User not found");
+
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors
+                    .GroupBy(e => e.Code)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => new Error { ErrorCode = e.Code, ErrorMessage = e.Description }).ToList()
+                    );
+
+                return GeneralResult.FailResult(errors, "Failed to change password");
+            }
+
+            return GeneralResult.SuccessResult("Password changed successfully");
+
+}
+
 
         private async Task<List<Claim>> GenerateClaims(ApplicationUser user)
         {

@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260704210942_addData")]
-    partial class addData
+    [Migration("20260705003916_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
