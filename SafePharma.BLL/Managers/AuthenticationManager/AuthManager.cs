@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SafePharma.BLL.DTOs;
@@ -14,20 +15,43 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly JwtSettings _jwtSettings;
+        private readonly IValidator<LoginDTO> _loginValidator;
 
-    public AuthManager(
+        public AuthManager(
         UserManager<ApplicationUser> userManager,
-            IOptions<JwtSettings> jwtSettings)
+            IOptions<JwtSettings> jwtSettings,
+            IValidator<LoginDTO> loginValidator
+            )
         {
             _userManager = userManager;
             if (jwtSettings == null || jwtSettings.Value == null)
                 throw new InvalidOperationException("JWT settings are not configured. Ensure JwtSettings are bound from configuration.");
 
             _jwtSettings = jwtSettings.Value;
+            _loginValidator = loginValidator;
         }
 
         public async Task<GeneralResult<TokenDto>> LoginAsync(LoginDTO dto)
+
         {
+            var validationResult = await _loginValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => new Error
+                        {
+                            ErrorCode = e.ErrorCode,
+                            ErrorMessage = e.ErrorMessage
+                        }).ToList()
+                    );
+
+                return GeneralResult<TokenDto>.FailResult(errors, "Validation failed");
+            }
+
             var user = await _userManager.FindByEmailAsync(dto.Email);
 
             if (user == null)
@@ -52,6 +76,8 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
         }
         public async Task<GeneralResult> ChangePasswordAsync(string userId, ChangePasswordDTO dto)
         {
+
+
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
