@@ -10,13 +10,16 @@ public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ICurrentUserContext _currentUser;
+    private readonly RoleManager<ApplicationRole> _roleManager;
 
     public UserService(
         UserManager<ApplicationUser> userManager,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        RoleManager<ApplicationRole> roleManager)
     {
         _userManager = userManager;
         _currentUser = currentUser;
+        _roleManager = roleManager;
     }
 
 
@@ -29,6 +32,11 @@ public class UserService : IUserService
     
     public async Task<GeneralResult<PagedResult<UserListItemDto>>> GetUsersAsync(UserQueryParams query)
     {
+        if(_currentUser.PharmacyId == Guid.Empty)
+        {
+            return GeneralResult<PagedResult<UserListItemDto>>
+                .FailResult("Current user is not assigned to a pharmacy");
+        }
         // Must Uncomment the tenant
         var q = _userManager.Users
             .Where(u => u.PharmacyId == _currentUser.PharmacyId && !u.IsDeleted);
@@ -100,6 +108,11 @@ public class UserService : IUserService
 
     public async Task<GeneralResult<UserDetailDto>> GetUserByIdAsync(Guid id)
     {
+        if (_currentUser.PharmacyId == Guid.Empty)
+        {
+            return GeneralResult<UserDetailDto>
+                .FailResult("Current user is not assigned to a pharmacy");
+        }
         var user = await _userManager.Users
             .Include(u => u.AuditList)
             .FirstOrDefaultAsync(u =>
@@ -151,9 +164,33 @@ public class UserService : IUserService
 
     public async Task<GeneralResult<UserDetailDto>> CreateUserAsync(CreateUserRequest request)
     {
-        if (request.Password != request.ConfirmPassword)
-            return GeneralResult<UserDetailDto>.FailResult("Passwords do not match.");
 
+
+        if (_currentUser.PharmacyId == Guid.Empty)
+        {
+            return GeneralResult<UserDetailDto>
+                .FailResult("Current user is not assigned to a pharmacy");
+        }
+
+        var existingUser =
+       await _userManager.FindByEmailAsync(request.Email);
+
+        if (existingUser != null)
+        {
+            return GeneralResult<UserDetailDto>
+                .FailResult("Email already exists");
+        }
+
+        var roleExists =
+        await _roleManager.RoleExistsAsync(request.Role);
+
+        if (!roleExists)
+        {
+            return GeneralResult<UserDetailDto>
+                .FailResult("Role does not exist");
+        }
+
+        
         var user = new ApplicationUser
         {
             FirstName    = request.FirstName.Trim(),
@@ -190,69 +227,136 @@ public class UserService : IUserService
 
     // ── UPDATE ──────────────────────────────────────────────────────────────
 
-    public async Task<GeneralResult<UserDetailDto>> UpdateUserAsync(Guid id, UpdateUserRequest request)
+    public async Task<GeneralResult<UserDetailDto>> UpdateUserAsync(Guid id,UpdateUserRequest request)
     {
+        // Get user scoped to current pharmacy
         var user = await GetOwnedUserAsync(id);
-        if (user is null) return GeneralResult<UserDetailDto>.NotFound();
 
-        user.FirstName   = request.FirstName.Trim();
-        user.LastName    = request.LastName.Trim();
+        if (user is null)
+            return GeneralResult<UserDetailDto>.NotFound("User not found");
+
+        // Check if another user already owns this email
+        var existingUser =
+            await _userManager.FindByEmailAsync(
+                request.Email.Trim().ToLower());
+
+        if (existingUser != null &&
+            existingUser.Id != user.Id)
+        {
+            return GeneralResult<UserDetailDto>
+                .FailResult("Email already exists");
+        }
+
+        // Check role exists
+        if (!await _roleManager.RoleExistsAsync(request.Role))
+        {
+            return GeneralResult<UserDetailDto>
+                .FailResult("Role does not exist");
+        }
+
+        // Update normal properties
+        user.FirstName = request.FirstName.Trim();
+        user.LastName = request.LastName.Trim();
         user.PhoneNumber = request.Phone;
-        user.Branch      = request.Branch;
-        user.IsActive    = request.IsActive;
-        user.UpdatedAt   = DateTime.UtcNow;
+        user.Branch = request.Branch;
+        user.IsActive = request.IsActive;
+        user.UpdatedAt = DateTime.UtcNow;
 
-        // Email change goes through UserManager to keep the normalised index in sync
-        if (!string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase))
+        // Update email + username if changed
+        if (!string.Equals(
+                user.Email,
+                request.Email,
+                StringComparison.OrdinalIgnoreCase))
         {
-            var setEmailResult = await _userManager.SetEmailAsync(user, request.Email.Trim().ToLower());
-            if (!setEmailResult.Succeeded)
+            var normalizedEmail =
+                request.Email.Trim().ToLower();
+
+            var emailResult =
+                await _userManager.SetEmailAsync(
+                    user,
+                    normalizedEmail);
+
+            if (!emailResult.Succeeded)
             {
-                var errors = MapIdentityErrors(setEmailResult.Errors);
-                return GeneralResult<UserDetailDto>.FailResult(errors);
+                return GeneralResult<UserDetailDto>
+                    .FailResult(
+                        MapIdentityErrors(emailResult.Errors));
             }
 
-            await _userManager.SetUserNameAsync(user, request.Email.Trim().ToLower());
-        }
-        else
-        {
-            var updateResult = await _userManager.UpdateAsync(user);
-            if (!updateResult.Succeeded)
-            {
-                var errors = MapIdentityErrors(updateResult.Errors);
-                return GeneralResult<UserDetailDto>.FailResult(errors);
-            }
-        }
+            var usernameResult =
+                await _userManager.SetUserNameAsync(
+                    user,
+                    normalizedEmail);
 
-        // Role: remove all existing, assign the new one
-        var currentRoles = await _userManager.GetRolesAsync(user);
-        if (currentRoles.Any())
-        {
-            var remRes = await _userManager.RemoveFromRolesAsync(user, currentRoles);
-            if (!remRes.Succeeded)
+            if (!usernameResult.Succeeded)
             {
-                var errors = MapIdentityErrors(remRes.Errors);
-                return GeneralResult<UserDetailDto>.FailResult(errors);
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.Role))
-        {
-            var addRes = await _userManager.AddToRoleAsync(user, request.Role);
-            if (!addRes.Succeeded)
-            {
-                var errors = MapIdentityErrors(addRes.Errors);
-                return GeneralResult<UserDetailDto>.FailResult(errors);
+                return GeneralResult<UserDetailDto>
+                    .FailResult(
+                        MapIdentityErrors(usernameResult.Errors));
             }
         }
 
-        return await GetUserByIdAsync(id);
+        // Update role only if changed
+        var currentRoles =
+            await _userManager.GetRolesAsync(user);
+
+        var currentRole =
+            currentRoles.FirstOrDefault();
+
+        if (!string.Equals(
+                currentRole,
+                request.Role,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            if (currentRoles.Any())
+            {
+                var removeResult =
+                    await _userManager.RemoveFromRolesAsync(
+                        user,
+                        currentRoles);
+
+                if (!removeResult.Succeeded)
+                {
+                    return GeneralResult<UserDetailDto>
+                        .FailResult(
+                            MapIdentityErrors(removeResult.Errors));
+                }
+            }
+
+            var addResult =
+                await _userManager.AddToRoleAsync(
+                    user,
+                    request.Role);
+
+            if (!addResult.Succeeded)
+            {
+                return GeneralResult<UserDetailDto>
+                    .FailResult(
+                        MapIdentityErrors(addResult.Errors));
+            }
+        }
+
+        // Save remaining property changes
+        var updateResult =
+            await _userManager.UpdateAsync(user);
+
+        if (!updateResult.Succeeded)
+        {
+            return GeneralResult<UserDetailDto>
+                .FailResult(
+                    MapIdentityErrors(updateResult.Errors));
+        }
+
+        // Return fresh data
+        return await GetUserByIdAsync(user.Id);
     }
 
     // ── STATUS TOGGLE ───────────────────────────────────────────────────────
     //try it with frontend
     public async Task<GeneralResult> SetUserStatusAsync(Guid id, bool isActive)
     {
+        if (_currentUser.PharmacyId == null)
+            return null;
         var user = await GetOwnedUserAsync(id);
         if (user is null) return GeneralResult.NotFound();
 
@@ -287,30 +391,30 @@ public class UserService : IUserService
 
     // ── ACTIVITY ────────────────────────────────────────────────────────────
 
-    public async Task<GeneralResult<IReadOnlyList<UserActivityDto>>> GetUserActivityAsync(Guid id)
-    {
-        var user = await _userManager.Users
-            .Include(u => u.AuditList)
-            .FirstOrDefaultAsync(u =>
-                u.Id == id &&
-                u.PharmacyId == _currentUser.PharmacyId &&
-                !u.IsDeleted);
+    //public async Task<GeneralResult<IReadOnlyList<UserActivityDto>>> GetUserActivityAsync(Guid id)
+    //{
+    //    var user = await _userManager.Users
+    //        .Include(u => u.AuditList)
+    //        .FirstOrDefaultAsync(u =>
+    //            u.Id == id &&
+    //            u.PharmacyId == _currentUser.PharmacyId &&
+    //            !u.IsDeleted);
 
-        if (user is null) return GeneralResult<IReadOnlyList<UserActivityDto>>.NotFound();
+    //    if (user is null) return GeneralResult<IReadOnlyList<UserActivityDto>>.NotFound();
 
-        var list = user.AuditList
-            .OrderByDescending(a => a.Date)
-            .Take(20)
-            .Select(a => new UserActivityDto
-            {
-                Id        = a.Id,
-                Message   = a.Action,        // adjust to your Audit property names
-                Timestamp = a.Date,
-            })
-            .ToList();
+    //    var list = user.AuditList
+    //        .OrderByDescending(a => a.Date)
+    //        .Take(20)
+    //        .Select(a => new UserActivityDto
+    //        {
+    //            Id        = a.Id,
+    //            Message   = a.Action,        // adjust to your Audit property names
+    //            Timestamp = a.Date,
+    //        })
+    //        .ToList();
 
-        return GeneralResult<IReadOnlyList<UserActivityDto>>.SuccessResult(list);
-    }
+    //    return GeneralResult<IReadOnlyList<UserActivityDto>>.SuccessResult(list);
+    //}
 
     // ── PRIVATE HELPERS ─────────────────────────────────────────────────────
 
@@ -320,6 +424,8 @@ public class UserService : IUserService
     /// </summary>
     private async Task<ApplicationUser?> GetOwnedUserAsync(Guid id)
     {
+        if(_currentUser.PharmacyId == Guid.Empty)
+            return null;
         var user = await _userManager.Users.FirstOrDefaultAsync(u =>
             u.Id == id &&
             u.PharmacyId == _currentUser.PharmacyId &&
