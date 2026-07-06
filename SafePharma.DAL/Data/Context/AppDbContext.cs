@@ -125,7 +125,33 @@ namespace SafePharma.DAL
                         "[SellingPrice] >= 0");
                 });
             });
+
+            modelBuilder.Entity<Supplier>(entity =>
+            {
+                entity.Property(s => s.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                entity.Property(s => s.Outstanding)
+                    .HasColumnType("decimal(12,2)");
+
+                entity.HasOne(s => s.Pharmacy)
+                    .WithMany()
+                    .HasForeignKey(s => s.PharmacyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(s => s.Country)
+                    .WithMany()
+                    .HasForeignKey(s => s.CountryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(s => new { s.PharmacyId, s.Name }).IsUnique();
+            });
         }
+
+
+
+
         public override int SaveChanges()
         {
             AuditLog();
@@ -157,6 +183,7 @@ namespace SafePharma.DAL
         public DbSet<Country> Countries => Set<Country>();
         public DbSet<City> Cities => Set<City>();
         public DbSet<Medicine> Medicines => Set<Medicine>();
+        public DbSet<Supplier> Suppliers => Set<Supplier>();
 
     }
 }
