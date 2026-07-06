@@ -8,16 +8,16 @@ namespace SafePharma.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class TaxesController : ControllerBase
+    public class SuppliersController : ControllerBase
     {
-        private readonly ITaxManager _manager;
-        private readonly IValidator<TaxCreateDto> _createValidator;
-        private readonly IValidator<TaxUpdateDto> _updateValidator;
+        private readonly ISupplierManager _manager;
+        private readonly IValidator<SupplierCreateDto> _createValidator;
+        private readonly IValidator<SupplierUpdateDto> _updateValidator;
 
-        public TaxesController(
-            ITaxManager manager,
-            IValidator<TaxCreateDto> createValidator,
-            IValidator<TaxUpdateDto> updateValidator)
+        public SuppliersController(
+            ISupplierManager manager,
+            IValidator<SupplierCreateDto> createValidator,
+            IValidator<SupplierUpdateDto> updateValidator)
         {
             _manager = manager;
             _createValidator = createValidator;
@@ -28,7 +28,7 @@ namespace SafePharma.API.Controllers
         public async Task<IActionResult> GetAll([FromQuery] string? search)
         {
             var pharmacyId = User.GetPharmacyId();
-            var result = await _manager.GetAllTaxes(pharmacyId, search);
+            var result = await _manager.GetAllSuppliers(pharmacyId, search);
             return Ok(result);
         }
 
@@ -44,7 +44,7 @@ namespace SafePharma.API.Controllers
         public async Task<IActionResult> GetById(Guid id)
         {
             var pharmacyId = User.GetPharmacyId();
-            var result = await _manager.GetTaxById(pharmacyId, id);
+            var result = await _manager.GetSupplierById(pharmacyId, id);
             if (result is null)
             {
                 return NotFound();
@@ -53,7 +53,7 @@ namespace SafePharma.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] TaxCreateDto dto)
+        public async Task<IActionResult> Create([FromBody] SupplierCreateDto dto)
         {
             var validationResult = await _createValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -62,18 +62,18 @@ namespace SafePharma.API.Controllers
             }
 
             var pharmacyId = User.GetPharmacyId();
-            var result = await _manager.CreateTax(pharmacyId, dto);
+            var result = await _manager.CreateSupplier(pharmacyId, dto);
 
             if (result.DuplicateName)
             {
-                return Conflict(new { message = $"A tax named \"{dto.Name}\" already exists." });
+                return Conflict(new { message = $"A supplier named \"{dto.Name}\" already exists." });
             }
 
-            return CreatedAtAction(nameof(GetById), new { id = result.Tax!.Id }, result.Tax);
+            return CreatedAtAction(nameof(GetById), new { id = result.Supplier!.Id }, result.Supplier);
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] TaxUpdateDto dto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] SupplierUpdateDto dto)
         {
             var validationResult = await _updateValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -82,7 +82,7 @@ namespace SafePharma.API.Controllers
             }
 
             var pharmacyId = User.GetPharmacyId();
-            var result = await _manager.UpdateTax(pharmacyId, id, dto);
+            var result = await _manager.UpdateSupplier(pharmacyId, id, dto);
 
             if (result.NotFound)
             {
@@ -91,10 +91,10 @@ namespace SafePharma.API.Controllers
 
             if (result.DuplicateName)
             {
-                return Conflict(new { message = $"A tax named \"{dto.Name}\" already exists." });
+                return Conflict(new { message = $"A supplier named \"{dto.Name}\" already exists." });
             }
 
-            return Ok(result.Tax);
+            return Ok(result.Supplier);
         }
 
         [HttpPatch("{id:guid}/status")]
@@ -113,7 +113,7 @@ namespace SafePharma.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var pharmacyId = User.GetPharmacyId();
-            var deleted = await _manager.DeleteTax(pharmacyId, id);
+            var deleted = await _manager.DeleteSupplier(pharmacyId, id);
             if (!deleted)
             {
                 return NotFound();

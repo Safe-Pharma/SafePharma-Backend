@@ -10,6 +10,8 @@
         public IPrimaryContactRepository PrimaryContactRepository { get; }
         public ITaxRepository TaxRepository { get; }
         ICountryRepository CountryRepository { get; }
+        public ISupplierRepository SupplierRepository { get; }
+
         Task SaveAsync();
     }
 }
