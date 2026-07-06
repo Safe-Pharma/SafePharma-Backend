@@ -77,7 +77,81 @@ namespace SafePharma.DAL
                 // Same city name can exist in different countries, just not duplicated within one country
                 entity.HasIndex(c => new { c.CountryId, c.Name }).IsUnique();
             });
+
+            modelBuilder.Entity<Medicine>(entity =>
+            {
+                entity.Property(m => m.TradeNameAr)
+                    .HasMaxLength(255)
+                    .IsRequired();
+                entity.Property(m => m.TradeNameEn)
+                    .HasMaxLength(255)
+                    .IsRequired();
+                entity.Property(m => m.ScientificName)
+                    .HasMaxLength(255)
+                    .IsRequired();
+                entity.Property(m => m.Category)
+                    .HasMaxLength(50)
+                    .IsRequired();
+                entity.Property(m => m.UnitOfSale)
+                    .HasMaxLength(50)
+                    .IsRequired();
+                entity.Property(m => m.TherapeuticCategory)
+                    .HasMaxLength(100);
+                entity.Property(m => m.Manufacturer)
+                    .HasMaxLength(255);
+                entity.Property(m => m.CountryOfOrigin)
+                    .HasMaxLength(100);
+                entity.Property(m => m.StorageConditions)
+                    .HasMaxLength(100);
+                entity.Property(m => m.PurchasePrice)
+                    .HasColumnType("decimal(12,2)");
+                entity.Property(m => m.SellingPrice)
+                    .HasColumnType("decimal(12,2)");
+
+                entity.HasOne(m => m.Tax)
+                    .WithMany()
+                    .HasForeignKey(m => m.TaxId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(m => m.ScientificName);
+
+                entity.ToTable(t =>
+                {
+                    t.HasCheckConstraint(
+                        "CK_Medicine_PurchasePrice",
+                        "[PurchasePrice] >= 0");
+                    t.HasCheckConstraint(
+                        "CK_Medicine_SellingPrice",
+                        "[SellingPrice] >= 0");
+                });
+            });
+
+            modelBuilder.Entity<Supplier>(entity =>
+            {
+                entity.Property(s => s.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                entity.Property(s => s.Outstanding)
+                    .HasColumnType("decimal(12,2)");
+
+                entity.HasOne(s => s.Pharmacy)
+                    .WithMany()
+                    .HasForeignKey(s => s.PharmacyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(s => s.Country)
+                    .WithMany()
+                    .HasForeignKey(s => s.CountryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(s => new { s.PharmacyId, s.Name }).IsUnique();
+            });
         }
+
+
+
+
         public override int SaveChanges()
         {
             AuditLog();
@@ -108,6 +182,8 @@ namespace SafePharma.DAL
         public DbSet<PrimaryContact> PrimaryContacts => Set<PrimaryContact>();
         public DbSet<Country> Countries => Set<Country>();
         public DbSet<City> Cities => Set<City>();
+        public DbSet<Medicine> Medicines => Set<Medicine>();
+        public DbSet<Supplier> Suppliers => Set<Supplier>();
 
     }
 }

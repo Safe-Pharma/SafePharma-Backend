@@ -52,6 +52,22 @@ namespace SafePharma.DAL
                             await context.AddRangeAsync(taxes);
                             await context.SaveChangesAsync();
                         }
+
+                        // 6. Medicines (needs Taxes to already be seeded)
+                        if (!await context.Set<Medicine>().AnyAsync())
+                        {
+                            var taxes = await context.Set<Tax>().ToListAsync();
+                            var medicines = MedicineSeedingProvider.GetMedicines(taxes);
+                            await context.AddRangeAsync(medicines);
+                            await context.SaveChangesAsync();
+                        }
+                        // 7. Suppliers
+                        if (!await context.Set<Supplier>().AnyAsync())
+                        {
+                            var suppliers = SupplierSeeding.GetSuppliers();
+                            await context.AddRangeAsync(suppliers);
+                            await context.SaveChangesAsync();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -102,6 +118,22 @@ namespace SafePharma.DAL
                             context.AddRange(taxes);
                             context.SaveChanges();
                         }
+
+                        // 6. Medicines (needs Taxes to already be seeded)
+                        if (!context.Set<Medicine>().Any())
+                        {
+                            var taxes = context.Set<Tax>().ToList();
+                            var medicines = MedicineSeedingProvider.GetMedicines(taxes);
+                            context.AddRange(medicines);
+                            context.SaveChanges();
+                        }
+                        // 7. Suppliers 
+                        if (!context.Set<Supplier>().Any())
+                        {
+                            var suppliers = SupplierSeeding.GetSuppliers();
+                            context.AddRange(suppliers);
+                            context.SaveChanges();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -118,7 +150,9 @@ namespace SafePharma.DAL
             services.AddScoped<IPrimaryContactRepository, PrimaryContactRepository>();
             services.AddScoped<ITaxRepository, TaxRepository>();
             services.AddScoped<ICountryRepository, CountryRepository>();
+            services.AddScoped<ISupplierRepository, SupplierRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
         }
     }
 }

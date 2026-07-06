@@ -176,14 +176,7 @@ namespace SafePharma.DAL.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PharmacyId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LogoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Street = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    City = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Governorate = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TaxRegistrationNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PharmacyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -195,7 +188,8 @@ namespace SafePharma.DAL.Migrations
                         name: "FK_PharmacySettings_Pharmacies_PharmacyId",
                         column: x => x.PharmacyId,
                         principalTable: "Pharmacies",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -221,6 +215,42 @@ namespace SafePharma.DAL.Migrations
                         principalTable: "Pharmacies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Suppliers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ContactPerson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TaxNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Outstanding = table.Column<decimal>(type: "decimal(12,2)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PharmacyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CountryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Suppliers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Suppliers_Countries_CountryId",
+                        column: x => x.CountryId,
+                        principalTable: "Countries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Suppliers_Pharmacies_PharmacyId",
+                        column: x => x.PharmacyId,
+                        principalTable: "Pharmacies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -355,6 +385,44 @@ namespace SafePharma.DAL.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Medicines",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TradeNameAr = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    TradeNameEn = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    ScientificName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    UnitOfSale = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    UnitsPerPackage = table.Column<int>(type: "int", nullable: false),
+                    PurchasePrice = table.Column<decimal>(type: "decimal(12,2)", nullable: false),
+                    SellingPrice = table.Column<decimal>(type: "decimal(12,2)", nullable: false),
+                    TaxId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MinStockLevel = table.Column<int>(type: "int", nullable: false),
+                    IsPrescriptionRequired = table.Column<bool>(type: "bit", nullable: false),
+                    IsControlled = table.Column<bool>(type: "bit", nullable: false),
+                    Manufacturer = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    CountryOfOrigin = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    StorageConditions = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    TherapeuticCategory = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Medicines", x => x.Id);
+                    table.CheckConstraint("CK_Medicine_PurchasePrice", "[PurchasePrice] >= 0");
+                    table.CheckConstraint("CK_Medicine_SellingPrice", "[SellingPrice] >= 0");
+                    table.ForeignKey(
+                        name: "FK_Medicines_Taxes_TaxId",
+                        column: x => x.TaxId,
+                        principalTable: "Taxes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -423,6 +491,16 @@ namespace SafePharma.DAL.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Medicines_ScientificName",
+                table: "Medicines",
+                column: "ScientificName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Medicines_TaxId",
+                table: "Medicines",
+                column: "TaxId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Pharmacies_BusinessEmail",
                 table: "Pharmacies",
                 column: "BusinessEmail",
@@ -452,8 +530,7 @@ namespace SafePharma.DAL.Migrations
                 name: "IX_PharmacySettings_PharmacyId",
                 table: "PharmacySettings",
                 column: "PharmacyId",
-                unique: true,
-                filter: "[PharmacyId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PrimaryContacts_Email",
@@ -465,6 +542,17 @@ namespace SafePharma.DAL.Migrations
                 name: "IX_PrimaryContacts_PharmacyId",
                 table: "PrimaryContacts",
                 column: "PharmacyId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Suppliers_CountryId",
+                table: "Suppliers",
+                column: "CountryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Suppliers_PharmacyId_Name",
+                table: "Suppliers",
+                columns: new[] { "PharmacyId", "Name" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -499,19 +587,25 @@ namespace SafePharma.DAL.Migrations
                 name: "Cities");
 
             migrationBuilder.DropTable(
+                name: "Medicines");
+
+            migrationBuilder.DropTable(
                 name: "PharmacySettings");
 
             migrationBuilder.DropTable(
                 name: "PrimaryContacts");
 
             migrationBuilder.DropTable(
-                name: "Taxes");
+                name: "Suppliers");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Taxes");
 
             migrationBuilder.DropTable(
                 name: "Countries");

@@ -13,6 +13,8 @@
 
         public ICountryRepository CountryRepository { get; }
 
+        public ISupplierRepository SupplierRepository { get; }
+
         public UnitOfWork(
             AppDbContext db,
             IAuditRepository auditRepository,
@@ -21,7 +23,9 @@
             IPharmacyRepository pharmacyRepository,
             IPrimaryContactRepository primaryContactRepository,
             ITaxRepository taxRepository,
-            ICountryRepository countryRepository)
+            ICountryRepository countryRepository,
+            ISupplierRepository supplierRepository)
+            
         {
             _auditRepository = auditRepository;
             _db = db;
@@ -31,6 +35,7 @@
             PharmacyRepository=pharmacyRepository;
             PrimaryContactRepository=primaryContactRepository;
             CountryRepository=countryRepository;
+            SupplierRepository = supplierRepository;
         }
 
         public async Task SaveAsync()
