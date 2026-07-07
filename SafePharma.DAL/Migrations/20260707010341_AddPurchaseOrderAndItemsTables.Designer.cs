@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260706232606_added_po_poi")]
-    partial class added_po_poi
+    [Migration("20260707010341_AddPurchaseOrderAndItemsTables")]
+    partial class AddPurchaseOrderAndItemsTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -607,6 +607,9 @@ namespace SafePharma.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("PharmacyId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -615,9 +618,12 @@ namespace SafePharma.DAL.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PharmacyId");
 
                     b.HasIndex("SupplierId");
 
@@ -640,6 +646,7 @@ namespace SafePharma.DAL.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -914,11 +921,19 @@ namespace SafePharma.DAL.Migrations
 
             modelBuilder.Entity("SafePharma.DAL.PurchaseOrder", b =>
                 {
+                    b.HasOne("SafePharma.DAL.Pharmacy", "Pharmacy")
+                        .WithMany("PurchaseOrders")
+                        .HasForeignKey("PharmacyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SafePharma.DAL.Supplier", "Supplier")
                         .WithMany()
                         .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Pharmacy");
 
                     b.Navigation("Supplier");
                 });
@@ -928,7 +943,7 @@ namespace SafePharma.DAL.Migrations
                     b.HasOne("SafePharma.DAL.Medicine", "Medicine")
                         .WithMany()
                         .HasForeignKey("MedicineId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SafePharma.DAL.PurchaseOrder", "PurchaseOrder")
@@ -985,6 +1000,8 @@ namespace SafePharma.DAL.Migrations
             modelBuilder.Entity("SafePharma.DAL.Pharmacy", b =>
                 {
                     b.Navigation("PharmacySettings");
+
+                    b.Navigation("PurchaseOrders");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.PurchaseOrder", b =>

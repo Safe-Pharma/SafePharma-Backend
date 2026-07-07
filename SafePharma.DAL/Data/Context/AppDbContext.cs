@@ -147,6 +147,38 @@ namespace SafePharma.DAL
 
                 entity.HasIndex(s => new { s.PharmacyId, s.Name }).IsUnique();
             });
+
+            modelBuilder.Entity<PurchaseOrder>(entity =>
+            {
+                entity.Property(po => po.TotalAmount)
+                    .HasPrecision(18, 2);
+
+                entity.HasOne(po => po.Pharmacy)
+                    .WithMany(p => p.PurchaseOrders)
+                    .HasForeignKey(po => po.PharmacyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(po => po.Supplier)
+                    .WithMany()
+                    .HasForeignKey(po => po.SupplierId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+            });
+
+            modelBuilder.Entity<PurchaseOrderItem>(entity =>
+            {
+                entity.Property(i => i.UnitPrice)
+                    .HasPrecision(18, 2);
+
+                entity.HasOne(i => i.Medicine)
+                    .WithMany()
+                    .HasForeignKey(i => i.MedicineId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+
+                entity.HasOne(i => i.PurchaseOrder)
+                    .WithMany(po => po.Items)
+                    .HasForeignKey(i => i.PurchaseOrderId)
+                    .OnDelete(DeleteBehavior.Cascade); 
+            });
         }
 
 

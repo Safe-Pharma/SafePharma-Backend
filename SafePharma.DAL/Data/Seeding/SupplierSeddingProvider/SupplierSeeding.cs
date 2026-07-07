@@ -31,7 +31,7 @@ namespace SafePharma.DAL
             {
                 new Supplier
                 {
-                    Id = Guid.Parse("60000000-0000-0000-0000-000000000001"),
+                    Id = Guid.NewGuid(),
                     PharmacyId = pharmacyId,
                     Name = "MedSupply Co.",
                     ContactPerson = "Ahmed Najjar",
@@ -47,7 +47,7 @@ namespace SafePharma.DAL
                 },
                 new Supplier
                 {
-                    Id = Guid.Parse("60000000-0000-0000-0000-000000000002"),
+                    Id = Guid.NewGuid(),
                     PharmacyId = pharmacyId,
                     Name = "GulfPharma",
                     ContactPerson = "Sarah Habib",
@@ -63,7 +63,7 @@ namespace SafePharma.DAL
                 },
                 new Supplier
                 {
-                    Id = Guid.Parse("60000000-0000-0000-0000-000000000003"),
+                    Id = Guid.NewGuid(),
                     PharmacyId = pharmacyId,
                     Name = "BioGen Distrib.",
                     ContactPerson = "Omar Sami",
@@ -79,7 +79,7 @@ namespace SafePharma.DAL
                 },
                 new Supplier
                 {
-                    Id = Guid.Parse("60000000-0000-0000-0000-000000000004"),
+                    Id = Guid.NewGuid(),
                     PharmacyId = pharmacyId,
                     Name = "CarePlus",
                     ContactPerson = "Layla Karim",
