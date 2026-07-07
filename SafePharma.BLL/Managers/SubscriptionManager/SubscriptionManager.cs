@@ -71,9 +71,28 @@ namespace SafePharma.BLL
                 Id = Guid.NewGuid(),
                 PlanTier = dto.PlanTier,
                 BillingCycle = dto.BillingCycle,
-                Status = SubscriptionStatus.PendingReview,
+                Status = SubscriptionStatus.AwaitingPayment,   // was: SubscriptionStatus.PendingReview
                 CreatedAt = DateTime.UtcNow
             };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             var pharmacy = new Pharmacy
             {

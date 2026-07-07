@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SafePharma.DAL.Data.Seeding.PaymentMethodSeedingProvider;
+using SafePharma.DAL.Data.Seeding.SubscriptionPlanSeedingProvider;
 namespace SafePharma.DAL
 {
     public static class DALServicesExtention
@@ -66,6 +68,18 @@ namespace SafePharma.DAL
                         {
                             var suppliers = SupplierSeeding.GetSuppliers();
                             await context.AddRangeAsync(suppliers);
+                            await context.SaveChangesAsync();
+                        }
+                        // 8. Subscription Plans
+                        if (!await context.Set<SubscriptionPlan>().AnyAsync())
+                        {
+                            await context.AddRangeAsync(SubscriptionPlanSeeding.GetPlans());
+                            await context.SaveChangesAsync();
+                        }
+                        // 9. Payment Methods
+                        if (!await context.Set<PaymentMethod>().AnyAsync())
+                        {
+                            await context.AddRangeAsync(PaymentMethodSeeding.GetMethods());
                             await context.SaveChangesAsync();
                         }
                     }
@@ -134,6 +148,18 @@ namespace SafePharma.DAL
                             context.AddRange(suppliers);
                             context.SaveChanges();
                         }
+                        // 8. Subscription Plans
+                        if (!context.Set<SubscriptionPlan>().Any())
+                        {
+                            context.AddRange(SubscriptionPlanSeeding.GetPlans());
+                            context.SaveChanges();
+                        }
+                        // 9. Payment Methods
+                        if (!context.Set<PaymentMethod>().Any())
+                        {
+                            context.AddRange(PaymentMethodSeeding.GetMethods());
+                            context.SaveChanges();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -151,6 +177,9 @@ namespace SafePharma.DAL
             services.AddScoped<ITaxRepository, TaxRepository>();
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<ISupplierRepository, SupplierRepository>();
+            services.AddScoped<IPaymentVerificationRepository, PaymentVerificationRepository>();
+            services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
+            services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         }

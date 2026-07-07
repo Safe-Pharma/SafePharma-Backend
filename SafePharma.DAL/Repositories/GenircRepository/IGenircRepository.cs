@@ -6,6 +6,7 @@ namespace SafePharma.DAL
     {
         void Add(T entity);
         void Delete(T entity);
+        void Update(T entity);
         Task<IEnumerable<T>> GetAll();
         Task<IEnumerable<T>> GetAllWithException(Expression<Func<T, bool>>? exceptionExpression = null, bool isTracking = false);
         Task<T> GetById(Guid id);

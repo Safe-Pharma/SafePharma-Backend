@@ -4,5 +4,6 @@
     {
         Task<Subscription?> GetByIdWithPharmacy(Guid id);
         Task<IEnumerable<Subscription>> GetAllWithPharmacy();
+        Task<Subscription?> GetByIdWithPharmacyTracked(Guid id);
     }
 }

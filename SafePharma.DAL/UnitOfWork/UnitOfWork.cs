@@ -14,6 +14,9 @@
         public ICountryRepository CountryRepository { get; }
 
         public ISupplierRepository SupplierRepository { get; }
+        public IPaymentVerificationRepository PaymentVerificationRepository { get; }
+        public ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
+        public IPaymentMethodRepository PaymentMethodRepository { get; }
 
         public UnitOfWork(
             AppDbContext db,
@@ -24,7 +27,10 @@
             IPrimaryContactRepository primaryContactRepository,
             ITaxRepository taxRepository,
             ICountryRepository countryRepository,
-            ISupplierRepository supplierRepository)
+            ISupplierRepository supplierRepository,
+            IPaymentVerificationRepository paymentVerificationRepository,
+            ISubscriptionPlanRepository subscriptionPlanRepository,
+            IPaymentMethodRepository paymentMethodRepository)
             
         {
             _auditRepository = auditRepository;
@@ -36,6 +42,9 @@
             PrimaryContactRepository=primaryContactRepository;
             CountryRepository=countryRepository;
             SupplierRepository = supplierRepository;
+            PaymentVerificationRepository = paymentVerificationRepository;
+            SubscriptionPlanRepository = subscriptionPlanRepository;
+            PaymentMethodRepository = paymentMethodRepository;
         }
 
         public async Task SaveAsync()

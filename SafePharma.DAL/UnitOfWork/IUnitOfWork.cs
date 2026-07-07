@@ -11,6 +11,9 @@
         public ITaxRepository TaxRepository { get; }
         ICountryRepository CountryRepository { get; }
         public ISupplierRepository SupplierRepository { get; }
+        public IPaymentVerificationRepository PaymentVerificationRepository { get; }
+        public ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
+        public IPaymentMethodRepository PaymentMethodRepository { get; }
 
         Task SaveAsync();
     }

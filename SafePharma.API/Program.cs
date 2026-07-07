@@ -25,6 +25,7 @@ namespace SafePharma.API
             builder.Services.AddOpenApi();
             // Bind JwtSettings from configuration
             builder.Services.Configure<SafePharma.Common.JwtSettings>(builder.Configuration.GetSection("JWT"));
+            builder.Services.Configure<SafePharma.Common.PaymentSettings>(builder.Configuration.GetSection("Payment"));
             builder.Services.AddDALServices(builder.Configuration);
             builder.Services.AddBLLServices();
      
@@ -68,8 +69,12 @@ namespace SafePharma.API
             });
 
             // Register authorization services
-            builder.Services.AddAuthorization();
-        
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy(SafePharma.BLL.AuthPolicies.OwnerOnly, policy =>
+                    policy.RequireRole("Owner"));
+            });
+
 
             // CORS
             builder.Services.AddCors(options =>
