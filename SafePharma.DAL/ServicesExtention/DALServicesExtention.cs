@@ -70,6 +70,7 @@ namespace SafePharma.DAL
                             await context.AddRangeAsync(suppliers);
                             await context.SaveChangesAsync();
                         }
+<<<<<<< HEAD
                         // 8. Subscription Plans
                         if (!await context.Set<SubscriptionPlan>().AnyAsync())
                         {
@@ -80,6 +81,22 @@ namespace SafePharma.DAL
                         if (!await context.Set<PaymentMethod>().AnyAsync())
                         {
                             await context.AddRangeAsync(PaymentMethodSeeding.GetMethods());
+=======
+                        // 8. Purchase Orders (needs Suppliers to already be seeded)
+                        if (!await context.Set<PurchaseOrder>().AnyAsync())
+                        {
+                            var suppliers = await context.Set<Supplier>().ToListAsync();
+                            var purchaseOrders = PurchaseOrderSeeding.GetPurchaseOrders(suppliers);
+                            await context.AddRangeAsync(purchaseOrders);
+                            await context.SaveChangesAsync();
+                        }
+                        // 9. Purchase Order Items (needs Medicines and PurchaseOrders to already be seeded)
+                        if (!await context.Set<PurchaseOrderItem>().AnyAsync())
+                        {
+                            var medicines = await context.Set<Medicine>().ToListAsync();
+                            var purchaseOrderItems = PurchaseOrderItemSeeding.GetPurchaseOrderItems(medicines);
+                            await context.AddRangeAsync(purchaseOrderItems);
+>>>>>>> main
                             await context.SaveChangesAsync();
                         }
                     }
@@ -148,6 +165,7 @@ namespace SafePharma.DAL
                             context.AddRange(suppliers);
                             context.SaveChanges();
                         }
+<<<<<<< HEAD
                         // 8. Subscription Plans
                         if (!context.Set<SubscriptionPlan>().Any())
                         {
@@ -158,6 +176,22 @@ namespace SafePharma.DAL
                         if (!context.Set<PaymentMethod>().Any())
                         {
                             context.AddRange(PaymentMethodSeeding.GetMethods());
+=======
+                        // 8. Purchase Orders (needs Suppliers to already be seeded)
+                        if (!context.Set<PurchaseOrder>().Any())
+                        {
+                            var suppliers = context.Set<Supplier>().ToList();
+                            var purchaseOrders = PurchaseOrderSeeding.GetPurchaseOrders(suppliers);
+                            context.AddRange(purchaseOrders);
+                            context.SaveChanges();
+                        }
+                        // 9. Purchase Order Items (needs Medicines and PurchaseOrders to already be seeded)
+                        if (!context.Set<PurchaseOrderItem>().Any())
+                        {
+                            var medicines = context.Set<Medicine>().ToList();
+                            var purchaseOrderItems = PurchaseOrderItemSeeding.GetPurchaseOrderItems(medicines);
+                            context.AddRange(purchaseOrderItems);
+>>>>>>> main
                             context.SaveChanges();
                         }
                     }
@@ -177,9 +211,13 @@ namespace SafePharma.DAL
             services.AddScoped<ITaxRepository, TaxRepository>();
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<ISupplierRepository, SupplierRepository>();
+<<<<<<< HEAD
             services.AddScoped<IPaymentVerificationRepository, PaymentVerificationRepository>();
             services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
             services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
+=======
+            services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
+>>>>>>> main
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         }

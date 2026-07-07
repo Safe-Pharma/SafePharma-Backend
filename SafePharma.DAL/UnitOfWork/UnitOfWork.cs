@@ -18,6 +18,8 @@
         public ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
         public IPaymentMethodRepository PaymentMethodRepository { get; }
 
+        public IPurchaseOrderRepository PurchaseOrderRepository { get; }
+
         public UnitOfWork(
             AppDbContext db,
             IAuditRepository auditRepository,
@@ -28,23 +30,32 @@
             ITaxRepository taxRepository,
             ICountryRepository countryRepository,
             ISupplierRepository supplierRepository,
+<<<<<<< HEAD
             IPaymentVerificationRepository paymentVerificationRepository,
             ISubscriptionPlanRepository subscriptionPlanRepository,
             IPaymentMethodRepository paymentMethodRepository)
             
+=======
+            IPurchaseOrderRepository purchaseOrderRepository)
+
+>>>>>>> main
         {
             _auditRepository = auditRepository;
             _db = db;
             TaxRepository = taxRepository;
             PharmacySettingRepository = pharmacySettingRepository;
-            SubscriptionRepository=subscriptionRepository;
-            PharmacyRepository=pharmacyRepository;
-            PrimaryContactRepository=primaryContactRepository;
-            CountryRepository=countryRepository;
+            SubscriptionRepository = subscriptionRepository;
+            PharmacyRepository = pharmacyRepository;
+            PrimaryContactRepository = primaryContactRepository;
+            CountryRepository = countryRepository;
             SupplierRepository = supplierRepository;
+<<<<<<< HEAD
             PaymentVerificationRepository = paymentVerificationRepository;
             SubscriptionPlanRepository = subscriptionPlanRepository;
             PaymentMethodRepository = paymentMethodRepository;
+=======
+            PurchaseOrderRepository = purchaseOrderRepository;
+>>>>>>> main
         }
 
         public async Task SaveAsync()

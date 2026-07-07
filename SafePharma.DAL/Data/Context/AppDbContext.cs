@@ -147,6 +147,7 @@ namespace SafePharma.DAL
 
                 entity.HasIndex(s => new { s.PharmacyId, s.Name }).IsUnique();
             });
+<<<<<<< HEAD
             modelBuilder.Entity<PaymentVerification>(entity =>
             {
                 entity.Property(p => p.Status).HasConversion<string>().HasMaxLength(20);
@@ -181,6 +182,39 @@ namespace SafePharma.DAL
             modelBuilder.Entity<PaymentMethod>(entity =>
             {
                 entity.Property(m => m.MethodName).HasMaxLength(50);
+=======
+
+            modelBuilder.Entity<PurchaseOrder>(entity =>
+            {
+                entity.Property(po => po.TotalAmount)
+                    .HasPrecision(18, 2);
+
+                entity.HasOne(po => po.Pharmacy)
+                    .WithMany(p => p.PurchaseOrders)
+                    .HasForeignKey(po => po.PharmacyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(po => po.Supplier)
+                    .WithMany()
+                    .HasForeignKey(po => po.SupplierId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+            });
+
+            modelBuilder.Entity<PurchaseOrderItem>(entity =>
+            {
+                entity.Property(i => i.UnitPrice)
+                    .HasPrecision(18, 2);
+
+                entity.HasOne(i => i.Medicine)
+                    .WithMany()
+                    .HasForeignKey(i => i.MedicineId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+
+                entity.HasOne(i => i.PurchaseOrder)
+                    .WithMany(po => po.Items)
+                    .HasForeignKey(i => i.PurchaseOrderId)
+                    .OnDelete(DeleteBehavior.Cascade); 
+>>>>>>> main
             });
         }
 
@@ -219,9 +253,14 @@ namespace SafePharma.DAL
         public DbSet<City> Cities => Set<City>();
         public DbSet<Medicine> Medicines => Set<Medicine>();
         public DbSet<Supplier> Suppliers => Set<Supplier>();
+<<<<<<< HEAD
         public DbSet<PaymentVerification> PaymentVerifications => Set<PaymentVerification>();
         public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
         public DbSet<PaymentMethod> PaymentMethods => Set<PaymentMethod>();
+=======
+        public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+        public DbSet<PurchaseOrderItem> PurchaseOrdersItems => Set<PurchaseOrderItem>();
+>>>>>>> main
 
     }
 }
