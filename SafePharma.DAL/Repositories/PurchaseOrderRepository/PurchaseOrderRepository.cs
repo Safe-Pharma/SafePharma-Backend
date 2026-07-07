@@ -17,11 +17,13 @@ namespace SafePharma.DAL
                     .ThenInclude(item => item.Medicine)
                 .FirstOrDefaultAsync(po => po.Id == id);
         }
-        public async Task<IEnumerable<PurchaseOrder>> GetAllWithSupplierAsync(Guid pharmacyId)
+        public async Task<IEnumerable<PurchaseOrder>> GetAllAsync(Guid pharmacyId)
         {
             return await _db.PurchaseOrders
                 .AsNoTracking()
                 .Include(po => po.Supplier)
+                .Include(po => po.Items)
+                    .ThenInclude(item => item.Medicine)
                 .Where(po => po.PharmacyId == pharmacyId)
                 .ToListAsync();
         }
