@@ -20,6 +20,9 @@
 
         public IPurchaseOrderRepository PurchaseOrderRepository { get; }
 
+        public ISupplierPaymentRepository SupplierPaymentRepository { get; }
+
+
         public UnitOfWork(
             AppDbContext db,
             IAuditRepository auditRepository,
@@ -34,7 +37,8 @@
             IPaymentVerificationRepository paymentVerificationRepository,
             ISubscriptionPlanRepository subscriptionPlanRepository,
             IPaymentMethodRepository paymentMethodRepository,
-            IPurchaseOrderRepository purchaseOrderRepository)
+            IPurchaseOrderRepository purchaseOrderRepository,
+            ISupplierPaymentRepository supplierPaymentRepository)
 
 
         {
@@ -53,6 +57,7 @@
             PaymentMethodRepository = paymentMethodRepository;
 
             PurchaseOrderRepository = purchaseOrderRepository;
+            SupplierPaymentRepository = supplierPaymentRepository;
 
         }
 

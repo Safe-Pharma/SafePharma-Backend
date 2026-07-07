@@ -11,7 +11,6 @@ namespace SafePharma.DAL
                 Guid.Parse("30000000-0000-0000-0000-000000000003"),
             };
 
-            // same Country ids used in CountrySeeding
             var uae = Guid.Parse("10000000-0000-0000-0000-000000000001");
             var ksa = Guid.Parse("10000000-0000-0000-0000-000000000002");
             var egypt = Guid.Parse("10000000-0000-0000-0000-000000000003");
@@ -24,14 +23,23 @@ namespace SafePharma.DAL
                 .ToList();
         }
 
+        
+        public static Guid GetSeededSupplierId(int pharmacyIndex, int supplierIndex)
+        {
+            return Guid.Parse($"5000000{pharmacyIndex}-0000-0000-0000-00000000000{supplierIndex}");
+        }
+
         private static List<Supplier> SuppliersFor(
             Guid pharmacyId, Guid uae, Guid ksa, Guid egypt, Guid jordan, DateTime seededAt)
         {
+         
+            var pharmacyIndex = int.Parse(pharmacyId.ToString().Substring(35, 1));
+
             return new List<Supplier>
             {
                 new Supplier
                 {
-                    Id = Guid.NewGuid(),
+                    Id = GetSeededSupplierId(pharmacyIndex, 1),
                     PharmacyId = pharmacyId,
                     Name = "MedSupply Co.",
                     ContactPerson = "Ahmed Najjar",
@@ -47,7 +55,7 @@ namespace SafePharma.DAL
                 },
                 new Supplier
                 {
-                    Id = Guid.NewGuid(),
+                    Id = GetSeededSupplierId(pharmacyIndex, 2),
                     PharmacyId = pharmacyId,
                     Name = "GulfPharma",
                     ContactPerson = "Sarah Habib",
@@ -63,7 +71,7 @@ namespace SafePharma.DAL
                 },
                 new Supplier
                 {
-                    Id = Guid.NewGuid(),
+                    Id = GetSeededSupplierId(pharmacyIndex, 3),
                     PharmacyId = pharmacyId,
                     Name = "BioGen Distrib.",
                     ContactPerson = "Omar Sami",
@@ -79,7 +87,7 @@ namespace SafePharma.DAL
                 },
                 new Supplier
                 {
-                    Id = Guid.NewGuid(),
+                    Id = GetSeededSupplierId(pharmacyIndex, 4),
                     PharmacyId = pharmacyId,
                     Name = "CarePlus",
                     ContactPerson = "Layla Karim",

@@ -110,6 +110,12 @@ namespace SafePharma.API
                     context.AddRange(audit);
                     context.SaveChanges();
                 }
+                if (!context.Set<SupplierPayment>().Any())
+                {
+                    var payments = SupplierPaymentSeeding.GetPayments();
+                    context.AddRange(payments);
+                    context.SaveChanges();
+                }
             }
             catch
             {

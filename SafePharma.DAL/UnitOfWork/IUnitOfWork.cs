@@ -17,7 +17,7 @@
         public IPaymentMethodRepository PaymentMethodRepository { get; }
 
         public IPurchaseOrderRepository PurchaseOrderRepository { get; }
-
+        public ISupplierPaymentRepository SupplierPaymentRepository { get; }
 
         Task SaveAsync();
     }
