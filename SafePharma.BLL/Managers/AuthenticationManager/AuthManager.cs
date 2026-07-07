@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SafePharma.BLL.DTOs;
@@ -56,7 +57,10 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
                 return GeneralResult<TokenDto>.FailResult(errors, "Validation failed");
             }
 
-            var user = await _userManager.FindByEmailAsync(dto.Email);
+            
+            var user = await _userManager.Users
+                     .Include(u => u.Pharmacy)
+                    .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
             if (user == null)
                 return GeneralResult<TokenDto>.FailResult("Invalid email or password.");
@@ -132,7 +136,8 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email!),
             new Claim("FullName", user.FullName),
-            new Claim("PharmacyId", user.PharmacyId.ToString())
+            new Claim("PharmacyId", user.PharmacyId.ToString()),
+            new Claim("PharmacyName", user.Pharmacy?.Name ?? string.Empty)
         };
 
             var roles = await _userManager.GetRolesAsync(user);
