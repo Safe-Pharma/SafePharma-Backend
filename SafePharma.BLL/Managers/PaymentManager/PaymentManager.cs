@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using SafePharma.BLL.SafePharma.BLL;
 using SafePharma.Common;
 using SafePharma.DAL;
 
@@ -59,6 +61,35 @@ namespace SafePharma.BLL
             return GeneralResult<PaymentInstructionsDto>.SuccessResult(dto);
         }
 
+        private static readonly string[] AllowedReceiptContentTypes = { "image/jpeg", "image/png", "application/pdf" };
+        private const long MaxReceiptSizeBytes = 5 * 1024 * 1024;
+
+        public async Task<GeneralResult<string>> UploadReceipt(Guid subscriptionId, IFormFile receipt)
+        {
+            var subscription = await _unitOfWork.SubscriptionRepository.GetById(subscriptionId);
+            if (subscription == null)
+                return GeneralResult<string>.NotFound("Subscription not found.");
+
+            if (subscription.Status != SubscriptionStatus.AwaitingPayment)
+                return GeneralResult<string>.FailResult(
+                    $"Cannot upload a receipt while subscription status is {subscription.Status}.");
+
+            if (receipt == null || receipt.Length == 0)
+                return GeneralResult<string>.FailResult("A receipt image or screenshot is required.");
+
+            if (receipt.Length > MaxReceiptSizeBytes)
+                return GeneralResult<string>.FailResult("Receipt must be under 5MB.");
+
+            if (!AllowedReceiptContentTypes.Contains(receipt.ContentType))
+                return GeneralResult<string>.FailResult("Receipt must be a JPG, PNG, or PDF.");
+
+            var receiptUrl = await _cloudinaryService.UploadImageAsync(receipt);
+            if (string.IsNullOrWhiteSpace(receiptUrl))
+                return GeneralResult<string>.FailResult("Receipt upload failed. Please attach a valid image.");
+
+            return GeneralResult<string>.SuccessResult(receiptUrl, "Receipt uploaded. Use this URL when submitting payment proof.");
+        }
+
         public async Task<GeneralResult<PaymentVerificationReadDto>> SubmitPaymentProof(Guid subscriptionId, SubmitPaymentProofDto dto)
         {
             var subscription = await _unitOfWork.SubscriptionRepository.GetById(subscriptionId);
@@ -73,12 +104,9 @@ namespace SafePharma.BLL
                 return GeneralResult<PaymentVerificationReadDto>.FailResult(
                     "A payment proof is already pending review for this subscription.");
 
-            if (dto.Receipt == null || dto.Receipt.Length == 0)
-                return GeneralResult<PaymentVerificationReadDto>.FailResult("A receipt image is required.");
-
-            var receiptUrl = await _cloudinaryService.UploadImageAsync(dto.Receipt);
-            if (string.IsNullOrWhiteSpace(receiptUrl))
-                return GeneralResult<PaymentVerificationReadDto>.FailResult("Receipt upload failed. Please attach a valid image.");
+            if (string.IsNullOrWhiteSpace(dto.ReceiptUrl))
+                return GeneralResult<PaymentVerificationReadDto>.FailResult(
+                    "A receipt must be uploaded first via /proof/receipt.");
 
             var verification = new PaymentVerification
             {
@@ -88,7 +116,7 @@ namespace SafePharma.BLL
                 TransactionReference = dto.TransactionReference,
                 PaymentDate = dto.PaymentDate,
                 PaidAmount = dto.PaidAmount,
-                ReceiptUrl = receiptUrl,
+                ReceiptUrl = dto.ReceiptUrl,
                 Status = PaymentVerificationStatus.Pending
             };
 

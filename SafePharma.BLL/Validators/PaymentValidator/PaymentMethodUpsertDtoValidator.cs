@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace SafePharma.BLL
+namespace SafePharma.BLL.Validators.PaymentValidator
 {
     public class PaymentMethodUpsertDtoValidator : AbstractValidator<PaymentMethodUpsertDto>
     {
