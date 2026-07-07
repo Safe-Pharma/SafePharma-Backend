@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
+using SafePharma.Common;
 
 namespace SafePharma.API.Controllers
 {
@@ -35,6 +37,38 @@ namespace SafePharma.API.Controllers
             }
 
             return Ok(result);
+        }
+
+        [Authorize(Policy = AuthPolicies.OwnerOnly)]
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+    => Ok(await _manager.GetAllSubscriptions());
+
+        [Authorize(Policy = AuthPolicies.OwnerOnly)]
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var result = await _manager.GetSubscriptionById(id);
+            return result.Success ? Ok(result) : NotFound(result);
+        }
+
+        [Authorize(Policy = AuthPolicies.OwnerOnly)]
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSubscriptionDto dto, [FromServices] IValidator<UpdateSubscriptionDto> validator)
+        {
+            var validationResult = await validator.ValidateAsync(dto);
+            if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
+            var result = await _manager.UpdateSubscription(id, dto);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [Authorize(Policy = AuthPolicies.OwnerOnly)]
+        [HttpPost("{id:guid}/cancel")]
+        public async Task<IActionResult> Cancel(Guid id, [FromServices] ICurrentUserContext currentUser)
+        {
+            var result = await _manager.CancelSubscription(id, currentUser.UserId);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
     }
 }

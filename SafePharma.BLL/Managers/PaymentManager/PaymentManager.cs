@@ -10,18 +10,15 @@ namespace SafePharma.BLL
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly PaymentSettings _paymentSettings;
 
         public PaymentManager(
             IUnitOfWork unitOfWork,
             ICloudinaryService cloudinaryService,
-            UserManager<ApplicationUser> userManager,
-            IOptions<PaymentSettings> paymentSettings)
+            UserManager<ApplicationUser> userManager)
         {
             _unitOfWork = unitOfWork;
             _cloudinaryService = cloudinaryService;
             _userManager = userManager;
-            _paymentSettings = paymentSettings.Value;
         }
 
         public async Task<GeneralResult<PaymentInstructionsDto>> GetPaymentInstructions(Guid subscriptionId)
@@ -119,24 +116,7 @@ namespace SafePharma.BLL
         public async Task<IEnumerable<PaymentVerificationReadDto>> GetPendingVerifications()
         {
             var verifications = await _unitOfWork.PaymentVerificationRepository.GetPendingWithSubscription();
-
-            return verifications.Select(v => new PaymentVerificationReadDto
-            {
-                Id = v.Id,
-                SubscriptionId = v.SubscriptionId,
-                PharmacyName = v.Subscription.Pharmacy?.Name,
-                PlanTier = v.Subscription.PlanTier,
-                BillingCycle = v.Subscription.BillingCycle,
-                PaymentMethod = v.PaymentMethod,
-                TransactionReference = v.TransactionReference,
-                PaymentDate = v.PaymentDate,
-                PaidAmount = v.PaidAmount,
-                ReceiptUrl = v.ReceiptUrl,
-                Status = v.Status.ToString(),
-                RejectionReason = v.RejectionReason,
-                CreatedAt = v.CreatedAt,
-                ReviewedAt = v.ReviewedAt
-            });
+            return verifications.Select(ToReadDto);
         }
 
         public async Task<GeneralResult> ApprovePayment(Guid verificationId, Guid reviewedByUserId)
@@ -217,6 +197,37 @@ namespace SafePharma.BLL
             await _unitOfWork.SaveAsync();
 
             return GeneralResult.SuccessResult("Payment rejected. The user can submit a new payment proof.");
+        }
+        private static PaymentVerificationReadDto ToReadDto(PaymentVerification v) => new()
+        {
+            Id = v.Id,
+            SubscriptionId = v.SubscriptionId,
+            PharmacyName = v.Subscription?.Pharmacy?.Name,
+            PlanTier = v.Subscription?.PlanTier,
+            BillingCycle = v.Subscription?.BillingCycle,
+            PaymentMethod = v.PaymentMethod,
+            TransactionReference = v.TransactionReference,
+            PaymentDate = v.PaymentDate,
+            PaidAmount = v.PaidAmount,
+            ReceiptUrl = v.ReceiptUrl,
+            Status = v.Status.ToString(),
+            RejectionReason = v.RejectionReason,
+            CreatedAt = v.CreatedAt,
+            ReviewedAt = v.ReviewedAt
+        };
+        public async Task<GeneralResult<PaymentVerificationReadDto>> GetLatestVerificationStatus(Guid subscriptionId)
+        {
+            var verification = await _unitOfWork.PaymentVerificationRepository.GetLatestForSubscription(subscriptionId);
+            if (verification == null)
+                return GeneralResult<PaymentVerificationReadDto>.NotFound("No payment proof has been submitted for this subscription yet.");
+
+            return GeneralResult<PaymentVerificationReadDto>.SuccessResult(ToReadDto(verification));
+        }
+
+        public async Task<IEnumerable<PaymentVerificationReadDto>> GetAllVerifications()
+        {
+            var verifications = await _unitOfWork.PaymentVerificationRepository.GetAllWithSubscription();
+            return verifications.Select(ToReadDto);
         }
     }
 }

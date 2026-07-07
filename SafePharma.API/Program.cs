@@ -25,7 +25,6 @@ namespace SafePharma.API
             builder.Services.AddOpenApi();
             // Bind JwtSettings from configuration
             builder.Services.Configure<SafePharma.Common.JwtSettings>(builder.Configuration.GetSection("JWT"));
-            builder.Services.Configure<SafePharma.Common.PaymentSettings>(builder.Configuration.GetSection("Payment"));
             builder.Services.AddDALServices(builder.Configuration);
             builder.Services.AddBLLServices();
      

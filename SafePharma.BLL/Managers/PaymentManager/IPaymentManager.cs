@@ -9,5 +9,7 @@ namespace SafePharma.BLL
         Task<IEnumerable<PaymentVerificationReadDto>> GetPendingVerifications();
         Task<GeneralResult> ApprovePayment(Guid verificationId, Guid reviewedByUserId);
         Task<GeneralResult> RejectPayment(Guid verificationId, Guid reviewedByUserId, string reason);
+        Task<GeneralResult<PaymentVerificationReadDto>> GetLatestVerificationStatus(Guid subscriptionId);
+        Task<IEnumerable<PaymentVerificationReadDto>> GetAllVerifications();
     }
 }

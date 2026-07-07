@@ -39,6 +39,13 @@ namespace SafePharma.API.Controllers
             var result = await _manager.SubmitPaymentProof(subscriptionId, dto);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
+        [HttpGet("status")]
+        public async Task<IActionResult> GetStatus(Guid subscriptionId)
+        {
+            var result = await _manager.GetLatestVerificationStatus(subscriptionId);
+            return result.Success ? Ok(result) : NotFound(result);
+        }
     }
 
     [Route("api/admin/payment-verifications")]
@@ -59,6 +66,10 @@ namespace SafePharma.API.Controllers
             _currentUser = currentUser;
             _rejectValidator = rejectValidator;
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+            => Ok(await _manager.GetAllVerifications());
 
         [HttpGet("pending")]
         public async Task<IActionResult> GetPending()

@@ -20,8 +20,8 @@
 
     public enum SubscriptionStatus
     {
-        AwaitingPayment,  // admin approved, payment email sent
+        AwaitingPayment,  //admin approved, payment email sent
         Active,           // payment confirmed, account can log in
-        Rejected
+        Cancelled
     }
 }
