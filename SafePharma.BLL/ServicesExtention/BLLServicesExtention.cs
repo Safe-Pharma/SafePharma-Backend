@@ -22,12 +22,14 @@ namespace SafePharma.BLL
             services.AddScoped<ITaxManager, TaxManager>();
             services.AddScoped<ISupplierManager, SupplierManager>();
             services.AddScoped<IAuthManager, AuthManager>();
+            services.AddScoped<IPurchaseOrderManager, PurchaseOrderManager>();
             services.AddValidatorsFromAssemblyContaining<LoginValidator>();
             services.AddValidatorsFromAssemblyContaining<ChangePasswordValidator>();
             services.AddValidatorsFromAssemblyContaining<TaxCreateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<TaxUpdateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<SupplierCreateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<SupplierUpdateDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<PurchaseOrderCreateDtoValidator>();
 
 
             services.AddScoped<IUserService, UserService>();

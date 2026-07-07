@@ -68,6 +68,22 @@ namespace SafePharma.DAL
                             await context.AddRangeAsync(suppliers);
                             await context.SaveChangesAsync();
                         }
+                        // 8. Purchase Orders (needs Suppliers to already be seeded)
+                        if (!await context.Set<PurchaseOrder>().AnyAsync())
+                        {
+                            var suppliers = await context.Set<Supplier>().ToListAsync();
+                            var purchaseOrders = PurchaseOrderSeeding.GetPurchaseOrders(suppliers);
+                            await context.AddRangeAsync(purchaseOrders);
+                            await context.SaveChangesAsync();
+                        }
+                        // 9. Purchase Order Items (needs Medicines and PurchaseOrders to already be seeded)
+                        if (!await context.Set<PurchaseOrderItem>().AnyAsync())
+                        {
+                            var medicines = await context.Set<Medicine>().ToListAsync();
+                            var purchaseOrderItems = PurchaseOrderItemSeeding.GetPurchaseOrderItems(medicines);
+                            await context.AddRangeAsync(purchaseOrderItems);
+                            await context.SaveChangesAsync();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -134,6 +150,22 @@ namespace SafePharma.DAL
                             context.AddRange(suppliers);
                             context.SaveChanges();
                         }
+                        // 8. Purchase Orders (needs Suppliers to already be seeded)
+                        if (!context.Set<PurchaseOrder>().Any())
+                        {
+                            var suppliers = context.Set<Supplier>().ToList();
+                            var purchaseOrders = PurchaseOrderSeeding.GetPurchaseOrders(suppliers);
+                            context.AddRange(purchaseOrders);
+                            context.SaveChanges();
+                        }
+                        // 9. Purchase Order Items (needs Medicines and PurchaseOrders to already be seeded)
+                        if (!context.Set<PurchaseOrderItem>().Any())
+                        {
+                            var medicines = context.Set<Medicine>().ToList();
+                            var purchaseOrderItems = PurchaseOrderItemSeeding.GetPurchaseOrderItems(medicines);
+                            context.AddRange(purchaseOrderItems);
+                            context.SaveChanges();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -151,6 +183,7 @@ namespace SafePharma.DAL
             services.AddScoped<ITaxRepository, TaxRepository>();
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<ISupplierRepository, SupplierRepository>();
+            services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         }
