@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using SafePharma.BLL.SafePharma.BLL;
+using SafePharma.BLL;
 using SafePharma.Common;
 using SafePharma.DAL;
 
@@ -127,6 +127,7 @@ namespace SafePharma.BLL
             {
                 Id = verification.Id,
                 SubscriptionId = subscription.Id,
+                ReferenceCode = subscription.ReferenceCode,
                 PlanTier = subscription.PlanTier,
                 BillingCycle = subscription.BillingCycle,
                 PaymentMethod = verification.PaymentMethod,
@@ -230,6 +231,7 @@ namespace SafePharma.BLL
         {
             Id = v.Id,
             SubscriptionId = v.SubscriptionId,
+            ReferenceCode = v.Subscription?.ReferenceCode,
             PharmacyName = v.Subscription?.Pharmacy?.Name,
             PlanTier = v.Subscription?.PlanTier,
             BillingCycle = v.Subscription?.BillingCycle,
@@ -256,6 +258,15 @@ namespace SafePharma.BLL
         {
             var verifications = await _unitOfWork.PaymentVerificationRepository.GetAllWithSubscription();
             return verifications.Select(ToReadDto);
+        }
+        public async Task<GeneralResult<IEnumerable<PaymentVerificationReadDto>>> GetVerificationHistory(Guid subscriptionId)
+        {
+            var subscription = await _unitOfWork.SubscriptionRepository.GetById(subscriptionId);
+            if (subscription == null)
+                return GeneralResult<IEnumerable<PaymentVerificationReadDto>>.NotFound("Subscription not found.");
+
+            var history = await _unitOfWork.PaymentVerificationRepository.GetHistoryForSubscription(subscriptionId);
+            return GeneralResult<IEnumerable<PaymentVerificationReadDto>>.SuccessResult(history.Select(ToReadDto));
         }
     }
 }

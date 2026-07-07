@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using SafePharma.BLL.SafePharma.BLL;
+using SafePharma.BLL;
 using SafePharma.Common;
 
 namespace SafePharma.BLL
@@ -13,6 +13,7 @@ namespace SafePharma.BLL
         Task<GeneralResult> ApprovePayment(Guid verificationId, Guid reviewedByUserId);
         Task<GeneralResult> RejectPayment(Guid verificationId, Guid reviewedByUserId, string reason);
         Task<GeneralResult<PaymentVerificationReadDto>> GetLatestVerificationStatus(Guid subscriptionId);
+        Task<GeneralResult<IEnumerable<PaymentVerificationReadDto>>> GetVerificationHistory(Guid subscriptionId);
         Task<IEnumerable<PaymentVerificationReadDto>> GetAllVerifications();
     }
 }

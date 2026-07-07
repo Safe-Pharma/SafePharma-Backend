@@ -2,8 +2,6 @@
 
 namespace SafePharma.BLL
 {
-    namespace SafePharma.BLL
-    {
         public class SubmitPaymentProofDto
         {
             public string PaymentMethod { get; set; }
@@ -12,5 +10,5 @@ namespace SafePharma.BLL
             public decimal PaidAmount { get; set; }
             public string ReceiptUrl { get; set; }   // returned by POST .../proof/receipt
         }
-    }
+    
 }

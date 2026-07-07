@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
-using SafePharma.BLL.SafePharma.BLL;
 using SafePharma.Common;
 
 namespace SafePharma.API.Controllers
@@ -30,18 +29,8 @@ namespace SafePharma.API.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
-        // Step 1: upload just the receipt file (multipart/form-data, single "receipt" field).
-        // Returns a ReceiptUrl to pass into SubmitProof below.
-        [HttpPost("proof/receipt")]
-        public async Task<IActionResult> UploadReceipt(Guid subscriptionId, IFormFile receipt)
-        {
-            var result = await _manager.UploadReceipt(subscriptionId, receipt);
-            return result.Success ? Ok(result) : BadRequest(result);
-        }
-
-        // Step 2: submit the rest of the proof as plain JSON, referencing the uploaded ReceiptUrl.
         [HttpPost("proof")]
-        public async Task<IActionResult> SubmitProof(Guid subscriptionId, [FromBody] SubmitPaymentProofDto dto)
+        public async Task<IActionResult> SubmitProof(Guid subscriptionId, [FromForm] SubmitPaymentProofDto dto)
         {
             var validationResult = await _validator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -103,5 +92,13 @@ namespace SafePharma.API.Controllers
             var result = await _manager.RejectPayment(id, _currentUser.UserId, dto.RejectionReason);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory(Guid subscriptionId)
+        {
+            var result = await _manager.GetVerificationHistory(subscriptionId);
+            return result.Success ? Ok(result) : NotFound(result);
+        }
     }
 }
+
+
