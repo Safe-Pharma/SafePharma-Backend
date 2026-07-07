@@ -9,6 +9,7 @@
         public decimal TotalAmount { get; set; }
         public string SupplierName { get; set; } = null!;
         public int Lines { get; set; }
+        public List<PurchaseOrderItemReadDto> Items { get; set; } = new List<PurchaseOrderItemReadDto>();
 
     }
 }

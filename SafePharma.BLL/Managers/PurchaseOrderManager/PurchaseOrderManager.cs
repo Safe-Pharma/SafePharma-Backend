@@ -49,12 +49,18 @@ namespace SafePharma.BLL
                 Status = po.Status,
                 TotalAmount = po.TotalAmount,
                 Lines = po.Items.Count,
-                SupplierName = supplier.Name
+                SupplierName = supplier.Name,
+                Items = po.Items.Select(i => new PurchaseOrderItemReadDto
+                 {
+                     MedicineName = i.Medicine?.ScientificName ?? i.Medicine?.TradeNameEn ?? "",
+                     QuantityOrdered = i.QuantityOrdered,
+                     UnitPrice = i.UnitPrice
+                 }).ToList()
             });
         }
         public async Task<GeneralResult<IEnumerable<PurchaseOrderReadDto>>> GetAllAsync(Guid pharmacyId)
         {
-            var orders = await _unitOfWork.PurchaseOrderRepository.GetAllWithSupplierAsync(pharmacyId);
+            var orders = await _unitOfWork.PurchaseOrderRepository.GetAllAsync(pharmacyId);
 
             var dtos = orders.Select(po => new PurchaseOrderReadDto
             {
@@ -64,7 +70,14 @@ namespace SafePharma.BLL
                 Status = po.Status,
                 TotalAmount = po.TotalAmount,
                 Lines = po.Items.Count,
-                SupplierName = po.Supplier?.Name ?? ""
+                SupplierName = po.Supplier?.Name ?? "",
+                Items = po.Items.Select(i => new PurchaseOrderItemReadDto
+                {
+                    MedicineName = i.Medicine?.ScientificName ?? "",
+                    QuantityOrdered = i.QuantityOrdered,
+                    UnitPrice = i.UnitPrice
+                }).ToList()
+
             });
 
             return GeneralResult<IEnumerable<PurchaseOrderReadDto>>.SuccessResult(dtos);
