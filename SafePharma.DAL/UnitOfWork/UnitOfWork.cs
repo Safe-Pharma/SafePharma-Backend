@@ -15,6 +15,8 @@
 
         public ISupplierRepository SupplierRepository { get; }
 
+        public IPurchaseOrderRepository PurchaseOrderRepository { get; }
+
         public UnitOfWork(
             AppDbContext db,
             IAuditRepository auditRepository,
@@ -24,18 +26,20 @@
             IPrimaryContactRepository primaryContactRepository,
             ITaxRepository taxRepository,
             ICountryRepository countryRepository,
-            ISupplierRepository supplierRepository)
-            
+            ISupplierRepository supplierRepository,
+            IPurchaseOrderRepository purchaseOrderRepository)
+
         {
             _auditRepository = auditRepository;
             _db = db;
             TaxRepository = taxRepository;
             PharmacySettingRepository = pharmacySettingRepository;
-            SubscriptionRepository=subscriptionRepository;
-            PharmacyRepository=pharmacyRepository;
-            PrimaryContactRepository=primaryContactRepository;
-            CountryRepository=countryRepository;
+            SubscriptionRepository = subscriptionRepository;
+            PharmacyRepository = pharmacyRepository;
+            PrimaryContactRepository = primaryContactRepository;
+            CountryRepository = countryRepository;
             SupplierRepository = supplierRepository;
+            PurchaseOrderRepository = purchaseOrderRepository;
         }
 
         public async Task SaveAsync()

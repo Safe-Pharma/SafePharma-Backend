@@ -184,6 +184,8 @@ namespace SafePharma.DAL
         public DbSet<City> Cities => Set<City>();
         public DbSet<Medicine> Medicines => Set<Medicine>();
         public DbSet<Supplier> Suppliers => Set<Supplier>();
+        public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+        public DbSet<PurchaseOrderItem> PurchaseOrdersItems => Set<PurchaseOrderItem>();
 
     }
 }

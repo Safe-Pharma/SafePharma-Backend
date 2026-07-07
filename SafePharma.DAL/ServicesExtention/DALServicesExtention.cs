@@ -151,6 +151,7 @@ namespace SafePharma.DAL
             services.AddScoped<ITaxRepository, TaxRepository>();
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<ISupplierRepository, SupplierRepository>();
+            services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         }
