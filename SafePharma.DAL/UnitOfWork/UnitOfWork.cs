@@ -30,15 +30,13 @@
             ITaxRepository taxRepository,
             ICountryRepository countryRepository,
             ISupplierRepository supplierRepository,
-<<<<<<< HEAD
+
             IPaymentVerificationRepository paymentVerificationRepository,
             ISubscriptionPlanRepository subscriptionPlanRepository,
-            IPaymentMethodRepository paymentMethodRepository)
-            
-=======
+            IPaymentMethodRepository paymentMethodRepository,
             IPurchaseOrderRepository purchaseOrderRepository)
 
->>>>>>> main
+
         {
             _auditRepository = auditRepository;
             _db = db;
@@ -49,13 +47,13 @@
             PrimaryContactRepository = primaryContactRepository;
             CountryRepository = countryRepository;
             SupplierRepository = supplierRepository;
-<<<<<<< HEAD
+
             PaymentVerificationRepository = paymentVerificationRepository;
             SubscriptionPlanRepository = subscriptionPlanRepository;
             PaymentMethodRepository = paymentMethodRepository;
-=======
+
             PurchaseOrderRepository = purchaseOrderRepository;
->>>>>>> main
+
         }
 
         public async Task SaveAsync()
