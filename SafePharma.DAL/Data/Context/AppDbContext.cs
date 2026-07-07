@@ -147,6 +147,42 @@ namespace SafePharma.DAL
 
                 entity.HasIndex(s => new { s.PharmacyId, s.Name }).IsUnique();
             });
+<<<<<<< HEAD
+            modelBuilder.Entity<PaymentVerification>(entity =>
+            {
+                entity.Property(p => p.Status).HasConversion<string>().HasMaxLength(20);
+                entity.Property(p => p.PaidAmount).HasColumnType("decimal(12,2)");
+                entity.Property(p => p.PaymentMethod).HasMaxLength(50);
+                entity.Property(p => p.TransactionReference).HasMaxLength(100);
+
+                entity.HasOne(p => p.Subscription)
+                      .WithMany(s => s.PaymentVerifications)
+                      .HasForeignKey(p => p.SubscriptionId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<Subscription>(entity =>
+            {
+                entity.Property(s => s.Status).HasConversion<string>().HasMaxLength(20);
+                entity.Property(s => s.PlanTier).HasMaxLength(20);
+                entity.Property(s => s.BillingCycle).HasMaxLength(10);
+                entity.Property(s => s.SequenceNumber).UseIdentityColumn();   // NEW — auto-incrementing, independent of the Guid Id
+
+                entity.HasOne(s => s.Pharmacy)
+                      .WithOne(p => p.Subscription)
+                      .HasForeignKey<Pharmacy>(p => p.SubscriptionId);
+            });
+
+            modelBuilder.Entity<SubscriptionPlan>(entity =>
+            {
+                entity.Property(p => p.MonthlyPrice).HasColumnType("decimal(10,2)");
+                entity.Property(p => p.YearlyPrice).HasColumnType("decimal(10,2)");
+                entity.HasIndex(p => p.Tier).IsUnique();
+            });
+
+            modelBuilder.Entity<PaymentMethod>(entity =>
+            {
+                entity.Property(m => m.MethodName).HasMaxLength(50);
+=======
 
             modelBuilder.Entity<PurchaseOrder>(entity =>
             {
@@ -178,6 +214,7 @@ namespace SafePharma.DAL
                     .WithMany(po => po.Items)
                     .HasForeignKey(i => i.PurchaseOrderId)
                     .OnDelete(DeleteBehavior.Cascade); 
+>>>>>>> main
             });
         }
 
@@ -216,8 +253,14 @@ namespace SafePharma.DAL
         public DbSet<City> Cities => Set<City>();
         public DbSet<Medicine> Medicines => Set<Medicine>();
         public DbSet<Supplier> Suppliers => Set<Supplier>();
+<<<<<<< HEAD
+        public DbSet<PaymentVerification> PaymentVerifications => Set<PaymentVerification>();
+        public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
+        public DbSet<PaymentMethod> PaymentMethods => Set<PaymentMethod>();
+=======
         public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
         public DbSet<PurchaseOrderItem> PurchaseOrdersItems => Set<PurchaseOrderItem>();
+>>>>>>> main
 
     }
 }

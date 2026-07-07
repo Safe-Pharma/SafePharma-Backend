@@ -1,18 +1,21 @@
 ﻿using FluentValidation;
+using SafePharma.DAL;
 
 namespace SafePharma.BLL
 {
     public class CreateSubscriptionDtoValidator : AbstractValidator<CreateSubscriptionDto>
     {
-        private static readonly string[] ValidPlanTiers = { "Starter", "Professional", "Enterprise" };
         private static readonly string[] ValidBillingCycles = { "monthly", "yearly" };
+        private readonly ISubscriptionPlanRepository _planRepository;
 
-        public CreateSubscriptionDtoValidator()
+        public CreateSubscriptionDtoValidator(ISubscriptionPlanRepository planRepository)
         {
+            _planRepository = planRepository;
+
             RuleFor(x => x.PlanTier)
                 .NotEmpty().WithMessage("Plan tier is required.")
-                .Must(p => ValidPlanTiers.Contains(p))
-                .WithMessage($"Plan tier must be one of: {string.Join(", ", ValidPlanTiers)}.");
+                .MustAsync(BeAnActivePlan)
+                .WithMessage("Selected plan is not available.");
 
             RuleFor(x => x.BillingCycle)
                 .NotEmpty().WithMessage("Billing cycle is required.")
@@ -26,6 +29,12 @@ namespace SafePharma.BLL
             RuleFor(x => x.PrimaryContact)
                 .NotNull().WithMessage("Primary contact information is required.")
                 .SetValidator(new PrimaryContactDtoValidator());
+        }
+
+        private async Task<bool> BeAnActivePlan(string tier, CancellationToken ct)
+        {
+            var plan = await _planRepository.GetByTier(tier);
+            return plan is { IsActive: true };
         }
     }
 }

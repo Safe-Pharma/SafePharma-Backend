@@ -11,7 +11,13 @@
         public ITaxRepository TaxRepository { get; }
         ICountryRepository CountryRepository { get; }
         public ISupplierRepository SupplierRepository { get; }
+<<<<<<< HEAD
+        public IPaymentVerificationRepository PaymentVerificationRepository { get; }
+        public ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
+        public IPaymentMethodRepository PaymentMethodRepository { get; }
+=======
         public IPurchaseOrderRepository PurchaseOrderRepository { get; }
+>>>>>>> main
 
         Task SaveAsync();
     }

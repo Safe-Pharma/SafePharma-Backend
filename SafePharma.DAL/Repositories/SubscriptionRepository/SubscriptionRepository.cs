@@ -22,5 +22,11 @@ namespace SafePharma.DAL
                 .Include(s => s.Pharmacy)
                 .ToListAsync();
         }
+        public async Task<Subscription?> GetByIdWithPharmacyTracked(Guid id)
+        {
+            return await _db.Subscriptions
+                .Include(s => s.Pharmacy)
+                .FirstOrDefaultAsync(s => s.Id == id);
+        }
     }
 }

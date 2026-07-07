@@ -68,8 +68,12 @@ namespace SafePharma.API
             });
 
             // Register authorization services
-            builder.Services.AddAuthorization();
-        
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy(SafePharma.BLL.AuthPolicies.OwnerOnly, policy =>
+                    policy.RequireRole("Owner"));
+            });
+
 
             // CORS
             builder.Services.AddCors(options =>

@@ -38,6 +38,11 @@ namespace SafePharma.BLL
 
             services.AddScoped<IUserLanguageManager, UserLanguageManager>();
             services.AddScoped<ILocationManager, LocationManager>();
+            services.AddScoped<IPaymentManager, PaymentManager>();
+            services.AddScoped<ISubscriptionPlanManager, SubscriptionPlanManager>();
+            services.AddScoped<IPaymentMethodManager, PaymentMethodManager>();
+            services.AddValidatorsFromAssemblyContaining<SubscriptionPlanUpsertDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<PaymentMethodUpsertDtoValidator>();
 
 
             services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();

@@ -12,7 +12,7 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
             RoleManager<ApplicationRole> roleManager)
         {
             // Seed required roles
-            var roles = new[] { "admin", "Manager", "assistant", "cashier", "pharmassist", "accountant" };
+            var roles = new[] { "admin", "Manager", "assistant", "cashier", "pharmassist", "accountant", "Owner" };
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
@@ -41,7 +41,9 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                 {
                     "admin" => "Admin@123",
                     "user" => "User@123",
-                    _ => "Default@123"
+                    "owner" => "Owner@123",
+                    _ => "Default@123",
+
                 };
 
                 if (existing == null)
@@ -79,6 +81,12 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                     throw new Exception($"Failed to add 'admin' user to role 'admin': {string.Join(", ", addToRoleResult.Errors)}");
                 }
             }
+
+            var ownerUser = await userManager.FindByNameAsync("owner");
+            if (ownerUser != null && !await userManager.IsInRoleAsync(ownerUser, "Owner"))
+            {
+                await userManager.AddToRoleAsync(ownerUser, "Owner");
+            }
         }
 
         private static List<ApplicationUser> GetUsers()
@@ -91,6 +99,7 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
             var cashierId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
             var pharmassistId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
             var accountantId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+            var ownerId = Guid.Parse("77777777-7777-7777-7777-777777777777");
 
             var pharmacy1 = Guid.Parse("30000000-0000-0000-0000-000000000001");
             var pharmacy2 = Guid.Parse("30000000-0000-0000-0000-000000000002");
@@ -181,7 +190,18 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
                     LastName = "Accountant",
                     EmailConfirmed = true,
                     PharmacyId = pharmacy3,
-                }
+                },
+                new ApplicationUser
+                { 
+                    Id = ownerId,
+                    UserName = "owner",
+                    NormalizedUserName = "OWNER",
+                    Email = "owner@safepharma.com",
+                    NormalizedEmail = "OWNER@SAFEPHARMA.COM",
+                    FirstName = "System",
+                    LastName = "Owner",
+                    EmailConfirmed = true,
+                },
             };
         }
     }

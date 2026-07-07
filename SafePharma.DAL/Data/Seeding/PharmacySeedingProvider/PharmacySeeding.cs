@@ -35,7 +35,7 @@
                     Id = Guid.Parse("20000000-0000-0000-0000-000000000002"),
                     PlanTier = "Starter",
                     BillingCycle = "yearly",
-                    Status = SubscriptionStatus.PendingReview,
+                    Status = SubscriptionStatus.AwaitingPayment,
                     CreatedAt = DateTime.UtcNow.AddDays(-2),
                     ApprovedAt = null,
                     Pharmacy = new Pharmacy

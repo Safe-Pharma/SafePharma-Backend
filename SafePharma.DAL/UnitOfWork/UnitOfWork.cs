@@ -14,6 +14,9 @@
         public ICountryRepository CountryRepository { get; }
 
         public ISupplierRepository SupplierRepository { get; }
+        public IPaymentVerificationRepository PaymentVerificationRepository { get; }
+        public ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
+        public IPaymentMethodRepository PaymentMethodRepository { get; }
 
         public IPurchaseOrderRepository PurchaseOrderRepository { get; }
 
@@ -27,8 +30,15 @@
             ITaxRepository taxRepository,
             ICountryRepository countryRepository,
             ISupplierRepository supplierRepository,
+<<<<<<< HEAD
+            IPaymentVerificationRepository paymentVerificationRepository,
+            ISubscriptionPlanRepository subscriptionPlanRepository,
+            IPaymentMethodRepository paymentMethodRepository)
+            
+=======
             IPurchaseOrderRepository purchaseOrderRepository)
 
+>>>>>>> main
         {
             _auditRepository = auditRepository;
             _db = db;
@@ -39,7 +49,13 @@
             PrimaryContactRepository = primaryContactRepository;
             CountryRepository = countryRepository;
             SupplierRepository = supplierRepository;
+<<<<<<< HEAD
+            PaymentVerificationRepository = paymentVerificationRepository;
+            SubscriptionPlanRepository = subscriptionPlanRepository;
+            PaymentMethodRepository = paymentMethodRepository;
+=======
             PurchaseOrderRepository = purchaseOrderRepository;
+>>>>>>> main
         }
 
         public async Task SaveAsync()

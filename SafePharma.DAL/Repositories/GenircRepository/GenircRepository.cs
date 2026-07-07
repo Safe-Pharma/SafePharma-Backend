@@ -26,6 +26,10 @@ namespace SafePharma.DAL
         {
             _db.Set<T>().Add(entity);
         }
+        public void Update(T entity)
+        {
+            _db.Set<T>().Update(entity);
+        }
 
         public void Delete(T entity)
         {
