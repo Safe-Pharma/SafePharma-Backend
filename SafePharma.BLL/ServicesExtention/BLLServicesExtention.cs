@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SafePharma.BLL.Managers;
 using SafePharma.BLL.Managers.AuthenticationManager;
 using SafePharma.BLL.Managers.users;
+using SafePharma.BLL.Validators.PaymentValidator;
 using SafePharma.Common;
 using SafePharma.DAL;
 

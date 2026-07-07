@@ -2,12 +2,15 @@
 
 namespace SafePharma.BLL
 {
-    public class SubmitPaymentProofDto
+    namespace SafePharma.BLL
     {
-        public string PaymentMethod { get; set; }
-        public string TransactionReference { get; set; }
-        public DateTime PaymentDate { get; set; }
-        public decimal PaidAmount { get; set; }
-        public IFormFile Receipt { get; set; }
+        public class SubmitPaymentProofDto
+        {
+            public string PaymentMethod { get; set; }
+            public string TransactionReference { get; set; }
+            public DateTime PaymentDate { get; set; }
+            public decimal PaidAmount { get; set; }
+            public string ReceiptUrl { get; set; }   // returned by POST .../proof/receipt
+        }
     }
 }

@@ -1,10 +1,13 @@
-﻿using SafePharma.Common;
+﻿using Microsoft.AspNetCore.Http;
+using SafePharma.BLL.SafePharma.BLL;
+using SafePharma.Common;
 
 namespace SafePharma.BLL
 {
     public interface IPaymentManager
     {
         Task<GeneralResult<PaymentInstructionsDto>> GetPaymentInstructions(Guid subscriptionId);
+        Task<GeneralResult<string>> UploadReceipt(Guid subscriptionId, IFormFile receipt);
         Task<GeneralResult<PaymentVerificationReadDto>> SubmitPaymentProof(Guid subscriptionId, SubmitPaymentProofDto dto);
         Task<IEnumerable<PaymentVerificationReadDto>> GetPendingVerifications();
         Task<GeneralResult> ApprovePayment(Guid verificationId, Guid reviewedByUserId);
