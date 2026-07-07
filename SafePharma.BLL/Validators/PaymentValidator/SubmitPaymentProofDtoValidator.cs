@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using SafePharma.BLL.SafePharma.BLL;
+using SafePharma.BLL;
 
 namespace SafePharma.BLL
 {

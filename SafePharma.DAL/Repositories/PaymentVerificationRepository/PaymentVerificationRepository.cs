@@ -51,5 +51,15 @@ namespace SafePharma.DAL
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<PaymentVerification>> GetHistoryForSubscription(Guid subscriptionId)
+        {
+            return await _db.Set<PaymentVerification>()
+                .AsNoTracking()
+                .Include(p => p.Subscription)
+                    .ThenInclude(s => s.Pharmacy)
+                .Where(p => p.SubscriptionId == subscriptionId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
     }
 }

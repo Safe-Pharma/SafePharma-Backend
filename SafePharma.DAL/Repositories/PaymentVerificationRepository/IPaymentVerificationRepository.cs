@@ -7,5 +7,6 @@
         Task<bool> HasPendingForSubscription(Guid subscriptionId);
         Task<PaymentVerification?> GetLatestForSubscription(Guid subscriptionId);
         Task<IEnumerable<PaymentVerification>> GetAllWithSubscription();
+        Task<IEnumerable<PaymentVerification>> GetHistoryForSubscription(Guid subscriptionId);
     }
 }

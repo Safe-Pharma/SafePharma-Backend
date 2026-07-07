@@ -4,6 +4,7 @@
     {
         public Guid Id { get; set; }
         public Guid SubscriptionId { get; set; }
+        public string ReferenceCode { get; set; }
         public string PharmacyName { get; set; }
         public string PlanTier { get; set; }
         public string BillingCycle { get; set; }
