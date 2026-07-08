@@ -49,6 +49,10 @@ namespace SafePharma.BLL
             services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
             services.AddValidatorsFromAssemblyContaining<UpdateUserValidator>();
 
+            services.AddScoped<IMedicineManager, MedicineManager>();
+            services.AddValidatorsFromAssemblyContaining<MedicineCreateDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<MedicineUpdateDtoValidator>();
+
         }
     }
 }
