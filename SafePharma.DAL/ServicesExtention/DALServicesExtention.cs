@@ -55,12 +55,21 @@ namespace SafePharma.DAL
                             await context.SaveChangesAsync();
                         }
 
-                        // 6. Medicines (needs Taxes to already be seeded)
+                        // 6. Medicines (global catalog)
                         if (!await context.Set<Medicine>().AnyAsync())
                         {
-                            var taxes = await context.Set<Tax>().ToListAsync();
-                            var medicines = MedicineSeedingProvider.GetMedicines(taxes);
+                            var medicines = MedicineSeedingProvider.GetMedicines();
                             await context.AddRangeAsync(medicines);
+                            await context.SaveChangesAsync();
+                        }
+
+                        // 6b. Medicine Prices (needs Medicines and Taxes to already be seeded, per pharmacy)
+                        if (!await context.Set<MedicinePrice>().AnyAsync())
+                        {
+                            var medicines = await context.Set<Medicine>().ToListAsync();
+                            var taxes = await context.Set<Tax>().ToListAsync();
+                            var medicinePrices = MedicinePriceSeedingProvider.GetMedicinePrices(medicines, taxes);
+                            await context.AddRangeAsync(medicinePrices);
                             await context.SaveChangesAsync();
                         }
                         // 7. Suppliers
@@ -158,12 +167,21 @@ namespace SafePharma.DAL
                             context.SaveChanges();
                         }
 
-                        // 6. Medicines (needs Taxes to already be seeded)
+                        // 6. Medicines (global catalog)
                         if (!context.Set<Medicine>().Any())
                         {
-                            var taxes = context.Set<Tax>().ToList();
-                            var medicines = MedicineSeedingProvider.GetMedicines(taxes);
+                            var medicines = MedicineSeedingProvider.GetMedicines();
                             context.AddRange(medicines);
+                            context.SaveChanges();
+                        }
+
+                        // 6b. Medicine Prices (needs Medicines and Taxes to already be seeded, per pharmacy)
+                        if (!context.Set<MedicinePrice>().Any())
+                        {
+                            var medicines = context.Set<Medicine>().ToList();
+                            var taxes = context.Set<Tax>().ToList();
+                            var medicinePrices = MedicinePriceSeedingProvider.GetMedicinePrices(medicines, taxes);
+                            context.AddRange(medicinePrices);
                             context.SaveChanges();
                         }
                         // 7. Suppliers 
@@ -227,11 +245,11 @@ namespace SafePharma.DAL
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<ISupplierRepository, SupplierRepository>();
             services.AddScoped<ISupplierPaymentRepository, SupplierPaymentRepository>();
-
             services.AddScoped<IPaymentVerificationRepository, PaymentVerificationRepository>();
             services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
             services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
-
+            services.AddScoped<IMedicineRepository, MedicineRepository>();
+            services.AddScoped<IMedicinePriceRepository, MedicinePriceRepository>();
             services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();

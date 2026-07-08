@@ -18,6 +18,8 @@
 
         public IPurchaseOrderRepository PurchaseOrderRepository { get; }
         public ISupplierPaymentRepository SupplierPaymentRepository { get; }
+        public IMedicinePriceRepository MedicinePriceRepository { get; }
+        public IMedicinePriceRepository MedicineRepository { get; }
 
         Task SaveAsync();
     }
