@@ -262,6 +262,8 @@ namespace SafePharma.DAL
 
         public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
         public DbSet<PurchaseOrderItem> PurchaseOrdersItems => Set<PurchaseOrderItem>();
+        public DbSet<Batch> Batches => Set<Batch>();
+
 
 
     }

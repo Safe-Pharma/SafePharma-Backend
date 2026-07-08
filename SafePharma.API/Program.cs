@@ -103,13 +103,13 @@ namespace SafePharma.API
                     .SeedAsync(userManager, roleManager)
                     .GetAwaiter().GetResult();
 
-                // Seed audit data if missing
-                if (!context.Set<Audit>().Any())
-                {
-                    var audit = AuditSeeding.GetAudits();
-                    context.AddRange(audit);
-                    context.SaveChanges();
-                }
+                //// Seed audit data if missing
+                //if (!context.Set<Audit>().Any())
+                //{
+                //    var audit = AuditSeeding.GetAudits();
+                //    context.AddRange(audit);
+                //    context.SaveChanges();
+                //}
             }
             catch
             {

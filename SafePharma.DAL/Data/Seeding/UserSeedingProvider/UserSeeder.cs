@@ -89,7 +89,7 @@ namespace SafePharma.DAL.Data.Seeding.UserSeedingProvider
             }
         }
 
-        private static List<ApplicationUser> GetUsers()
+        public static List<ApplicationUser> GetUsers()
         {
             // Preserve original seeded users' IDs and add new role users
             var adminId = Guid.Parse("99999999-9999-9999-9999-999999999999");

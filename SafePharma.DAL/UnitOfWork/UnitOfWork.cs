@@ -19,6 +19,8 @@
         public IPaymentMethodRepository PaymentMethodRepository { get; }
 
         public IPurchaseOrderRepository PurchaseOrderRepository { get; }
+        public IBatchRepository _batchRepository { get; }
+
 
         public UnitOfWork(
             AppDbContext db,
@@ -34,8 +36,10 @@
             IPaymentVerificationRepository paymentVerificationRepository,
             ISubscriptionPlanRepository subscriptionPlanRepository,
             IPaymentMethodRepository paymentMethodRepository,
-            IPurchaseOrderRepository purchaseOrderRepository)
+            IPurchaseOrderRepository purchaseOrderRepository,
+            IBatchRepository batchRepository
 
+            )
 
         {
             _auditRepository = auditRepository;
@@ -53,7 +57,7 @@
             PaymentMethodRepository = paymentMethodRepository;
 
             PurchaseOrderRepository = purchaseOrderRepository;
-
+            _batchRepository= batchRepository;
         }
 
         public async Task SaveAsync()
