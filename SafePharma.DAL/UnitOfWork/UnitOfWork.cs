@@ -42,12 +42,12 @@
             ISubscriptionPlanRepository subscriptionPlanRepository,
             IPaymentMethodRepository paymentMethodRepository,
             IPurchaseOrderRepository purchaseOrderRepository,
-            IBatchRepository batchRepository
+            IBatchRepository batchRepository,
             ISupplierPaymentRepository supplierPaymentRepository,
             IMedicinePriceRepository medicinePriceRepository,
             IMedicineRepository medicineRepository)
 
-            )
+            
 
         {
             _auditRepository = auditRepository;
