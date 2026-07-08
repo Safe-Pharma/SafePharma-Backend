@@ -17,6 +17,8 @@
         public IPaymentMethodRepository PaymentMethodRepository { get; }
 
         public IPurchaseOrderRepository PurchaseOrderRepository { get; }
+        public IBatchRepository _batchRepository { get; }
+
         public ISupplierPaymentRepository SupplierPaymentRepository { get; }
         public IMedicinePriceRepository MedicinePriceRepository { get; }
         public IMedicineRepository MedicineRepository { get; }

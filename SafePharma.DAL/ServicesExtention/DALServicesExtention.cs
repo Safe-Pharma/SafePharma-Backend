@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SafePharma.DAL.Data.Seeding.PaymentMethodSeedingProvider;
 using SafePharma.DAL.Data.Seeding.SubscriptionPlanSeedingProvider;
+using SafePharma.DAL.Data.Seeding.UserSeedingProvider;
 namespace SafePharma.DAL
 {
     public static class DALServicesExtention
@@ -40,13 +41,20 @@ namespace SafePharma.DAL
                             await context.SaveChangesAsync();
                         }
 
-                        //// 4. Audit
-                        //if (!await context.Set<Audit>().AnyAsync())
-                        //{
-                        //    var audits = AuditSeeding.GetAudits();
-                        //    await context.AddRangeAsync(audits);
-                        //    await context.SaveChangesAsync();
-                        //}
+                        // 4. Audit
+                        if (!await context.Set<ApplicationUser>().AnyAsync())
+                        {
+                            var audits = UserSeeder.GetUsers();
+                            await context.AddRangeAsync(audits);
+                            await context.SaveChangesAsync();
+                        }
+
+                        if (!await context.Set<Audit>().AnyAsync())
+                        {
+                            var audits = AuditSeeding.GetAudits();
+                            await context.AddRangeAsync(audits);
+                            await context.SaveChangesAsync();
+                        }
                         // 5. Taxes 
                         if (!await context.Set<Tax>().AnyAsync())
                         {
@@ -152,13 +160,19 @@ namespace SafePharma.DAL
                             context.SaveChanges();
                         }
 
-                        //// 4. Audit
-                        //if (!context.Set<Audit>().Any())
-                        //{
-                        //    var audits = AuditSeeding.GetAudits();
-                        //    context.AddRange(audits);
-                        //    context.SaveChanges();
-                        //}
+                        // 4. Audit
+                        if (!context.Set<ApplicationUser>().Any())
+                        {
+                            var users = UserSeeder.GetUsers();
+                            context.AddRange(users);
+                            context.SaveChanges();
+                        }
+                        if (!context.Set<Audit>().Any())
+                        {
+                            var audits = AuditSeeding.GetAudits();
+                            context.AddRange(audits);
+                            context.SaveChanges();
+                        }
                         // 5. Taxes
                         if (!context.Set<Tax>().Any())
                         {
@@ -251,6 +265,7 @@ namespace SafePharma.DAL
             services.AddScoped<IMedicineRepository, MedicineRepository>();
             services.AddScoped<IMedicinePriceRepository, MedicinePriceRepository>();
             services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
+            services.AddScoped<IBatchRepository, BatchRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
