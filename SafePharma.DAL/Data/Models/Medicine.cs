@@ -12,12 +12,6 @@
         public string UnitOfSale { get; set; } = string.Empty;
         public int UnitsPerPackage { get; set; }
 
-        public decimal PurchasePrice { get; set; }
-        public decimal SellingPrice { get; set; }
-
-        public Guid TaxId { get; set; }
-        public Tax Tax { get; set; } = null!;
-
         public int MinStockLevel { get; set; }
 
         public bool IsPrescriptionRequired { get; set; }
@@ -32,5 +26,7 @@
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        public ICollection<MedicinePrice> Prices { get; set; } = new List<MedicinePrice>();
     }
 }
