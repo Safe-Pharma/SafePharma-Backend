@@ -103,27 +103,9 @@ namespace SafePharma.DAL
                     .HasMaxLength(100);
                 entity.Property(m => m.StorageConditions)
                     .HasMaxLength(100);
-                entity.Property(m => m.PurchasePrice)
-                    .HasColumnType("decimal(12,2)");
-                entity.Property(m => m.SellingPrice)
-                    .HasColumnType("decimal(12,2)");
-
-                entity.HasOne(m => m.Tax)
-                    .WithMany()
-                    .HasForeignKey(m => m.TaxId)
-                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasIndex(m => m.ScientificName);
-
-                entity.ToTable(t =>
-                {
-                    t.HasCheckConstraint(
-                        "CK_Medicine_PurchasePrice",
-                        "[PurchasePrice] >= 0");
-                    t.HasCheckConstraint(
-                        "CK_Medicine_SellingPrice",
-                        "[SellingPrice] >= 0");
-                });
+                entity.HasIndex(m => m.TradeNameEn).IsUnique();
             });
 
             modelBuilder.Entity<Supplier>(entity =>
@@ -217,9 +199,66 @@ namespace SafePharma.DAL
 
                 });
             });
+
+
+            modelBuilder.Entity<SupplierPayment>(entity =>
+            {
+                entity.Property(p => p.Amount)
+                    .HasColumnType("decimal(12,2)");
+
+                entity.Property(p => p.PaymentMethod)
+                    .HasMaxLength(50);
+
+                entity.HasOne(p => p.Supplier)
+                    .WithMany()
+                    .HasForeignKey(p => p.SupplierId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(p => p.RecordedByUser)
+                    .WithMany()
+                    .HasForeignKey(p => p.RecordedBy)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<MedicinePrice>(entity =>
+            {
+                entity.Property(mp => mp.PurchasePrice)
+                    .HasColumnType("decimal(12,2)");
+                entity.Property(mp => mp.SellingPrice)
+                    .HasColumnType("decimal(12,2)");
+                entity.Property(mp => mp.ChangedBy)
+                    .HasMaxLength(255);
+
+                entity.HasOne(mp => mp.Medicine)
+                    .WithMany(m => m.Prices)
+                    .HasForeignKey(mp => mp.MedicineId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(mp => mp.Pharmacy)
+                    .WithMany()
+                    .HasForeignKey(mp => mp.PharmacyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(mp => mp.Tax)
+                    .WithMany()
+                    .HasForeignKey(mp => mp.TaxId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // One current price row per medicine per pharmacy
+                entity.HasIndex(mp => new { mp.MedicineId, mp.PharmacyId }).IsUnique();
+
+                entity.ToTable(t =>
+                {
+                    t.HasCheckConstraint(
+                        "CK_MedicinePrice_PurchasePrice",
+                        "[PurchasePrice] >= 0");
+                    t.HasCheckConstraint(
+                        "CK_MedicinePrice_SellingPrice",
+                        "[SellingPrice] >= 0");
+                });
+            });
         }
           
-
 
 
 
@@ -265,6 +304,8 @@ namespace SafePharma.DAL
         public DbSet<Batch> Batches => Set<Batch>();
 
 
+        public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
+        public DbSet<MedicinePrice> MedicinePrices => Set<MedicinePrice>();
 
     }
 }

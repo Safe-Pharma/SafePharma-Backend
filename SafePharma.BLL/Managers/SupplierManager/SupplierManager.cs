@@ -26,6 +26,7 @@ namespace SafePharma.BLL
         public async Task<SupplierStatsDto> GetStats(Guid pharmacyId)
         {
             var suppliers = (await _unitOfWork.SupplierRepository.GetAllForPharmacy(pharmacyId)).ToList();
+            var paymentsCount = await _unitOfWork.SupplierPaymentRepository.CountForPharmacy(pharmacyId);
 
             var active = suppliers.Count(s => s.Status == SupplierStatus.Active);
 
@@ -34,7 +35,8 @@ namespace SafePharma.BLL
                 TotalSuppliers = suppliers.Count,
                 Active = active,
                 Inactive = suppliers.Count - active,
-                CountriesCount = suppliers.Select(s => s.CountryId).Distinct().Count()
+                CountriesCount = suppliers.Select(s => s.CountryId).Distinct().Count(),
+                PaymentsRecorded = paymentsCount
             };
         }
 

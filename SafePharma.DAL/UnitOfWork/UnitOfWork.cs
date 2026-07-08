@@ -22,6 +22,11 @@
         public IBatchRepository _batchRepository { get; }
 
 
+        public ISupplierPaymentRepository SupplierPaymentRepository { get; }
+        public IMedicinePriceRepository MedicinePriceRepository { get; }
+        public IMedicineRepository MedicineRepository { get; }
+
+
         public UnitOfWork(
             AppDbContext db,
             IAuditRepository auditRepository,
@@ -38,6 +43,9 @@
             IPaymentMethodRepository paymentMethodRepository,
             IPurchaseOrderRepository purchaseOrderRepository,
             IBatchRepository batchRepository
+            ISupplierPaymentRepository supplierPaymentRepository,
+            IMedicinePriceRepository medicinePriceRepository,
+            IMedicineRepository medicineRepository)
 
             )
 
@@ -58,6 +66,9 @@
 
             PurchaseOrderRepository = purchaseOrderRepository;
             _batchRepository= batchRepository;
+            SupplierPaymentRepository = supplierPaymentRepository;
+            MedicinePriceRepository = medicinePriceRepository;
+            MedicineRepository = medicineRepository;
         }
 
         public async Task SaveAsync()

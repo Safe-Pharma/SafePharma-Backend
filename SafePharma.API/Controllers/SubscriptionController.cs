@@ -12,11 +12,16 @@ namespace SafePharma.API.Controllers
     {
         private readonly ISubscriptionManager _manager;
         private readonly IValidator<CreateSubscriptionDto> _validator;
+        private readonly IValidator<UploadLogoDto> _logoValidator;
 
-        public SubscriptionController(ISubscriptionManager manager, IValidator<CreateSubscriptionDto> validator)
+        public SubscriptionController(
+            ISubscriptionManager manager,
+            IValidator<CreateSubscriptionDto> validator,
+            IValidator<UploadLogoDto> logoValidator)
         {
             _manager = manager;
             _validator = validator;
+            _logoValidator = logoValidator;
         }
 
         [HttpPost]
@@ -69,6 +74,20 @@ namespace SafePharma.API.Controllers
         {
             var result = await _manager.CancelSubscription(id, currentUser.UserId);
             return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("logo")]
+        public async Task<IActionResult> UploadLogo([FromForm] UploadLogoDto dto, [FromServices] ICloudinaryService cloudinaryService)
+        {
+            var validationResult = await _logoValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors);
+
+            var url = await cloudinaryService.UploadImageAsync(dto.Logo);
+            if (string.IsNullOrWhiteSpace(url))
+                return BadRequest(GeneralResult<string>.FailResult("Logo upload failed. Please try again."));
+
+            return Ok(GeneralResult<string>.SuccessResult(url, "Logo uploaded."));
         }
     }
 }

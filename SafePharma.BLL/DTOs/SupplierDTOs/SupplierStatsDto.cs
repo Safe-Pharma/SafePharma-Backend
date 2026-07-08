@@ -6,5 +6,6 @@ namespace SafePharma.BLL
         public int Active { get; set; }
         public int Inactive { get; set; }
         public int CountriesCount { get; set; }
+        public int PaymentsRecorded { get; set; }
     }
 }
