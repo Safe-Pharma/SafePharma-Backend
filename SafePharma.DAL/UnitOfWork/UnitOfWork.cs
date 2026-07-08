@@ -21,6 +21,8 @@
         public IPurchaseOrderRepository PurchaseOrderRepository { get; }
 
         public ISupplierPaymentRepository SupplierPaymentRepository { get; }
+        public IMedicinePriceRepository MedicinePriceRepository { get; }
+        public IMedicineRepository MedicineRepository { get; }
 
 
         public UnitOfWork(
@@ -38,7 +40,9 @@
             ISubscriptionPlanRepository subscriptionPlanRepository,
             IPaymentMethodRepository paymentMethodRepository,
             IPurchaseOrderRepository purchaseOrderRepository,
-            ISupplierPaymentRepository supplierPaymentRepository)
+            ISupplierPaymentRepository supplierPaymentRepository,
+            IMedicinePriceRepository medicinePriceRepository,
+            IMedicineRepository medicineRepository)
 
 
         {
@@ -58,7 +62,8 @@
 
             PurchaseOrderRepository = purchaseOrderRepository;
             SupplierPaymentRepository = supplierPaymentRepository;
-
+            MedicinePriceRepository = medicinePriceRepository;
+            MedicineRepository = medicineRepository;
         }
 
         public async Task SaveAsync()
