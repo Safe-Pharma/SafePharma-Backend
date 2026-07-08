@@ -217,9 +217,28 @@ namespace SafePharma.DAL
 
                 });
             });
+
+
+            modelBuilder.Entity<SupplierPayment>(entity =>
+            {
+                entity.Property(p => p.Amount)
+                    .HasColumnType("decimal(12,2)");
+
+                entity.Property(p => p.PaymentMethod)
+                    .HasMaxLength(50);
+
+                entity.HasOne(p => p.Supplier)
+                    .WithMany()
+                    .HasForeignKey(p => p.SupplierId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(p => p.RecordedByUser)
+                    .WithMany()
+                    .HasForeignKey(p => p.RecordedBy)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
         }
           
-
 
 
 
@@ -262,7 +281,7 @@ namespace SafePharma.DAL
 
         public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
         public DbSet<PurchaseOrderItem> PurchaseOrdersItems => Set<PurchaseOrderItem>();
-
+        public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
 
     }
 }

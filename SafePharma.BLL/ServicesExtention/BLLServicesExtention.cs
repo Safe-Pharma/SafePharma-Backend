@@ -31,7 +31,7 @@ namespace SafePharma.BLL
             services.AddValidatorsFromAssemblyContaining<SupplierCreateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<SupplierUpdateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<PurchaseOrderCreateDtoValidator>();
-
+            services.AddScoped<ISupplierPaymentManager, SupplierPaymentManager>();
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
@@ -44,7 +44,7 @@ namespace SafePharma.BLL
             services.AddScoped<IPaymentMethodManager, PaymentMethodManager>();
             services.AddValidatorsFromAssemblyContaining<SubscriptionPlanUpsertDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<PaymentMethodUpsertDtoValidator>();
-
+            services.AddValidatorsFromAssemblyContaining<RecordSupplierPaymentDtoValidator>();
 
             services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
             services.AddValidatorsFromAssemblyContaining<UpdateUserValidator>();
