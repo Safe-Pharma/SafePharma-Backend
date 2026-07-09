@@ -56,6 +56,9 @@ namespace SafePharma.BLL
             services.AddValidatorsFromAssemblyContaining<CreatePurchaseReceiptDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<CreatePurchaseReceiptItemDtoValidator>();
 
+
+            services.AddHttpClient<IEmailService, EmailService>();
+
         }
     }
 }
