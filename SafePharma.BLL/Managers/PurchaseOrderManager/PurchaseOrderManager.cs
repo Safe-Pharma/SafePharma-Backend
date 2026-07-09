@@ -23,7 +23,6 @@ namespace SafePharma.BLL
             var po = new PurchaseOrder
             {
                 PharmacyId = pharmacyId,
-
                 OrderDate = createDto.OrderDate,
                 ExpectedDate = createDto.ExpectedDate,
                 OrderNumber = $"PO-{DateTime.UtcNow:yyMMddHHmmss}",
@@ -32,6 +31,7 @@ namespace SafePharma.BLL
                 TotalAmount = createDto.Items.Sum(i => i.QuantityOrdered * i.UnitPrice),
                 Items = createDto.Items.Select(i => new PurchaseOrderItem
                 {
+                    Id = i.Id,
                     MedicineId = i.MedicineId,
                     QuantityOrdered = i.QuantityOrdered,
                     UnitPrice = i.UnitPrice
@@ -64,6 +64,7 @@ namespace SafePharma.BLL
 
             var dtos = orders.Select(po => new PurchaseOrderReadDto
             {
+                Id = po.Id,
                 OrderNumber = po.OrderNumber,
                 OrderDate = po.OrderDate,
                 ExpectedDate = po.ExpectedDate,
@@ -73,6 +74,7 @@ namespace SafePharma.BLL
                 SupplierName = po.Supplier?.Name ?? "",
                 Items = po.Items.Select(i => new PurchaseOrderItemReadDto
                 {
+                    Id = i.Id,
                     MedicineName = i.Medicine?.ScientificName ?? "",
                     QuantityOrdered = i.QuantityOrdered,
                     UnitPrice = i.UnitPrice
