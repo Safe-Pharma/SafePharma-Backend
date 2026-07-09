@@ -12,8 +12,6 @@
         public string UnitOfSale { get; set; } = string.Empty;
         public int UnitsPerPackage { get; set; }
 
-        public int MinStockLevel { get; set; }
-
         public bool IsPrescriptionRequired { get; set; }
         public bool IsControlled { get; set; }
 
@@ -27,6 +25,6 @@
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
-        public ICollection<MedicinePrice> Prices { get; set; } = new List<MedicinePrice>();
+        public ICollection<PharmacyMedicine> PharmacyMedicines { get; set; } = new List<PharmacyMedicine>();
     }
 }

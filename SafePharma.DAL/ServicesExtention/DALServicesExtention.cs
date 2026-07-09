@@ -72,12 +72,12 @@ namespace SafePharma.DAL
                         }
 
                         // 6b. Medicine Prices (needs Medicines and Taxes to already be seeded, per pharmacy)
-                        if (!await context.Set<MedicinePrice>().AnyAsync())
+                        if (!await context.Set<PharmacyMedicine>().AnyAsync())
                         {
                             var medicines = await context.Set<Medicine>().ToListAsync();
                             var taxes = await context.Set<Tax>().ToListAsync();
-                            var medicinePrices = MedicinePriceSeedingProvider.GetMedicinePrices(medicines, taxes);
-                            await context.AddRangeAsync(medicinePrices);
+                            var pharmacyMedicines = PharmacyMedicineSeedingProvider.GetPharmacyMedicines(medicines, taxes);
+                            await context.AddRangeAsync(pharmacyMedicines);
                             await context.SaveChangesAsync();
                         }
                         // 7. Suppliers
@@ -190,12 +190,12 @@ namespace SafePharma.DAL
                         }
 
                         // 6b. Medicine Prices (needs Medicines and Taxes to already be seeded, per pharmacy)
-                        if (!context.Set<MedicinePrice>().Any())
+                        if (!context.Set<PharmacyMedicine>().Any())
                         {
                             var medicines = context.Set<Medicine>().ToList();
                             var taxes = context.Set<Tax>().ToList();
-                            var medicinePrices = MedicinePriceSeedingProvider.GetMedicinePrices(medicines, taxes);
-                            context.AddRange(medicinePrices);
+                            var pharmacyMedicines = PharmacyMedicineSeedingProvider.GetPharmacyMedicines(medicines, taxes);
+                            context.AddRange(pharmacyMedicines);
                             context.SaveChanges();
                         }
                         // 7. Suppliers 
@@ -263,7 +263,7 @@ namespace SafePharma.DAL
             services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
             services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
             services.AddScoped<IMedicineRepository, MedicineRepository>();
-            services.AddScoped<IMedicinePriceRepository, MedicinePriceRepository>();
+            services.AddScoped<IPharmacyMedicineRepository, PharmacyMedicineRepository>();
             services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
             services.AddScoped<IBatchRepository, BatchRepository>();
 

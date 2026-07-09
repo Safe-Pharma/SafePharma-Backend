@@ -20,7 +20,7 @@
         public IBatchRepository _batchRepository { get; }
 
         public ISupplierPaymentRepository SupplierPaymentRepository { get; }
-        public IMedicinePriceRepository MedicinePriceRepository { get; }
+        public IPharmacyMedicineRepository PharmacyMedicineRepository { get; }
         public IMedicineRepository MedicineRepository { get; }
 
         Task SaveAsync();

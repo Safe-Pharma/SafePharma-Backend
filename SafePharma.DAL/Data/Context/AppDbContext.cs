@@ -220,7 +220,7 @@ namespace SafePharma.DAL
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<MedicinePrice>(entity =>
+            modelBuilder.Entity<PharmacyMedicine>(entity =>
             {
                 entity.Property(mp => mp.PurchasePrice)
                     .HasColumnType("decimal(12,2)");
@@ -230,7 +230,7 @@ namespace SafePharma.DAL
                     .HasMaxLength(255);
 
                 entity.HasOne(mp => mp.Medicine)
-                    .WithMany(m => m.Prices)
+                    .WithMany(m => m.PharmacyMedicines)
                     .HasForeignKey(mp => mp.MedicineId)
                     .OnDelete(DeleteBehavior.Cascade);
 
@@ -305,7 +305,7 @@ namespace SafePharma.DAL
 
 
         public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
-        public DbSet<MedicinePrice> MedicinePrices => Set<MedicinePrice>();
+        public DbSet<PharmacyMedicine> PharmacyMedicines => Set<PharmacyMedicine>();
 
     }
 }

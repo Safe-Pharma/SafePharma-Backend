@@ -2,23 +2,23 @@
 
 namespace SafePharma.DAL
 {
-    public class MedicinePriceRepository : GenircRepository<MedicinePrice>, IMedicinePriceRepository
+    public class PharmacyMedicineRepository : GenircRepository<PharmacyMedicine>, IPharmacyMedicineRepository
     {
-        public MedicinePriceRepository(AppDbContext db) : base(db)
+        public PharmacyMedicineRepository   (AppDbContext db) : base(db)
         {
         }
 
-        public async Task<MedicinePrice?> GetByMedicineAndPharmacy(Guid medicineId, Guid pharmacyId)
+        public async Task<PharmacyMedicine?> GetByMedicineAndPharmacy(Guid medicineId, Guid pharmacyId)
         {
-            return await _db.Set<MedicinePrice>()
+            return await _db.Set<PharmacyMedicine>()
                 .Include(mp => mp.Medicine)
                 .Include(mp => mp.Tax)
                 .FirstOrDefaultAsync(mp => mp.MedicineId == medicineId && mp.PharmacyId == pharmacyId);
         }
 
-        public async Task<IEnumerable<MedicinePrice>> Search(Guid pharmacyId, string? query, string? category = null)
+        public async Task<IEnumerable<PharmacyMedicine>> Search(Guid pharmacyId, string? query, string? category = null)
         {
-            var prices = _db.Set<MedicinePrice>()
+            var prices = _db.Set<PharmacyMedicine>()
                 .AsNoTracking()
                 .Include(mp => mp.Medicine)
                 .Include(mp => mp.Tax)
@@ -41,9 +41,9 @@ namespace SafePharma.DAL
             return await prices.OrderBy(mp => mp.Medicine.TradeNameEn).ToListAsync();
         }
 
-        public async Task<IEnumerable<MedicinePrice>> GetAllForPharmacy(Guid pharmacyId)
+        public async Task<IEnumerable<PharmacyMedicine>> GetAllForPharmacy(Guid pharmacyId)
         {
-            return await _db.Set<MedicinePrice>()
+            return await _db.Set<PharmacyMedicine>()
                 .AsNoTracking()
                 .Include(mp => mp.Medicine)
                 .Where(mp => mp.PharmacyId == pharmacyId)
