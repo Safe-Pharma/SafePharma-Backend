@@ -198,6 +198,43 @@ namespace SafePharma.DAL
                         .OnDelete(DeleteBehavior.Cascade);
 
                 });
+                modelBuilder.Entity<PurchaseReceipt>(entity =>
+                {
+                    entity.Property(x => x.InvoiceTotal)
+                          .HasPrecision(18, 2);
+
+                    entity.Property(x => x.InvoiceNumber)
+                          .HasMaxLength(100);
+
+                    entity.HasOne(x => x.PurchaseOrder)
+                          .WithMany()
+                          .HasForeignKey(x => x.PurchaseOrderId)
+                          .OnDelete(DeleteBehavior.Restrict);
+
+                    entity.HasMany(x => x.Items)
+                          .WithOne(x => x.PurchaseReceipt)
+                          .HasForeignKey(x => x.PurchaseReceiptId)
+                          .OnDelete(DeleteBehavior.Cascade);
+                });
+
+
+                modelBuilder.Entity<PurchaseReceiptItem>(entity =>
+                {
+                    entity.Property(x => x.UnitPrice)
+                          .HasPrecision(18, 2);
+
+                    entity.Property(x => x.MedicineName)
+                          .HasMaxLength(255);
+
+                    entity.Property(x => x.BatchNumber)
+                          .HasMaxLength(100);
+
+
+                    entity.HasOne(x => x.PurchaseOrderItem)
+                          .WithMany()
+                          .HasForeignKey(x => x.PurchaseOrderItemId)
+                          .OnDelete(DeleteBehavior.Restrict);
+                });
             });
 
 
@@ -303,6 +340,8 @@ namespace SafePharma.DAL
         public DbSet<PurchaseOrderItem> PurchaseOrdersItems => Set<PurchaseOrderItem>();
         public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
         public DbSet<MedicinePrice> MedicinePrices => Set<MedicinePrice>();
+        public DbSet<PurchaseReceipt> PurchaseReceipts { get; set; }
+        public DbSet<PurchaseReceiptItem> PurchaseReceiptItems { get; set; }
 
     }
 }

@@ -11,7 +11,6 @@ namespace SafePharma.DAL
         public async Task<PurchaseOrder?> GetByIdWithDetailsAsync(Guid id)
         {
             return await _db.PurchaseOrders
-                .AsNoTracking()
                 .Include(po => po.Supplier)
                 .Include(po => po.Items)
                     .ThenInclude(item => item.Medicine)

@@ -20,6 +20,8 @@
         public ISupplierPaymentRepository SupplierPaymentRepository { get; }
         public IMedicinePriceRepository MedicinePriceRepository { get; }
         public IMedicineRepository MedicineRepository { get; }
+        public IPurchaseReceiptRepository PurchaseReceiptRepository { get; }
+        public IPurchaseReceiptItemRepository PurchaseReceiptItemRepository { get; }
 
         Task SaveAsync();
     }

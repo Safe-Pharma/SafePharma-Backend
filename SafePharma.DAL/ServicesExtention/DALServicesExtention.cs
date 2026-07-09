@@ -251,6 +251,8 @@ namespace SafePharma.DAL
             services.AddScoped<IMedicineRepository, MedicineRepository>();
             services.AddScoped<IMedicinePriceRepository, MedicinePriceRepository>();
             services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
+            services.AddScoped<IPurchaseReceiptRepository, PurchaseReceiptRepository>();
+            services.AddScoped<IPurchaseReceiptItemRepository, PurchaseReceiptItemRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
