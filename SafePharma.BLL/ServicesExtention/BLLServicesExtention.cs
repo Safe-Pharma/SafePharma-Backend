@@ -53,6 +53,9 @@ namespace SafePharma.BLL
             services.AddValidatorsFromAssemblyContaining<MedicineCreateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<MedicineUpdateDtoValidator>();
 
+
+            services.AddHttpClient<IEmailService, EmailService>();
+
         }
     }
 }

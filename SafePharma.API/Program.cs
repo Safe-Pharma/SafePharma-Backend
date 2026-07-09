@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using SafePharma.BLL;
+using SafePharma.Common;
 using SafePharma.DAL;
 using Scalar.AspNetCore;
 using System.Text;
@@ -74,6 +75,15 @@ namespace SafePharma.API
                     policy.RequireRole("Owner"));
             });
 
+
+            //Register Mail Service
+            builder.Services.Configure<EmailSettings>(
+                builder.Configuration.GetSection("EmailSettings"));
+
+
+            //FrontEnd URL configuration
+            builder.Services.Configure<FrontendSettings>(
+                builder.Configuration.GetSection("FrontendSettings"));
 
             // CORS
             builder.Services.AddCors(options =>

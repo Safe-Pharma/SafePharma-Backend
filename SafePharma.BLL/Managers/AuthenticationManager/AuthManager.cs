@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -178,6 +179,46 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
                 tokenString,
                 duration
             );
+        }
+
+
+        public async Task<GeneralResult> SetPasswordAsync(SetPasswordDTO dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+
+            if (user == null)
+                return GeneralResult.FailResult("User not found");
+
+            var decodedToken = Encoding.UTF8.GetString(
+                WebEncoders.Base64UrlDecode(dto.Token));
+            Console.WriteLine("token coming from frontend:");
+            Console.WriteLine(dto.Token);
+            Console.WriteLine("token after decoding:");
+            Console.WriteLine(decodedToken);
+            var result = await _userManager.ResetPasswordAsync(
+                user,
+                decodedToken,
+                dto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors
+                    .GroupBy(e => e.Code)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => new Error
+                        {
+                            ErrorCode = e.Code,
+                            ErrorMessage = e.Description
+                        }).ToList());
+
+                return GeneralResult.FailResult(
+                    errors,
+                    "Failed to set password");
+            }
+
+            return GeneralResult.SuccessResult(
+                "Password created successfully");
         }
     }
 
