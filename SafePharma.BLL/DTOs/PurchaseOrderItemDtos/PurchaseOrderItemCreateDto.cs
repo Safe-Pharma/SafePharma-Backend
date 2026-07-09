@@ -2,6 +2,7 @@
 {
     public class PurchaseOrderItemCreateDto
     {
+        public Guid Id { get; set; }
         public Guid MedicineId { get; set; }
         public int QuantityOrdered { get; set; }
         public decimal UnitPrice { get; set; }

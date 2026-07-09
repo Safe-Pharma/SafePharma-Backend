@@ -7,6 +7,7 @@ namespace SafePharma.BLL.Managers
     {
         Task<GeneralResult<TokenDto>> LoginAsync(LoginDTO dto);
         Task<GeneralResult> ChangePasswordAsync(string userId, ChangePasswordDTO dto);
+        Task<GeneralResult> SetPasswordAsync(SetPasswordDTO dto);
 
     }
 }

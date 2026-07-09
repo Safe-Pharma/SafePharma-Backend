@@ -2,6 +2,7 @@
 {
     public class PurchaseOrderReadDto
     {
+        public Guid Id { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime? ExpectedDate { get; set; }
         public string OrderNumber { get; set; } = null!;

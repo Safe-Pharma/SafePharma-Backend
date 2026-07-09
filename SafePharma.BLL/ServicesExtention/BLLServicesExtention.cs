@@ -42,6 +42,7 @@ namespace SafePharma.BLL
             services.AddScoped<IPaymentManager, PaymentManager>();
             services.AddScoped<ISubscriptionPlanManager, SubscriptionPlanManager>();
             services.AddScoped<IPaymentMethodManager, PaymentMethodManager>();
+            services.AddScoped<IPurchaseReceiptManager, PurchaseReceiptManager>();
             services.AddValidatorsFromAssemblyContaining<SubscriptionPlanUpsertDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<PaymentMethodUpsertDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<RecordSupplierPaymentDtoValidator>();
@@ -51,9 +52,18 @@ namespace SafePharma.BLL
 
             services.AddScoped<IMedicineManager, MedicineManager>();
             services.AddValidatorsFromAssemblyContaining<MedicineCreateDtoValidator>();
+<<<<<<< HEAD
             services.AddValidatorsFromAssemblyContaining<PharmacyMedicineUpdateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<GlobalMedicineUpdateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<LinkExistingMedicineDtoValidator>();
+=======
+            services.AddValidatorsFromAssemblyContaining<MedicineUpdateDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<CreatePurchaseReceiptDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<CreatePurchaseReceiptItemDtoValidator>();
+
+
+            services.AddHttpClient<IEmailService, EmailService>();
+>>>>>>> main
 
         }
     }
