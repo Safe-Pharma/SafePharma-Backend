@@ -1,9 +1,12 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using SafePharma.BLL;
 using SafePharma.Common;
 using SafePharma.DAL;
+using System.Text;
 
 namespace SafePharma.BLL;
 
@@ -12,18 +15,24 @@ public class UserService : IUserService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ICurrentUserContext _currentUser;
     private readonly RoleManager<ApplicationRole> _roleManager;
+    private readonly IEmailService _emailService;
+    private readonly FrontendSettings _frontendSettings;
     
 
     public UserService(
         UserManager<ApplicationUser> userManager,
         ICurrentUserContext currentUser,
-        RoleManager<ApplicationRole> roleManager
+        RoleManager<ApplicationRole> roleManager,
+        IEmailService emailService,
+        IOptions<FrontendSettings> frontendOptions
         )
     {
         _userManager = userManager;
         _currentUser = currentUser;
         _roleManager = roleManager;
-        
+        _emailService = emailService;
+        _frontendSettings = frontendOptions.Value;
+
     }
 
 
@@ -205,6 +214,7 @@ public class UserService : IUserService
             IsActive     = request.IsActive,
             // Scope new user to the caller's pharmacy — never take this from the request body
             PharmacyId   = _currentUser.PharmacyId,
+            //PharmacyId   = Guid.Parse("30000000-0000-0000-0000-000000000001"),
             CreatedAt    = DateTime.UtcNow,
         };
 
@@ -224,6 +234,51 @@ public class UserService : IUserService
                 return GeneralResult<UserDetailDto>.FailResult(errors);
             }
         }
+
+        //Send Email to user with password set link
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        var encodedToken = WebEncoders.Base64UrlEncode(
+            Encoding.UTF8.GetBytes(token));
+
+        var link =
+        $"{_frontendSettings.BaseUrl}/create-password" +
+        $"?email={Uri.EscapeDataString(user.Email!)}" +
+        $"&token={encodedToken}";
+
+
+        var body = $"""
+                <h2>Welcome to Safe Pharma!</h2>
+
+                <p>Your account has been created successfully.</p>
+
+                <p>Please click the button below to set your password.</p>
+
+                <p style="margin-top:30px">
+                <a href="{link}"
+                style="
+                background:#0d6efd;
+                padding:12px 24px;
+                color:white;
+                text-decoration:none;
+                border-radius:5px;">
+                Create Password
+                </a>
+                </p>
+
+                <p style="margin-top:25px">
+                If you didn't expect this email, you can safely ignore it.
+                </p>
+            """;
+        Console.WriteLine("token before encoding:");
+        Console.WriteLine(token);
+        Console.WriteLine("token after encoding:");
+        Console.WriteLine(encodedToken);
+        await _emailService.SendEmailAsync(
+            user.Email!,
+            "Welcome to Safe Pharma",
+            body);
+
         var getResult = await GetUserByIdAsync(user.Id);
         return getResult;
     }
