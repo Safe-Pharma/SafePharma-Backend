@@ -419,9 +419,6 @@ namespace SafePharma.DAL.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<int>("MinStockLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("ScientificName")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -479,8 +476,14 @@ namespace SafePharma.DAL.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("MedicineId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MinStockLevel")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("PharmacyId")
                         .HasColumnType("uniqueidentifier");
@@ -493,6 +496,9 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<Guid>("TaxId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260708214949_init-create")]
-    partial class initcreate
+    [Migration("20260709205234_IntialCreate")]
+    partial class IntialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -422,9 +422,6 @@ namespace SafePharma.DAL.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<int>("MinStockLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("ScientificName")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -482,8 +479,14 @@ namespace SafePharma.DAL.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("MedicineId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MinStockLevel")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("PharmacyId")
                         .HasColumnType("uniqueidentifier");
@@ -496,6 +499,9 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<Guid>("TaxId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

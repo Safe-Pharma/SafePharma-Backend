@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SafePharma.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class initcreate : Migration
+    public partial class IntialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -50,7 +50,6 @@ namespace SafePharma.DAL.Migrations
                     Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     UnitOfSale = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     UnitsPerPackage = table.Column<int>(type: "int", nullable: false),
-                    MinStockLevel = table.Column<int>(type: "int", nullable: false),
                     IsPrescriptionRequired = table.Column<bool>(type: "bit", nullable: false),
                     IsControlled = table.Column<bool>(type: "bit", nullable: false),
                     Manufacturer = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
@@ -578,7 +577,10 @@ namespace SafePharma.DAL.Migrations
                     PurchasePrice = table.Column<decimal>(type: "decimal(12,2)", nullable: false),
                     SellingPrice = table.Column<decimal>(type: "decimal(12,2)", nullable: false),
                     ChangedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ChangedBy = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true)
+                    ChangedBy = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    MinStockLevel = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {

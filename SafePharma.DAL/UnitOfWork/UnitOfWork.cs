@@ -23,7 +23,7 @@
 
 
         public ISupplierPaymentRepository SupplierPaymentRepository { get; }
-        public IMedicinePriceRepository MedicinePriceRepository { get; }
+        public IPharmacyMedicineRepository PharmacyMedicineRepository { get; }
         public IMedicineRepository MedicineRepository { get; }
         public IPurchaseReceiptRepository PurchaseReceiptRepository { get; }
         public IPurchaseReceiptItemRepository PurchaseReceiptItemRepository { get; }
@@ -47,10 +47,11 @@
             IPurchaseOrderRepository purchaseOrderRepository,
             IBatchRepository batchRepository,
             ISupplierPaymentRepository supplierPaymentRepository,
-            IMedicinePriceRepository medicinePriceRepository,
+            IPharmacyMedicineRepository pharmacymedicineRepository,
             IMedicineRepository medicineRepository,
             IPurchaseReceiptRepository purchaseReceiptRepository,
             IPurchaseReceiptItemRepository purchaseReceiptItemRepository)
+
 
             
 
@@ -72,7 +73,7 @@
             PurchaseOrderRepository = purchaseOrderRepository;
             _batchRepository= batchRepository;
             SupplierPaymentRepository = supplierPaymentRepository;
-            MedicinePriceRepository = medicinePriceRepository;
+            PharmacyMedicineRepository= pharmacymedicineRepository;
             MedicineRepository = medicineRepository;
             PurchaseReceiptRepository = purchaseReceiptRepository;
             PurchaseReceiptItemRepository = purchaseReceiptItemRepository;
