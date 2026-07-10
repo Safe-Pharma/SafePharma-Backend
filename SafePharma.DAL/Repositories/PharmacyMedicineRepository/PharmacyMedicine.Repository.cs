@@ -72,5 +72,38 @@ namespace SafePharma.DAL
                 .Where(mp => mp.PharmacyId == pharmacyId)
                 .ToListAsync();
         }
+        public async Task<int> GetHighestAutoSkuNumber(Guid pharmacyId, string prefix)
+        {
+            // Pull only this pharmacy's SKUs that match the auto-generated shape, then parse in memory —
+            // avoids fragile string-to-int parsing inside SQL translation.
+            var skus = await _db.Set<PharmacyMedicine>()
+                .Where(pm => pm.PharmacyId == pharmacyId && pm.SKU.StartsWith(prefix))
+                .Select(pm => pm.SKU)
+                .ToListAsync();
+
+            var max = 0;
+            foreach (var sku in skus)
+            {
+                var suffix = sku.Substring(prefix.Length);
+                if (int.TryParse(suffix, out var n) && n > max)
+                {
+                    max = n;
+                }
+            }
+            return max;
+        }
+
+        public async Task<bool> SkuExistsForPharmacy(Guid pharmacyId, string sku, Guid? excludeId = null)
+        {
+            var query = _db.Set<PharmacyMedicine>()
+                .Where(pm => pm.PharmacyId == pharmacyId && pm.SKU == sku);
+
+            if (excludeId.HasValue)
+            {
+                query = query.Where(pm => pm.Id != excludeId.Value);
+            }
+
+            return await query.AnyAsync();
+        }
     }
 }

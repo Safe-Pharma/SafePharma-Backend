@@ -11,6 +11,45 @@ namespace SafePharma.BLL
             _unitOfWork = unitOfWork;
         }
 
+        private const string SkuPrefix = "RX-";
+        private const int SkuStartNumber = 1001;
+
+        private readonly record struct SkuResolution(string? Sku, bool Duplicate)
+        {
+            public static SkuResolution Ok(string sku) => new(sku, false);
+            public static SkuResolution AsDuplicate() => new(null, true);
+        }
+
+        // Single source of truth for SKU behavior across Create, Local Create, Link, and Update.
+        // - blank/null + no fallback  -> auto-generate next number for this pharmacy
+        // - blank/null + fallback     -> keep the current SKU unchanged (used on Update)
+        // - provided                  -> validate uniqueness within the pharmacy (excluding self on Update)
+        private async Task<SkuResolution> ResolveSkuAsync(
+            Guid pharmacyId,
+            string? requestedSku,
+            Guid? excludePharmacyMedicineId = null,
+            string? fallbackSku = null)
+        {
+            var trimmed = requestedSku?.Trim();
+
+            if (string.IsNullOrWhiteSpace(trimmed))
+            {
+                if (!string.IsNullOrWhiteSpace(fallbackSku))
+                {
+                    return SkuResolution.Ok(fallbackSku);
+                }
+
+                var highest = await _unitOfWork.PharmacyMedicineRepository.GetHighestAutoSkuNumber(pharmacyId, SkuPrefix);
+                var next = Math.Max(highest + 1, SkuStartNumber);
+                return SkuResolution.Ok($"{SkuPrefix}{next}");
+            }
+
+            var duplicate = await _unitOfWork.PharmacyMedicineRepository
+                .SkuExistsForPharmacy(pharmacyId, trimmed, excludePharmacyMedicineId);
+
+            return duplicate ? SkuResolution.AsDuplicate() : SkuResolution.Ok(trimmed);
+        }
+
         public async Task<IEnumerable<MedicineDto>> GetAllMedicines(Guid pharmacyId, string? search = null, string? category = null, bool includeInactive = false)
         {
             var prices = (await _unitOfWork.PharmacyMedicineRepository.Search(pharmacyId, search, category, includeInactive)).ToList();
@@ -92,8 +131,9 @@ namespace SafePharma.BLL
         public async Task<LinkExistingResult> LinkExistingMedicine(Guid pharmacyId, LinkExistingMedicineDto dto)
         {
             var medicine = await _unitOfWork.MedicineRepository.GetById(dto.MedicineId);
-            if (medicine is null)
+            if (medicine is null || !medicine.IsGlobal)
             {
+                // Not found, or it's another pharmacy's local medicine — indistinguishable from this pharmacy's view.
                 return new LinkExistingResult { MedicineNotFound = true };
             }
 
@@ -109,6 +149,12 @@ namespace SafePharma.BLL
                 return new LinkExistingResult { InvalidTaxIds = true };
             }
 
+            var skuResult = await ResolveSkuAsync(pharmacyId, dto.SKU);
+            if (skuResult.Duplicate)
+            {
+                return new LinkExistingResult { DuplicateSku = true };
+            }
+
             var price = new PharmacyMedicine
             {
                 Id = Guid.NewGuid(),
@@ -117,6 +163,7 @@ namespace SafePharma.BLL
                 PurchasePrice = dto.PurchasePrice,
                 SellingPrice = dto.SellingPrice,
                 MinStockLevel = dto.MinStockLevel,
+                SKU = skuResult.Sku!,
                 ChangedAt = DateTime.UtcNow,
             };
             foreach (var link in taxLinks)
@@ -126,7 +173,15 @@ namespace SafePharma.BLL
             }
 
             _unitOfWork.PharmacyMedicineRepository.Add(price);
-            await _unitOfWork.SaveAsync();
+
+            try
+            {
+                await _unitOfWork.SaveAsync();
+            }
+            catch (DuplicateSkuException)
+            {
+                return new LinkExistingResult { DuplicateSku = true };
+            }
 
             var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(medicine.Id, pharmacyId);
             return new LinkExistingResult { Medicine = saved!.ToDto() };
@@ -146,8 +201,16 @@ namespace SafePharma.BLL
                 return new MedicineCreateResult { InvalidTaxIds = true };
             }
 
+            var skuResult = await ResolveSkuAsync(pharmacyId, dto.SKU);
+            if (skuResult.Duplicate)
+            {
+                return new MedicineCreateResult { DuplicateSku = true };
+            }
+
             var medicine = dto.ToMedicineEntity();
             medicine.Id = Guid.NewGuid();
+            medicine.IsGlobal = true;
+            medicine.OwnerPharmacyId = null;
             medicine.CreatedAt = DateTime.UtcNow;
             medicine.UpdatedAt = DateTime.UtcNow;
             _unitOfWork.MedicineRepository.Add(medicine);
@@ -160,7 +223,7 @@ namespace SafePharma.BLL
                 PurchasePrice = dto.PurchasePrice,
                 SellingPrice = dto.SellingPrice,
                 MinStockLevel = dto.MinStockLevel,
-                SKU = dto.SKU,
+                SKU = skuResult.Sku!,
                 ChangedAt = DateTime.UtcNow,
             };
             foreach (var link in taxLinks)
@@ -170,7 +233,14 @@ namespace SafePharma.BLL
             }
             _unitOfWork.PharmacyMedicineRepository.Add(price);
 
-            await _unitOfWork.SaveAsync();
+            try
+            {
+                await _unitOfWork.SaveAsync();
+            }
+            catch (DuplicateSkuException)
+            {
+                return new MedicineCreateResult { DuplicateSku = true };
+            }
 
             var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(medicine.Id, pharmacyId);
             return new MedicineCreateResult { Medicine = saved!.ToDto() };
@@ -190,10 +260,16 @@ namespace SafePharma.BLL
                 return new MedicineUpdateResult { InvalidTaxIds = true };
             }
 
+            var skuResult = await ResolveSkuAsync(pharmacyId, dto.SKU, excludePharmacyMedicineId: price.Id, fallbackSku: price.SKU);
+            if (skuResult.Duplicate)
+            {
+                return new MedicineUpdateResult { DuplicateSku = true };
+            }
+
             dto.ApplyTo(price);
+            price.SKU = skuResult.Sku!;
             price.ChangedAt = DateTime.UtcNow;
 
-            // Replace the tax set entirely (tracked entity, so EF diffs the collection on save).
             price.PharmacyMedicineTaxes.Clear();
             foreach (var link in taxLinks)
             {
@@ -201,7 +277,14 @@ namespace SafePharma.BLL
                 price.PharmacyMedicineTaxes.Add(link);
             }
 
-            await _unitOfWork.SaveAsync();
+            try
+            {
+                await _unitOfWork.SaveAsync();
+            }
+            catch (DuplicateSkuException)
+            {
+                return new MedicineUpdateResult { DuplicateSku = true };
+            }
 
             var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(id, pharmacyId);
             return new MedicineUpdateResult { Medicine = saved!.ToDto() };
@@ -281,5 +364,71 @@ namespace SafePharma.BLL
             var batches = await _unitOfWork._batchRepository.GetBatchesByhMedicineId(price.Id);
             return price.ToDetailsDto(batches);
         }
+
+        public async Task<MedicineCreateResult> CreateLocalMedicine(Guid pharmacyId, MedicineCreateDto dto)
+        {
+            var globalMatch = await _unitOfWork.MedicineRepository.GetByTradeNameEn(dto.TradeNameEn);
+            if (globalMatch is not null)
+            {
+                return new MedicineCreateResult { ExistingMedicineFound = true, ExistingMedicineId = globalMatch.Id };
+            }
+
+            var localMatch = await _unitOfWork.MedicineRepository.GetLocalByTradeNameEnForPharmacy(pharmacyId, dto.TradeNameEn);
+            if (localMatch is not null)
+            {
+                return new MedicineCreateResult { ExistingMedicineFound = true, ExistingMedicineId = localMatch.Id };
+            }
+
+            var taxLinks = await BuildTaxLinksAsync(pharmacyId, dto.TaxIds);
+            if (taxLinks is null)
+            {
+                return new MedicineCreateResult { InvalidTaxIds = true };
+            }
+
+            var skuResult = await ResolveSkuAsync(pharmacyId, dto.SKU);
+            if (skuResult.Duplicate)
+            {
+                return new MedicineCreateResult { DuplicateSku = true };
+            }
+
+            var medicine = dto.ToMedicineEntity();
+            medicine.Id = Guid.NewGuid();
+            medicine.IsGlobal = false;
+            medicine.OwnerPharmacyId = pharmacyId;
+            medicine.CreatedAt = DateTime.UtcNow;
+            medicine.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.MedicineRepository.Add(medicine);
+
+            var price = new PharmacyMedicine
+            {
+                Id = Guid.NewGuid(),
+                MedicineId = medicine.Id,
+                PharmacyId = pharmacyId,
+                PurchasePrice = dto.PurchasePrice,
+                SellingPrice = dto.SellingPrice,
+                MinStockLevel = dto.MinStockLevel,
+                SKU = skuResult.Sku!,
+                ChangedAt = DateTime.UtcNow,
+            };
+            foreach (var link in taxLinks)
+            {
+                link.PharmacyMedicineId = price.Id;
+                price.PharmacyMedicineTaxes.Add(link);
+            }
+            _unitOfWork.PharmacyMedicineRepository.Add(price);
+
+            try
+            {
+                await _unitOfWork.SaveAsync();
+            }
+            catch (DuplicateSkuException)
+            {
+                return new MedicineCreateResult { DuplicateSku = true };
+            }
+
+            var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(medicine.Id, pharmacyId);
+            return new MedicineCreateResult { Medicine = saved!.ToDto() };
+        }
+
     }
 }

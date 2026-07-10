@@ -25,6 +25,10 @@ namespace SafePharma.DAL
         public string? StorageConditions { get; set; }
         public string? TherapeuticCategory { get; set; }
 
+        public bool IsGlobal { get; set; } = true;
+        public Guid? OwnerPharmacyId { get; set; }
+        public Pharmacy? OwnerPharmacy { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; }

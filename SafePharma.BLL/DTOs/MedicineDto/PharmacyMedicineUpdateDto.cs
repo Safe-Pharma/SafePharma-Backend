@@ -6,6 +6,6 @@
         public decimal PurchasePrice { get; set; }
         public decimal SellingPrice { get; set; }
         public int MinStockLevel { get; set; }
-        public string SKU { get; set; } = string.Empty;
+        public string? SKU { get; set; } 
     }
 }

@@ -102,8 +102,6 @@ namespace SafePharma.BLL
             price.PurchasePrice = dto.PurchasePrice;
             price.SellingPrice = dto.SellingPrice;
             price.MinStockLevel = dto.MinStockLevel;
-            price.SKU = dto.SKU;
-            // Tax assignment is handled separately in the manager (needs validation + diffing).
         }
 
         public static void ApplyTo(this GlobalMedicineUpdateDto dto, Medicine entity)

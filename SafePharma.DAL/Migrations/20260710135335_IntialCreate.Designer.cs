@@ -12,7 +12,7 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260710120405_IntialCreate")]
+    [Migration("20260710135335_IntialCreate")]
     partial class IntialCreate
     {
         /// <inheritdoc />
@@ -455,12 +455,20 @@ namespace SafePharma.DAL.Migrations
                     b.Property<bool>("IsControlled")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsGlobal")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<bool>("IsPrescriptionRequired")
                         .HasColumnType("bit");
 
                     b.Property<string>("Manufacturer")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid?>("OwnerPharmacyId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ScientificName")
                         .IsRequired()
@@ -505,7 +513,14 @@ namespace SafePharma.DAL.Migrations
                     b.HasIndex("ScientificName");
 
                     b.HasIndex("TradeNameEn")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Medicine_TradeNameEn_Global")
+                        .HasFilter("[IsGlobal] = 1");
+
+                    b.HasIndex("OwnerPharmacyId", "TradeNameEn")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Medicine_Owner_TradeNameEn_Local")
+                        .HasFilter("[IsGlobal] = 0");
 
                     b.ToTable("Medicines");
                 });
@@ -737,7 +752,8 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<string>("SKU")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("SellingPrice")
                         .HasColumnType("decimal(12,2)");
@@ -747,10 +763,12 @@ namespace SafePharma.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PharmacyId");
-
                     b.HasIndex("MedicineId", "PharmacyId")
                         .IsUnique();
+
+                    b.HasIndex("PharmacyId", "SKU")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PharmacyMedicine_Pharmacy_SKU");
 
                     b.ToTable("PharmacyMedicines", t =>
                         {
@@ -1328,6 +1346,16 @@ namespace SafePharma.DAL.Migrations
                         .IsRequired();
 
                     b.Navigation("Medicine");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.Medicine", b =>
+                {
+                    b.HasOne("SafePharma.DAL.Pharmacy", "OwnerPharmacy")
+                        .WithMany()
+                        .HasForeignKey("OwnerPharmacyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("OwnerPharmacy");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.PaymentVerification", b =>
