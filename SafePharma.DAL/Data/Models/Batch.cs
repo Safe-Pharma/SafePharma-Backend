@@ -11,13 +11,13 @@ namespace SafePharma.DAL
 
         [ForeignKey("Medicine")]
         public Guid MedicineId { get; set; }
-        public  Medicine Medicine { get; set; }
+        public  PharmacyMedicine Medicine { get; set; }
 
-        //[ForeignKey("PurchaseOrderItem")]
-        //public Guid PurchaseOrderItemId;
-        //public required PurchaseOrderItem PurchaseOrderItem { get; set; }
+        [ForeignKey("PurchaseReceiptItem")]
+        public Guid PurchaseReceiptItemId;
+        public PurchaseReceiptItem PurchaseReceiptItem { get; set; }
 
-        public int BatchNumber { get; set; }
+        public string BatchNumber { get; set; } = string.Empty;
 
         public DateTime ExpiryDate { get; set; }
 

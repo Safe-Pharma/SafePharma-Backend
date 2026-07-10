@@ -103,10 +103,9 @@ namespace SafePharma.API
             {
                 await app.Services.UseDALSeedingAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex.ToString());
-                throw;
+                // ignore seeding errors at startup
             }
 
             // Configure the HTTP request pipeline.

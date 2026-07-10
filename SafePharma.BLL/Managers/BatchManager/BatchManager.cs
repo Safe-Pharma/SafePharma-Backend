@@ -1,15 +1,10 @@
 ﻿using SafePharma.Common;
-using SafePharma.Common.Enums;
 using SafePharma.DAL;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
-using UAParser;
 
 namespace SafePharma.BLL
 {
-    public class BatchManager
+    public class BatchManager : IBatchManager
     {
         public IUnitOfWork _unitOfWork;
 
@@ -39,29 +34,38 @@ namespace SafePharma.BLL
             return GeneralResult<IEnumerable<AuditReadDto>>.SuccessResult(auditReadList);
         }
 
-        public async Task<GeneralResult<BatchCreateDto>> CreateBatch(BatchCreateDto batchDto)
+        public async Task<GeneralResult<Batch>> CreateBatch(BatchCreateDto batchDto)
         {
             if (batchDto is null)
             {
                 GeneralResult<BatchCreateDto>.NotFound();
             }
             // get medecine form medicine manager
+            var pharmacyMedicine = await _unitOfWork.PharmacyMedicineRepository.GetById(batchDto!.MedicineId);
+            var recieptItem = await _unitOfWork.PurchaseReceiptItemRepository.GetById(batchDto!.ReceiptItemId);
             var batch = new Batch
             {
-               MedicineId= batchDto.MedicineId,
-               BatchNumber= batchDto.BatchNumber,
-               ExpiryDate= batchDto.ExpiryDate,
-               QuantityReceived= batchDto.QuantityReceived,
-               QuantityRemaining=batchDto.QuantityReceived,
-               //assign medicine prices 
-               //selling
-               //purchased
-          
+                MedicineId = recieptItem.MedicineId,
+                Medicine = pharmacyMedicine,
+
+                PurchaseReceiptItemId = batchDto.ReceiptItemId,
+                PurchaseReceiptItem = recieptItem,
+
+                BatchNumber = recieptItem.BatchNumber,
+                ExpiryDate = recieptItem.ExpiryDate,
+                QuantityReceived = recieptItem.Quantity,
+                QuantityRemaining = recieptItem.Quantity,
+
+                SellingPrice = pharmacyMedicine.SellingPrice,
+                PurchasePrice = pharmacyMedicine.PurchasePrice,
+
+
+
             };
             _unitOfWork._batchRepository.Add(batch);
             await _unitOfWork.SaveAsync();
 
-            return GeneralResult<BatchCreateDto>.SuccessResult(batchDto);
+            return GeneralResult<Batch>.SuccessResult(batch);
         }
 
     }
