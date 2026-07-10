@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SafePharma.DAL;
 
@@ -11,9 +12,11 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260710012856_InitialMigraton")]
+    partial class InitialMigraton
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -665,8 +668,6 @@ namespace SafePharma.DAL.Migrations
                     b.ToTable("Pharmacies");
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("SafePharma.DAL.PharmacyBarcode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -695,7 +696,6 @@ namespace SafePharma.DAL.Migrations
                     b.ToTable("PharmacyBarcodes");
                 });
 
->>>>>>> main
             modelBuilder.Entity("SafePharma.DAL.PharmacyMedicine", b =>
                 {
                     b.Property<Guid>("Id")
@@ -712,12 +712,9 @@ namespace SafePharma.DAL.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-<<<<<<< HEAD
-=======
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
->>>>>>> main
                     b.Property<Guid>("MedicineId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1300,39 +1297,10 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Country");
                 });
 
-<<<<<<< HEAD
-            modelBuilder.Entity("SafePharma.DAL.PaymentVerification", b =>
-                {
-                    b.HasOne("SafePharma.DAL.Subscription", "Subscription")
-                        .WithMany("PaymentVerifications")
-                        .HasForeignKey("SubscriptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Subscription");
-                });
-
-            modelBuilder.Entity("SafePharma.DAL.Pharmacy", b =>
-                {
-                    b.HasOne("SafePharma.DAL.Subscription", "Subscription")
-                        .WithOne("Pharmacy")
-                        .HasForeignKey("SafePharma.DAL.Pharmacy", "SubscriptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Subscription");
-                });
-
-            modelBuilder.Entity("SafePharma.DAL.PharmacyMedicine", b =>
-                {
-                    b.HasOne("SafePharma.DAL.Medicine", "Medicine")
-                        .WithMany("PharmacyMedicines")
-=======
             modelBuilder.Entity("SafePharma.DAL.Data.Models.ManufacturerBarcode", b =>
                 {
                     b.HasOne("SafePharma.DAL.Medicine", "Medicine")
                         .WithMany("ManufacturerBarcodes")
->>>>>>> main
                         .HasForeignKey("MedicineId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1340,8 +1308,6 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Medicine");
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("SafePharma.DAL.PaymentVerification", b =>
                 {
                     b.HasOne("SafePharma.DAL.Subscription", "Subscription")
@@ -1402,7 +1368,6 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Tax");
                 });
 
->>>>>>> main
             modelBuilder.Entity("SafePharma.DAL.PharmacySettings", b =>
                 {
                     b.HasOne("SafePharma.DAL.Pharmacy", "Pharmacy")
@@ -1554,11 +1519,8 @@ namespace SafePharma.DAL.Migrations
 
             modelBuilder.Entity("SafePharma.DAL.Medicine", b =>
                 {
-<<<<<<< HEAD
-=======
                     b.Navigation("ManufacturerBarcodes");
 
->>>>>>> main
                     b.Navigation("PharmacyMedicines");
                 });
 

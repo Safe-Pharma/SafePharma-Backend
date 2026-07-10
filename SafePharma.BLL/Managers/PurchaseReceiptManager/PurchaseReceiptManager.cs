@@ -91,7 +91,7 @@ namespace SafePharma.BLL
                 {
                     Id = Guid.NewGuid(),
                     MedicineId = item.MedicineId,
-                    BatchNumber = int.Parse(item.BatchNumber),
+                    BatchNumber = item.BatchNumber,
                     ExpiryDate = item.ExpiryDate,
                     QuantityReceived = item.Quantity,
                     QuantityRemaining = item.Quantity,
