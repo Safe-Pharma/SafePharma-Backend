@@ -105,5 +105,13 @@ namespace SafePharma.DAL
 
             return await query.AnyAsync();
         }
+
+        public async Task<PharmacyMedicine?> GetByIdAndPharmacy(Guid pharmacyMedicineId, Guid pharmacyId)
+        {
+            return await _db.Set<PharmacyMedicine>()
+                .FirstOrDefaultAsync(x =>
+                    x.Id == pharmacyMedicineId &&
+                    x.PharmacyId == pharmacyId);
+        }
     }
 }

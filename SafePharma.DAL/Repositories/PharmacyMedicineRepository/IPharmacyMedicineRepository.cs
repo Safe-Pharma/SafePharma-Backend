@@ -8,5 +8,6 @@
         Task<IEnumerable<PharmacyMedicine>> GetAllForPharmacy(Guid pharmacyId);
         Task<int> GetHighestAutoSkuNumber(Guid pharmacyId, string prefix);
         Task<bool> SkuExistsForPharmacy(Guid pharmacyId, string sku, Guid? excludeId = null);
+        Task<PharmacyMedicine?> GetByIdAndPharmacy(Guid pharmacyMedicineId, Guid pharmacyId);
     }
 }
