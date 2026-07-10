@@ -2,10 +2,12 @@
 {
     public static class PurchaseOrderItemSeeding
     {
-        public static List<PurchaseOrderItem> GetPurchaseOrderItems(List<Medicine> medicines)
+        public static List<PurchaseOrderItem> GetPurchaseOrderItems(List<PharmacyMedicine> pharmacyMedicines)
         {
-            Guid MedicineIdFor(string tradeNameEn) =>
-                medicines.First(m => m.TradeNameEn == tradeNameEn).Id;
+            Guid PharmacyMedicineIdFor(string tradeNameEn) =>
+                pharmacyMedicines
+                    .First(pm => pm.Medicine.TradeNameEn == tradeNameEn)
+                    .Id;
 
             return new List<PurchaseOrderItem>
             {
@@ -13,39 +15,43 @@
                 {
                     Id = Guid.Parse("71000000-0000-0000-0000-000000000001"),
                     PurchaseOrderId = PurchaseOrderSeeding.Po1001Id,
-                    PharmacyMedicineId = MedicineIdFor("Panadol"),
+                    PharmacyMedicineId = PharmacyMedicineIdFor("Panadol"),
                     QuantityOrdered = 300,
                     UnitPrice = 10.50m
                 },
+
                 new PurchaseOrderItem
                 {
                     Id = Guid.Parse("71000000-0000-0000-0000-000000000002"),
                     PurchaseOrderId = PurchaseOrderSeeding.Po1001Id,
-                    PharmacyMedicineId = MedicineIdFor("Vitamin C Plus Collagen"),
+                    PharmacyMedicineId = PharmacyMedicineIdFor("Vitamin C Plus Collagen"),
                     QuantityOrdered = 20,
                     UnitPrice = 195m
                 },
+
                 new PurchaseOrderItem
                 {
                     Id = Guid.Parse("71000000-0000-0000-0000-000000000003"),
                     PurchaseOrderId = PurchaseOrderSeeding.Po1002Id,
-                    PharmacyMedicineId = MedicineIdFor("Augmentin"),
+                    PharmacyMedicineId = PharmacyMedicineIdFor("Augmentin"),
                     QuantityOrdered = 80,
                     UnitPrice = 33m
                 },
+
                 new PurchaseOrderItem
                 {
                     Id = Guid.Parse("71000000-0000-0000-0000-000000000004"),
                     PurchaseOrderId = PurchaseOrderSeeding.Po1002Id,
-                    PharmacyMedicineId = MedicineIdFor("Lantus Insulin"),
+                    PharmacyMedicineId = PharmacyMedicineIdFor("Lantus Insulin"),
                     QuantityOrdered = 16,
                     UnitPrice = 125m
                 },
+
                 new PurchaseOrderItem
                 {
                     Id = Guid.Parse("71000000-0000-0000-0000-000000000005"),
                     PurchaseOrderId = PurchaseOrderSeeding.Po1003Id,
-                    PharmacyMedicineId = MedicineIdFor("Nootropil"),
+                    PharmacyMedicineId = PharmacyMedicineIdFor("Nootropil"),
                     QuantityOrdered = 28,
                     UnitPrice = 60m
                 }
