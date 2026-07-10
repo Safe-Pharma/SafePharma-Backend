@@ -11,22 +11,45 @@ namespace SafePharma.BLL
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<MedicineDto>> GetAllMedicines(Guid pharmacyId, string? search = null, string? category = null)
+        public async Task<IEnumerable<MedicineDto>> GetAllMedicines(Guid pharmacyId, string? search = null, string? category = null, bool includeInactive = false)
         {
-            var prices = await _unitOfWork.PharmacyMedicineRepository.Search(pharmacyId, search, category);
-            return prices.Select(p => p.ToDto());
+            var prices = (await _unitOfWork.PharmacyMedicineRepository.Search(pharmacyId, search, category, includeInactive)).ToList();
+            if (prices.Count == 0) return Enumerable.Empty<MedicineDto>();
+
+            var aggregates = (await _unitOfWork._batchRepository.GetStockAggregates(prices.Select(p => p.Id)))
+                .ToDictionary(a => a.PharmacyMedicineId);
+
+            return prices.Select(p =>
+            {
+                aggregates.TryGetValue(p.Id, out var agg);
+                return p.ToDto(agg?.AvailableQuantity ?? 0, agg?.BatchCount ?? 0);
+            });
         }
 
         public async Task<MedicineDto?> GetMedicineById(Guid pharmacyId, Guid id)
         {
             var price = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(id, pharmacyId);
-            return price?.ToDto();
+            if (price is null) return null;
+
+            var aggregates = (await _unitOfWork._batchRepository.GetStockAggregates(new[] { price.Id })).ToList();
+            var agg = aggregates.FirstOrDefault();
+            return price.ToDto(agg?.AvailableQuantity ?? 0, agg?.BatchCount ?? 0);
         }
 
         public async Task<MedicineStatsDto> GetStats(Guid pharmacyId)
         {
             var prices = (await _unitOfWork.PharmacyMedicineRepository.GetAllForPharmacy(pharmacyId)).ToList();
-            var active = prices.Count(p => p.Medicine.IsActive);
+            var active = prices.Count(p => p.Medicine.IsActive && p.IsActive);
+
+            var aggregates = (await _unitOfWork._batchRepository.GetStockAggregates(prices.Select(p => p.Id)))
+                .ToDictionary(a => a.PharmacyMedicineId);
+
+            var belowMinStock = prices.Count(p =>
+            {
+                aggregates.TryGetValue(p.Id, out var agg);
+                var available = agg?.AvailableQuantity ?? 0;
+                return available < p.MinStockLevel;
+            });
 
             return new MedicineStatsDto
             {
@@ -35,11 +58,11 @@ namespace SafePharma.BLL
                 Inactive = prices.Count - active,
                 PrescriptionRequired = prices.Count(p => p.Medicine.IsPrescriptionRequired),
                 Controlled = prices.Count(p => p.Medicine.IsControlled),
-                CategoriesCount = prices.Select(p => p.Medicine.Category).Distinct().Count()
+                CategoriesCount = prices.Select(p => p.Medicine.Category).Distinct().Count(),
+                BelowMinStock = belowMinStock,
             };
         }
 
-        // STEP 1 of the scenario: "Search First"
         public async Task<IEnumerable<GlobalMedicineSearchResultDto>> SearchGlobalCatalog(Guid pharmacyId, string? query)
         {
             var medicines = (await _unitOfWork.MedicineRepository.SearchGlobal(query)).ToList();
@@ -51,7 +74,21 @@ namespace SafePharma.BLL
             return medicines.Select(m => m.ToSearchResultDto(linkedIds.Contains(m.Id)));
         }
 
-        // STEP 2 of the scenario: "Existing Medicine Found" -> "Add to Pharmacy"
+        // Validates every requested tax id exists and belongs to the pharmacy. Returns null if any are invalid.
+        private async Task<List<PharmacyMedicineTax>?> BuildTaxLinksAsync(Guid pharmacyId, List<Guid> taxIds)
+        {
+            var pharmacyTaxes = (await _unitOfWork.TaxRepository.GetAllForPharmacy(pharmacyId))
+                .Select(t => t.Id)
+                .ToHashSet();
+
+            if (taxIds.Any(id => !pharmacyTaxes.Contains(id)))
+            {
+                return null;
+            }
+
+            return taxIds.Distinct().Select(id => new PharmacyMedicineTax { TaxId = id }).ToList();
+        }
+
         public async Task<LinkExistingResult> LinkExistingMedicine(Guid pharmacyId, LinkExistingMedicineDto dto)
         {
             var medicine = await _unitOfWork.MedicineRepository.GetById(dto.MedicineId);
@@ -66,17 +103,27 @@ namespace SafePharma.BLL
                 return new LinkExistingResult { AlreadyLinked = true };
             }
 
+            var taxLinks = await BuildTaxLinksAsync(pharmacyId, dto.TaxIds);
+            if (taxLinks is null)
+            {
+                return new LinkExistingResult { InvalidTaxIds = true };
+            }
+
             var price = new PharmacyMedicine
             {
                 Id = Guid.NewGuid(),
                 MedicineId = medicine.Id,
                 PharmacyId = pharmacyId,
-                TaxId = dto.TaxId,
                 PurchasePrice = dto.PurchasePrice,
                 SellingPrice = dto.SellingPrice,
                 MinStockLevel = dto.MinStockLevel,
                 ChangedAt = DateTime.UtcNow,
             };
+            foreach (var link in taxLinks)
+            {
+                link.PharmacyMedicineId = price.Id;
+                price.PharmacyMedicineTaxes.Add(link);
+            }
 
             _unitOfWork.PharmacyMedicineRepository.Add(price);
             await _unitOfWork.SaveAsync();
@@ -85,14 +132,18 @@ namespace SafePharma.BLL
             return new LinkExistingResult { Medicine = saved!.ToDto() };
         }
 
-        // STEP 3 of the scenario: "Medicine Not Found" -> "Create & Add to Pharmacy"
         public async Task<MedicineCreateResult> CreateMedicine(Guid pharmacyId, MedicineCreateDto dto)
         {
             var existing = await _unitOfWork.MedicineRepository.GetByTradeNameEn(dto.TradeNameEn);
             if (existing is not null)
             {
-                // Safety net: don't silently attach. Tell the caller to use LinkExistingMedicine instead.
                 return new MedicineCreateResult { ExistingMedicineFound = true, ExistingMedicineId = existing.Id };
+            }
+
+            var taxLinks = await BuildTaxLinksAsync(pharmacyId, dto.TaxIds);
+            if (taxLinks is null)
+            {
+                return new MedicineCreateResult { InvalidTaxIds = true };
             }
 
             var medicine = dto.ToMedicineEntity();
@@ -106,12 +157,17 @@ namespace SafePharma.BLL
                 Id = Guid.NewGuid(),
                 MedicineId = medicine.Id,
                 PharmacyId = pharmacyId,
-                TaxId = dto.TaxId,
                 PurchasePrice = dto.PurchasePrice,
                 SellingPrice = dto.SellingPrice,
                 MinStockLevel = dto.MinStockLevel,
+                SKU = dto.SKU,
                 ChangedAt = DateTime.UtcNow,
             };
+            foreach (var link in taxLinks)
+            {
+                link.PharmacyMedicineId = price.Id;
+                price.PharmacyMedicineTaxes.Add(link);
+            }
             _unitOfWork.PharmacyMedicineRepository.Add(price);
 
             await _unitOfWork.SaveAsync();
@@ -120,7 +176,6 @@ namespace SafePharma.BLL
             return new MedicineCreateResult { Medicine = saved!.ToDto() };
         }
 
-        // Pharmacist edit: pharmacy-specific fields ONLY. Global data is untouched.
         public async Task<MedicineUpdateResult> UpdatePharmacyMedicine(Guid pharmacyId, Guid id, PharmacyMedicineUpdateDto dto)
         {
             var price = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(id, pharmacyId);
@@ -129,8 +184,22 @@ namespace SafePharma.BLL
                 return new MedicineUpdateResult { NotFound = true };
             }
 
+            var taxLinks = await BuildTaxLinksAsync(pharmacyId, dto.TaxIds);
+            if (taxLinks is null)
+            {
+                return new MedicineUpdateResult { InvalidTaxIds = true };
+            }
+
             dto.ApplyTo(price);
             price.ChangedAt = DateTime.UtcNow;
+
+            // Replace the tax set entirely (tracked entity, so EF diffs the collection on save).
+            price.PharmacyMedicineTaxes.Clear();
+            foreach (var link in taxLinks)
+            {
+                link.PharmacyMedicineId = price.Id;
+                price.PharmacyMedicineTaxes.Add(link);
+            }
 
             await _unitOfWork.SaveAsync();
 
@@ -138,7 +207,6 @@ namespace SafePharma.BLL
             return new MedicineUpdateResult { Medicine = saved!.ToDto() };
         }
 
-        // Admin-only edit: global catalog data.
         public async Task<GlobalMedicineUpdateResult> UpdateGlobalMedicine(Guid id, GlobalMedicineUpdateDto dto)
         {
             var medicine = await _unitOfWork.MedicineRepository.GetById(id);
@@ -180,11 +248,38 @@ namespace SafePharma.BLL
                 return null;
             }
 
-            price.Medicine.IsActive = !price.Medicine.IsActive;
-            price.Medicine.UpdatedAt = DateTime.UtcNow;
+            price.IsActive = !price.IsActive;
+            price.ChangedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveAsync();
             return price.ToDto();
+        }
+
+        public async Task<Medicine?> ToggleGlobalStatus(Guid id)
+        {
+            var medicine = await _unitOfWork.MedicineRepository.GetById(id);
+            if (medicine is null)
+            {
+                return null;
+            }
+
+            medicine.IsActive = !medicine.IsActive;
+            medicine.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.SaveAsync();
+            return medicine;
+        }
+
+        public async Task<MedicineDetailsDto?> GetMedicineDetails(Guid pharmacyId, Guid id)
+        {
+            var price = await _unitOfWork.PharmacyMedicineRepository.GetDetailsByMedicineAndPharmacy(id, pharmacyId);
+            if (price is null)
+            {
+                return null;
+            }
+
+            var batches = await _unitOfWork._batchRepository.GetBatchesByhMedicineId(price.Id);
+            return price.ToDetailsDto(batches);
         }
     }
 }

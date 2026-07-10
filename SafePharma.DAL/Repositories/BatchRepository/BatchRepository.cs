@@ -19,5 +19,24 @@ namespace SafePharma.DAL
         {
             return await _db.Set<Batch>().Select(b=>b).Where(m=>m.Id==MId).ToListAsync();
         }
+        public async Task<IEnumerable<StockAggregate>> GetStockAggregates(IEnumerable<Guid> pharmacyMedicineIds)
+        {
+            var ids = pharmacyMedicineIds.ToList();
+            if (ids.Count == 0) return Enumerable.Empty<StockAggregate>();
+
+            return await _db.Set<Batch>()
+                .AsNoTracking()
+                .Where(b => ids.Contains(b.MedicineId))
+                .GroupBy(b => b.MedicineId)
+                .Select(g => new StockAggregate
+                {
+                    PharmacyMedicineId = g.Key,
+                    AvailableQuantity = g.Sum(b => b.QuantityRemaining),
+                    BatchCount = g.Count()
+                })
+                .ToListAsync();
+        }
     }
+
+
 }

@@ -31,10 +31,10 @@ namespace SafePharma.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] string? category)
+        public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] string? category, [FromQuery] bool includeInactive = false)
         {
             var pharmacyId = User.GetPharmacyId();
-            var result = await _manager.GetAllMedicines(pharmacyId, search, category);
+            var result = await _manager.GetAllMedicines(pharmacyId, search, category, includeInactive);
             return Ok(result);
         }
 
@@ -76,12 +76,14 @@ namespace SafePharma.API.Controllers
 
             if (result.MedicineNotFound) return NotFound(new { message = "Global medicine not found." });
             if (result.AlreadyLinked) return Conflict(new { message = "This medicine is already in your pharmacy." });
+            if (result.InvalidTaxIds) return BadRequest(new { message = "One or more taxes are invalid for this pharmacy." });
 
             return CreatedAtAction(nameof(GetById), new { id = result.Medicine!.Id }, result.Medicine);
         }
 
         // STEP 3: Medicine Not Found -> "Create & Add to Pharmacy"
         [HttpPost]
+        [Authorize(Policy = AuthPolicies.OwnerOnly)]
         public async Task<IActionResult> Create([FromBody] MedicineCreateDto dto)
         {
             var validationResult = await _createValidator.ValidateAsync(dto);
@@ -98,6 +100,7 @@ namespace SafePharma.API.Controllers
                     existingMedicineId = result.ExistingMedicineId
                 });
             }
+            if (result.InvalidTaxIds) return BadRequest(new { message = "One or more taxes are invalid for this pharmacy." });
 
             return CreatedAtAction(nameof(GetById), new { id = result.Medicine!.Id }, result.Medicine);
         }
@@ -113,6 +116,7 @@ namespace SafePharma.API.Controllers
             var result = await _manager.UpdatePharmacyMedicine(pharmacyId, id, dto);
 
             if (result.NotFound) return NotFound();
+            if (result.InvalidTaxIds) return BadRequest(new { message = "One or more taxes are invalid for this pharmacy." });
             return Ok(result.Medicine);
         }
 

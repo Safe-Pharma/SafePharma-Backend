@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260710001733_initial")]
-    partial class initial
+    [Migration("20260710120405_IntialCreate")]
+    partial class IntialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -311,8 +311,9 @@ namespace SafePharma.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("BatchNumber")
-                        .HasColumnType("int");
+                    b.Property<string>("BatchNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -325,6 +326,9 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<decimal>("PurchasePrice")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("PurchaseReceiptItemId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("QuantityReceived")
                         .HasColumnType("int");
@@ -341,6 +345,8 @@ namespace SafePharma.DAL.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MedicineId");
+
+                    b.HasIndex("PurchaseReceiptItemId");
 
                     b.ToTable("Batches");
                 });
@@ -439,6 +445,10 @@ namespace SafePharma.DAL.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DosageForm")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -460,6 +470,10 @@ namespace SafePharma.DAL.Migrations
                     b.Property<string>("StorageConditions")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Strength")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TherapeuticCategory")
                         .HasMaxLength(100)
@@ -721,11 +735,12 @@ namespace SafePharma.DAL.Migrations
                     b.Property<decimal>("PurchasePrice")
                         .HasColumnType("decimal(12,2)");
 
+                    b.Property<string>("SKU")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("SellingPrice")
                         .HasColumnType("decimal(12,2)");
-
-                    b.Property<Guid>("TaxId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -733,8 +748,6 @@ namespace SafePharma.DAL.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PharmacyId");
-
-                    b.HasIndex("TaxId");
 
                     b.HasIndex("MedicineId", "PharmacyId")
                         .IsUnique();
@@ -745,6 +758,21 @@ namespace SafePharma.DAL.Migrations
 
                             t.HasCheckConstraint("CK_MedicinePrice_SellingPrice", "[SellingPrice] >= 0");
                         });
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.PharmacyMedicineTax", b =>
+                {
+                    b.Property<Guid>("PharmacyMedicineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TaxId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("PharmacyMedicineId", "TaxId");
+
+                    b.HasIndex("TaxId");
+
+                    b.ToTable("PharmacyMedicineTaxes");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.PharmacySettings", b =>
@@ -1263,13 +1291,21 @@ namespace SafePharma.DAL.Migrations
 
             modelBuilder.Entity("SafePharma.DAL.Batch", b =>
                 {
-                    b.HasOne("SafePharma.DAL.Medicine", "Medicine")
+                    b.HasOne("SafePharma.DAL.PharmacyMedicine", "Medicine")
                         .WithMany()
                         .HasForeignKey("MedicineId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SafePharma.DAL.PurchaseReceiptItem", "PurchaseReceiptItem")
+                        .WithMany()
+                        .HasForeignKey("PurchaseReceiptItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Medicine");
+
+                    b.Navigation("PurchaseReceiptItem");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.City", b =>
@@ -1341,15 +1377,26 @@ namespace SafePharma.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Medicine");
+
+                    b.Navigation("Pharmacy");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.PharmacyMedicineTax", b =>
+                {
+                    b.HasOne("SafePharma.DAL.PharmacyMedicine", "PharmacyMedicine")
+                        .WithMany("PharmacyMedicineTaxes")
+                        .HasForeignKey("PharmacyMedicineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SafePharma.DAL.Tax", "Tax")
                         .WithMany()
                         .HasForeignKey("TaxId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Medicine");
-
-                    b.Navigation("Pharmacy");
+                    b.Navigation("PharmacyMedicine");
 
                     b.Navigation("Tax");
                 });
@@ -1520,6 +1567,8 @@ namespace SafePharma.DAL.Migrations
             modelBuilder.Entity("SafePharma.DAL.PharmacyMedicine", b =>
                 {
                     b.Navigation("PharmacyBarcodes");
+
+                    b.Navigation("PharmacyMedicineTaxes");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.PurchaseOrder", b =>

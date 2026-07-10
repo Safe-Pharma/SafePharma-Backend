@@ -4,7 +4,7 @@ namespace SafePharma.BLL
 {
     public interface IMedicineManager
     {
-        Task<IEnumerable<MedicineDto>> GetAllMedicines(Guid pharmacyId, string? search = null, string? category = null);
+        Task<IEnumerable<MedicineDto>> GetAllMedicines(Guid pharmacyId, string? search = null, string? category = null, bool includeInactive = false);
         Task<MedicineDto?> GetMedicineById(Guid pharmacyId, Guid id);
         Task<MedicineStatsDto> GetStats(Guid pharmacyId);
 
@@ -17,7 +17,11 @@ namespace SafePharma.BLL
         Task<GlobalMedicineUpdateResult> UpdateGlobalMedicine(Guid id, GlobalMedicineUpdateDto dto);
 
         Task<bool> DeleteMedicine(Guid pharmacyId, Guid id);
+
         Task<MedicineDto?> ToggleStatus(Guid pharmacyId, Guid id);
+        Task<Medicine?> ToggleGlobalStatus(Guid id);
+
+        Task<MedicineDetailsDto?> GetMedicineDetails(Guid pharmacyId, Guid id);
     }
 
     public class MedicineCreateResult
@@ -25,6 +29,7 @@ namespace SafePharma.BLL
         public MedicineDto? Medicine { get; set; }
         public bool ExistingMedicineFound { get; set; }
         public Guid? ExistingMedicineId { get; set; }
+        public bool InvalidTaxIds { get; set; }
     }
 
     public class LinkExistingResult
@@ -32,12 +37,14 @@ namespace SafePharma.BLL
         public MedicineDto? Medicine { get; set; }
         public bool MedicineNotFound { get; set; }
         public bool AlreadyLinked { get; set; }
+        public bool InvalidTaxIds { get; set; }
     }
 
     public class MedicineUpdateResult
     {
         public MedicineDto? Medicine { get; set; }
         public bool NotFound { get; set; }
+        public bool InvalidTaxIds { get; set; }
     }
 
     public class GlobalMedicineUpdateResult
