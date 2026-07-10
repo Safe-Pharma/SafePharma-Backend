@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SafePharma.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -183,6 +183,27 @@ namespace SafePharma.DAL.Migrations
                     table.PrimaryKey("PK_Batches", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Batches_Medicines_MedicineId",
+                        column: x => x.MedicineId,
+                        principalTable: "Medicines",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ManufacturerBarcodes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MedicineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Barcode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    IsPrimary = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ManufacturerBarcodes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ManufacturerBarcodes_Medicines_MedicineId",
                         column: x => x.MedicineId,
                         principalTable: "Medicines",
                         principalColumn: "Id",
@@ -579,6 +600,7 @@ namespace SafePharma.DAL.Migrations
                     ChangedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ChangedBy = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     MinStockLevel = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -655,6 +677,27 @@ namespace SafePharma.DAL.Migrations
                         principalTable: "PurchaseOrders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PharmacyBarcodes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PharmacyMedicineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Barcode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    IsPrimary = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PharmacyBarcodes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PharmacyBarcodes_PharmacyMedicines_PharmacyMedicineId",
+                        column: x => x.PharmacyMedicineId,
+                        principalTable: "PharmacyMedicines",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -761,6 +804,17 @@ namespace SafePharma.DAL.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ManufacturerBarcodes_Barcode",
+                table: "ManufacturerBarcodes",
+                column: "Barcode",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ManufacturerBarcodes_MedicineId",
+                table: "ManufacturerBarcodes",
+                column: "MedicineId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Medicines_ScientificName",
                 table: "Medicines",
                 column: "ScientificName");
@@ -801,6 +855,12 @@ namespace SafePharma.DAL.Migrations
                 column: "TaxNumber",
                 unique: true,
                 filter: "[TaxNumber] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PharmacyBarcodes_PharmacyMedicineId_Barcode",
+                table: "PharmacyBarcodes",
+                columns: new[] { "PharmacyMedicineId", "Barcode" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PharmacyMedicines_MedicineId_PharmacyId",
@@ -933,13 +993,16 @@ namespace SafePharma.DAL.Migrations
                 name: "Cities");
 
             migrationBuilder.DropTable(
+                name: "ManufacturerBarcodes");
+
+            migrationBuilder.DropTable(
                 name: "PaymentMethods");
 
             migrationBuilder.DropTable(
                 name: "PaymentVerifications");
 
             migrationBuilder.DropTable(
-                name: "PharmacyMedicines");
+                name: "PharmacyBarcodes");
 
             migrationBuilder.DropTable(
                 name: "PharmacySettings");
@@ -960,7 +1023,7 @@ namespace SafePharma.DAL.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Taxes");
+                name: "PharmacyMedicines");
 
             migrationBuilder.DropTable(
                 name: "PurchaseOrdersItems");
@@ -970,6 +1033,9 @@ namespace SafePharma.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Taxes");
 
             migrationBuilder.DropTable(
                 name: "Medicines");

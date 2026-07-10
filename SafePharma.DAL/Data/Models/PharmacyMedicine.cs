@@ -19,7 +19,10 @@
         public DateTime ChangedAt { get; set; }
         public string? ChangedBy { get; set; }
         public int MinStockLevel { get; set; }
+        public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        public virtual ICollection<PharmacyBarcode> PharmacyBarcodes { get; set; } = new HashSet<PharmacyBarcode>();
     }
 }

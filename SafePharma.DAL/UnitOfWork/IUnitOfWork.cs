@@ -25,6 +25,9 @@
         public IPurchaseReceiptRepository PurchaseReceiptRepository { get; }
         public IPurchaseReceiptItemRepository PurchaseReceiptItemRepository { get; }
 
+        IManufacturerBarcodeRepository ManufacturerBarcodeRepository { get; }
+        IPharmacyBarcodeRepository PharmacyBarcodeRepository { get; }
+
         Task SaveAsync();
     }
 }

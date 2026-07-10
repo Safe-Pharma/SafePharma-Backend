@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260709235458_fixerrors")]
-    partial class fixerrors
+    [Migration("20260710001733_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -391,6 +391,36 @@ namespace SafePharma.DAL.Migrations
                     b.ToTable("Countries");
                 });
 
+            modelBuilder.Entity("SafePharma.DAL.Data.Models.ManufacturerBarcode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("MedicineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Barcode")
+                        .IsUnique();
+
+                    b.HasIndex("MedicineId");
+
+                    b.ToTable("ManufacturerBarcodes");
+                });
+
             modelBuilder.Entity("SafePharma.DAL.Medicine", b =>
                 {
                     b.Property<Guid>("Id")
@@ -632,6 +662,34 @@ namespace SafePharma.DAL.Migrations
                     b.ToTable("Pharmacies");
                 });
 
+            modelBuilder.Entity("SafePharma.DAL.PharmacyBarcode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("PharmacyMedicineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PharmacyMedicineId", "Barcode")
+                        .IsUnique();
+
+                    b.ToTable("PharmacyBarcodes");
+                });
+
             modelBuilder.Entity("SafePharma.DAL.PharmacyMedicine", b =>
                 {
                     b.Property<Guid>("Id")
@@ -647,6 +705,9 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<Guid>("MedicineId")
                         .HasColumnType("uniqueidentifier");
@@ -1222,6 +1283,17 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Country");
                 });
 
+            modelBuilder.Entity("SafePharma.DAL.Data.Models.ManufacturerBarcode", b =>
+                {
+                    b.HasOne("SafePharma.DAL.Medicine", "Medicine")
+                        .WithMany("ManufacturerBarcodes")
+                        .HasForeignKey("MedicineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Medicine");
+                });
+
             modelBuilder.Entity("SafePharma.DAL.PaymentVerification", b =>
                 {
                     b.HasOne("SafePharma.DAL.Subscription", "Subscription")
@@ -1242,6 +1314,17 @@ namespace SafePharma.DAL.Migrations
                         .IsRequired();
 
                     b.Navigation("Subscription");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.PharmacyBarcode", b =>
+                {
+                    b.HasOne("SafePharma.DAL.PharmacyMedicine", "PharmacyMedicine")
+                        .WithMany("PharmacyBarcodes")
+                        .HasForeignKey("PharmacyMedicineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PharmacyMedicine");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.PharmacyMedicine", b =>
@@ -1422,6 +1505,8 @@ namespace SafePharma.DAL.Migrations
 
             modelBuilder.Entity("SafePharma.DAL.Medicine", b =>
                 {
+                    b.Navigation("ManufacturerBarcodes");
+
                     b.Navigation("PharmacyMedicines");
                 });
 
@@ -1430,6 +1515,11 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("PharmacySettings");
 
                     b.Navigation("PurchaseOrders");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.PharmacyMedicine", b =>
+                {
+                    b.Navigation("PharmacyBarcodes");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.PurchaseOrder", b =>
