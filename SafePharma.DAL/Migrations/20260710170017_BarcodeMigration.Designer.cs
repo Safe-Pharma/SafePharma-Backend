@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260710001733_initial")]
-    partial class initial
+    [Migration("20260710170017_BarcodeMigration")]
+    partial class BarcodeMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -311,8 +311,9 @@ namespace SafePharma.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("BatchNumber")
-                        .HasColumnType("int");
+                    b.Property<string>("BatchNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -325,6 +326,9 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<decimal>("PurchasePrice")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("PurchaseReceiptItemId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("QuantityReceived")
                         .HasColumnType("int");
@@ -341,6 +345,8 @@ namespace SafePharma.DAL.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MedicineId");
+
+                    b.HasIndex("PurchaseReceiptItemId");
 
                     b.ToTable("Batches");
                 });
@@ -1263,13 +1269,21 @@ namespace SafePharma.DAL.Migrations
 
             modelBuilder.Entity("SafePharma.DAL.Batch", b =>
                 {
-                    b.HasOne("SafePharma.DAL.Medicine", "Medicine")
+                    b.HasOne("SafePharma.DAL.PharmacyMedicine", "Medicine")
                         .WithMany()
                         .HasForeignKey("MedicineId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SafePharma.DAL.PurchaseReceiptItem", "PurchaseReceiptItem")
+                        .WithMany()
+                        .HasForeignKey("PurchaseReceiptItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Medicine");
+
+                    b.Navigation("PurchaseReceiptItem");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.City", b =>

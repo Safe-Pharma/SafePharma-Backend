@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SafePharma.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class BarcodeMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -159,32 +159,6 @@ namespace SafePharma.DAL.Migrations
                         name: "FK_Cities_Countries_CountryId",
                         column: x => x.CountryId,
                         principalTable: "Countries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Batches",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MedicineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    BatchNumber = table.Column<int>(type: "int", nullable: false),
-                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    QuantityReceived = table.Column<int>(type: "int", nullable: false),
-                    QuantityRemaining = table.Column<int>(type: "int", nullable: false),
-                    SellingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PurchasePrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Batches", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Batches_Medicines_MedicineId",
-                        column: x => x.MedicineId,
-                        principalTable: "Medicines",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -731,6 +705,39 @@ namespace SafePharma.DAL.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Batches",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MedicineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PurchaseReceiptItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BatchNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    QuantityReceived = table.Column<int>(type: "int", nullable: false),
+                    QuantityRemaining = table.Column<int>(type: "int", nullable: false),
+                    SellingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PurchasePrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Batches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Batches_PharmacyMedicines_MedicineId",
+                        column: x => x.MedicineId,
+                        principalTable: "PharmacyMedicines",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Batches_PurchaseReceiptItems_PurchaseReceiptItemId",
+                        column: x => x.PurchaseReceiptItemId,
+                        principalTable: "PurchaseReceiptItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -784,6 +791,11 @@ namespace SafePharma.DAL.Migrations
                 name: "IX_Batches_MedicineId",
                 table: "Batches",
                 column: "MedicineId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Batches_PurchaseReceiptItemId",
+                table: "Batches",
+                column: "PurchaseReceiptItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Cities_CountryId_Name",
@@ -1011,9 +1023,6 @@ namespace SafePharma.DAL.Migrations
                 name: "PrimaryContacts");
 
             migrationBuilder.DropTable(
-                name: "PurchaseReceiptItems");
-
-            migrationBuilder.DropTable(
                 name: "SubscriptionPlans");
 
             migrationBuilder.DropTable(
@@ -1023,16 +1032,19 @@ namespace SafePharma.DAL.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "PurchaseReceiptItems");
+
+            migrationBuilder.DropTable(
                 name: "PharmacyMedicines");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "PurchaseOrdersItems");
 
             migrationBuilder.DropTable(
                 name: "PurchaseReceipts");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Taxes");
