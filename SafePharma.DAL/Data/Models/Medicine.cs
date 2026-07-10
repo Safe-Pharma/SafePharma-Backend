@@ -12,6 +12,9 @@ namespace SafePharma.DAL
 
         public string Category { get; set; } = string.Empty;
         public string UnitOfSale { get; set; } = string.Empty;
+        public string DosageForm { get; set; } = string.Empty;
+
+        public string Strength { get; set; } = string.Empty;
         public int UnitsPerPackage { get; set; }
 
         public bool IsPrescriptionRequired { get; set; }
@@ -21,6 +24,10 @@ namespace SafePharma.DAL
         public string? CountryOfOrigin { get; set; }
         public string? StorageConditions { get; set; }
         public string? TherapeuticCategory { get; set; }
+
+        public bool IsGlobal { get; set; } = true;
+        public Guid? OwnerPharmacyId { get; set; }
+        public Pharmacy? OwnerPharmacy { get; set; }
 
         public bool IsActive { get; set; } = true;
 

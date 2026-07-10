@@ -1,6 +1,8 @@
 ﻿namespace SafePharma.BLL
 {
-    public class MedicineDto
+    // Response shape for global-catalog endpoints — no pharmacy-scoped
+    // fields (price, tax, SKU, stock) since those don't exist without a pharmacy.
+    public class GlobalMedicineDto
     {
         public Guid Id { get; set; }
         public string TradeNameAr { get; set; } = string.Empty;
@@ -11,11 +13,6 @@
         public int UnitsPerPackage { get; set; }
         public string DosageForm { get; set; } = string.Empty;
         public string Strength { get; set; } = string.Empty;
-        public string SKU { get; set; } = string.Empty;
-        public decimal PurchasePrice { get; set; }
-        public decimal SellingPrice { get; set; }
-        public List<TaxSummaryDto> Taxes { get; set; } = new();
-        public int MinStockLevel { get; set; }
         public bool IsPrescriptionRequired { get; set; }
         public bool IsControlled { get; set; }
         public string? Manufacturer { get; set; }
@@ -23,12 +20,7 @@
         public string? StorageConditions { get; set; }
         public string? TherapeuticCategory { get; set; }
         public bool IsActive { get; set; }
-        public DateTime ChangedAt { get; set; }
-        public string? ChangedBy { get; set; }
-
-        // List-view stock snapshot — a cheap aggregate, not the full InventorySummaryDto.
-        public int AvailableQuantity { get; set; }
-        public int NumberOfBatches { get; set; }
-        public string StockStatus { get; set; } = "InStock"; // "InStock" | "Low" | "Out"
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace SafePharma.BLL
 {
-    public class GlobalMedicineUpdateDtoValidator : AbstractValidator<GlobalMedicineUpdateDto>
+    public class GlobalMedicineCreateDtoValidator : AbstractValidator<GlobalMedicineCreateDto>
     {
-        public GlobalMedicineUpdateDtoValidator()
+        public GlobalMedicineCreateDtoValidator()
         {
             RuleFor(x => x.TradeNameAr).NotEmpty().MaximumLength(255);
             RuleFor(x => x.TradeNameEn).NotEmpty().MaximumLength(255);

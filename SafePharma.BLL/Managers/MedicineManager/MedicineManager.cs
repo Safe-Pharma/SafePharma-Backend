@@ -11,22 +11,84 @@ namespace SafePharma.BLL
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<MedicineDto>> GetAllMedicines(Guid pharmacyId, string? search = null, string? category = null)
+        private const string SkuPrefix = "RX-";
+        private const int SkuStartNumber = 1001;
+
+        private readonly record struct SkuResolution(string? Sku, bool Duplicate)
         {
-            var prices = await _unitOfWork.PharmacyMedicineRepository.Search(pharmacyId, search, category);
-            return prices.Select(p => p.ToDto());
+            public static SkuResolution Ok(string sku) => new(sku, false);
+            public static SkuResolution AsDuplicate() => new(null, true);
+        }
+
+        // Single source of truth for SKU behavior across Create, Local Create, Link, and Update.
+        // - blank/null + no fallback  -> auto-generate next number for this pharmacy
+        // - blank/null + fallback     -> keep the current SKU unchanged (used on Update)
+        // - provided                  -> validate uniqueness within the pharmacy (excluding self on Update)
+        private async Task<SkuResolution> ResolveSkuAsync(
+            Guid pharmacyId,
+            string? requestedSku,
+            Guid? excludePharmacyMedicineId = null,
+            string? fallbackSku = null)
+        {
+            var trimmed = requestedSku?.Trim();
+
+            if (string.IsNullOrWhiteSpace(trimmed))
+            {
+                if (!string.IsNullOrWhiteSpace(fallbackSku))
+                {
+                    return SkuResolution.Ok(fallbackSku);
+                }
+
+                var highest = await _unitOfWork.PharmacyMedicineRepository.GetHighestAutoSkuNumber(pharmacyId, SkuPrefix);
+                var next = Math.Max(highest + 1, SkuStartNumber);
+                return SkuResolution.Ok($"{SkuPrefix}{next}");
+            }
+
+            var duplicate = await _unitOfWork.PharmacyMedicineRepository
+                .SkuExistsForPharmacy(pharmacyId, trimmed, excludePharmacyMedicineId);
+
+            return duplicate ? SkuResolution.AsDuplicate() : SkuResolution.Ok(trimmed);
+        }
+
+        public async Task<IEnumerable<MedicineDto>> GetAllMedicines(Guid pharmacyId, string? search = null, string? category = null, bool includeInactive = false)
+        {
+            var prices = (await _unitOfWork.PharmacyMedicineRepository.Search(pharmacyId, search, category, includeInactive)).ToList();
+            if (prices.Count == 0) return Enumerable.Empty<MedicineDto>();
+
+            var aggregates = (await _unitOfWork._batchRepository.GetStockAggregates(prices.Select(p => p.Id)))
+                .ToDictionary(a => a.PharmacyMedicineId);
+
+            return prices.Select(p =>
+            {
+                aggregates.TryGetValue(p.Id, out var agg);
+                return p.ToDto(agg?.AvailableQuantity ?? 0, agg?.BatchCount ?? 0);
+            });
         }
 
         public async Task<MedicineDto?> GetMedicineById(Guid pharmacyId, Guid id)
         {
             var price = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(id, pharmacyId);
-            return price?.ToDto();
+            if (price is null) return null;
+
+            var aggregates = (await _unitOfWork._batchRepository.GetStockAggregates(new[] { price.Id })).ToList();
+            var agg = aggregates.FirstOrDefault();
+            return price.ToDto(agg?.AvailableQuantity ?? 0, agg?.BatchCount ?? 0);
         }
 
         public async Task<MedicineStatsDto> GetStats(Guid pharmacyId)
         {
             var prices = (await _unitOfWork.PharmacyMedicineRepository.GetAllForPharmacy(pharmacyId)).ToList();
-            var active = prices.Count(p => p.Medicine.IsActive);
+            var active = prices.Count(p => p.Medicine.IsActive && p.IsActive);
+
+            var aggregates = (await _unitOfWork._batchRepository.GetStockAggregates(prices.Select(p => p.Id)))
+                .ToDictionary(a => a.PharmacyMedicineId);
+
+            var belowMinStock = prices.Count(p =>
+            {
+                aggregates.TryGetValue(p.Id, out var agg);
+                var available = agg?.AvailableQuantity ?? 0;
+                return available < p.MinStockLevel;
+            });
 
             return new MedicineStatsDto
             {
@@ -35,11 +97,11 @@ namespace SafePharma.BLL
                 Inactive = prices.Count - active,
                 PrescriptionRequired = prices.Count(p => p.Medicine.IsPrescriptionRequired),
                 Controlled = prices.Count(p => p.Medicine.IsControlled),
-                CategoriesCount = prices.Select(p => p.Medicine.Category).Distinct().Count()
+                CategoriesCount = prices.Select(p => p.Medicine.Category).Distinct().Count(),
+                BelowMinStock = belowMinStock,
             };
         }
 
-        // STEP 1 of the scenario: "Search First"
         public async Task<IEnumerable<GlobalMedicineSearchResultDto>> SearchGlobalCatalog(Guid pharmacyId, string? query)
         {
             var medicines = (await _unitOfWork.MedicineRepository.SearchGlobal(query)).ToList();
@@ -51,12 +113,27 @@ namespace SafePharma.BLL
             return medicines.Select(m => m.ToSearchResultDto(linkedIds.Contains(m.Id)));
         }
 
-        // STEP 2 of the scenario: "Existing Medicine Found" -> "Add to Pharmacy"
+        // Validates every requested tax id exists and belongs to the pharmacy. Returns null if any are invalid.
+        private async Task<List<PharmacyMedicineTax>?> BuildTaxLinksAsync(Guid pharmacyId, List<Guid> taxIds)
+        {
+            var pharmacyTaxes = (await _unitOfWork.TaxRepository.GetAllForPharmacy(pharmacyId))
+                .Select(t => t.Id)
+                .ToHashSet();
+
+            if (taxIds.Any(id => !pharmacyTaxes.Contains(id)))
+            {
+                return null;
+            }
+
+            return taxIds.Distinct().Select(id => new PharmacyMedicineTax { TaxId = id }).ToList();
+        }
+
         public async Task<LinkExistingResult> LinkExistingMedicine(Guid pharmacyId, LinkExistingMedicineDto dto)
         {
             var medicine = await _unitOfWork.MedicineRepository.GetById(dto.MedicineId);
-            if (medicine is null)
+            if (medicine is null || !medicine.IsGlobal)
             {
+                // Not found, or it's another pharmacy's local medicine — indistinguishable from this pharmacy's view.
                 return new LinkExistingResult { MedicineNotFound = true };
             }
 
@@ -66,61 +143,71 @@ namespace SafePharma.BLL
                 return new LinkExistingResult { AlreadyLinked = true };
             }
 
+            var taxLinks = await BuildTaxLinksAsync(pharmacyId, dto.TaxIds);
+            if (taxLinks is null)
+            {
+                return new LinkExistingResult { InvalidTaxIds = true };
+            }
+
+            var skuResult = await ResolveSkuAsync(pharmacyId, dto.SKU);
+            if (skuResult.Duplicate)
+            {
+                return new LinkExistingResult { DuplicateSku = true };
+            }
+
             var price = new PharmacyMedicine
             {
                 Id = Guid.NewGuid(),
                 MedicineId = medicine.Id,
                 PharmacyId = pharmacyId,
-                TaxId = dto.TaxId,
                 PurchasePrice = dto.PurchasePrice,
                 SellingPrice = dto.SellingPrice,
                 MinStockLevel = dto.MinStockLevel,
+                SKU = skuResult.Sku!,
                 ChangedAt = DateTime.UtcNow,
             };
+            foreach (var link in taxLinks)
+            {
+                link.PharmacyMedicineId = price.Id;
+                price.PharmacyMedicineTaxes.Add(link);
+            }
 
             _unitOfWork.PharmacyMedicineRepository.Add(price);
-            await _unitOfWork.SaveAsync();
+
+            try
+            {
+                await _unitOfWork.SaveAsync();
+            }
+            catch (DuplicateSkuException)
+            {
+                return new LinkExistingResult { DuplicateSku = true };
+            }
 
             var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(medicine.Id, pharmacyId);
             return new LinkExistingResult { Medicine = saved!.ToDto() };
         }
 
-        // STEP 3 of the scenario: "Medicine Not Found" -> "Create & Add to Pharmacy"
-        public async Task<MedicineCreateResult> CreateMedicine(Guid pharmacyId, MedicineCreateDto dto)
+        public async Task<GlobalMedicineCreateResult> CreateGlobalMedicine(GlobalMedicineCreateDto dto)
         {
             var existing = await _unitOfWork.MedicineRepository.GetByTradeNameEn(dto.TradeNameEn);
             if (existing is not null)
             {
-                // Safety net: don't silently attach. Tell the caller to use LinkExistingMedicine instead.
-                return new MedicineCreateResult { ExistingMedicineFound = true, ExistingMedicineId = existing.Id };
+                return new GlobalMedicineCreateResult { ExistingMedicineFound = true, ExistingMedicineId = existing.Id };
             }
 
             var medicine = dto.ToMedicineEntity();
             medicine.Id = Guid.NewGuid();
+            medicine.IsGlobal = true;
+            medicine.OwnerPharmacyId = null;
             medicine.CreatedAt = DateTime.UtcNow;
             medicine.UpdatedAt = DateTime.UtcNow;
+
             _unitOfWork.MedicineRepository.Add(medicine);
-
-            var price = new PharmacyMedicine
-            {
-                Id = Guid.NewGuid(),
-                MedicineId = medicine.Id,
-                PharmacyId = pharmacyId,
-                TaxId = dto.TaxId,
-                PurchasePrice = dto.PurchasePrice,
-                SellingPrice = dto.SellingPrice,
-                MinStockLevel = dto.MinStockLevel,
-                ChangedAt = DateTime.UtcNow,
-            };
-            _unitOfWork.PharmacyMedicineRepository.Add(price);
-
             await _unitOfWork.SaveAsync();
 
-            var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(medicine.Id, pharmacyId);
-            return new MedicineCreateResult { Medicine = saved!.ToDto() };
+            return new GlobalMedicineCreateResult { Medicine = medicine.ToGlobalDto() };
         }
 
-        // Pharmacist edit: pharmacy-specific fields ONLY. Global data is untouched.
         public async Task<MedicineUpdateResult> UpdatePharmacyMedicine(Guid pharmacyId, Guid id, PharmacyMedicineUpdateDto dto)
         {
             var price = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(id, pharmacyId);
@@ -129,16 +216,42 @@ namespace SafePharma.BLL
                 return new MedicineUpdateResult { NotFound = true };
             }
 
+            var taxLinks = await BuildTaxLinksAsync(pharmacyId, dto.TaxIds);
+            if (taxLinks is null)
+            {
+                return new MedicineUpdateResult { InvalidTaxIds = true };
+            }
+
+            var skuResult = await ResolveSkuAsync(pharmacyId, dto.SKU, excludePharmacyMedicineId: price.Id, fallbackSku: price.SKU);
+            if (skuResult.Duplicate)
+            {
+                return new MedicineUpdateResult { DuplicateSku = true };
+            }
+
             dto.ApplyTo(price);
+            price.SKU = skuResult.Sku!;
             price.ChangedAt = DateTime.UtcNow;
 
-            await _unitOfWork.SaveAsync();
+            price.PharmacyMedicineTaxes.Clear();
+            foreach (var link in taxLinks)
+            {
+                link.PharmacyMedicineId = price.Id;
+                price.PharmacyMedicineTaxes.Add(link);
+            }
+
+            try
+            {
+                await _unitOfWork.SaveAsync();
+            }
+            catch (DuplicateSkuException)
+            {
+                return new MedicineUpdateResult { DuplicateSku = true };
+            }
 
             var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(id, pharmacyId);
             return new MedicineUpdateResult { Medicine = saved!.ToDto() };
         }
 
-        // Admin-only edit: global catalog data.
         public async Task<GlobalMedicineUpdateResult> UpdateGlobalMedicine(Guid id, GlobalMedicineUpdateDto dto)
         {
             var medicine = await _unitOfWork.MedicineRepository.GetById(id);
@@ -180,11 +293,104 @@ namespace SafePharma.BLL
                 return null;
             }
 
-            price.Medicine.IsActive = !price.Medicine.IsActive;
-            price.Medicine.UpdatedAt = DateTime.UtcNow;
+            price.IsActive = !price.IsActive;
+            price.ChangedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveAsync();
             return price.ToDto();
         }
+
+        public async Task<Medicine?> ToggleGlobalStatus(Guid id)
+        {
+            var medicine = await _unitOfWork.MedicineRepository.GetById(id);
+            if (medicine is null)
+            {
+                return null;
+            }
+
+            medicine.IsActive = !medicine.IsActive;
+            medicine.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.SaveAsync();
+            return medicine;
+        }
+
+        public async Task<MedicineDetailsDto?> GetMedicineDetails(Guid pharmacyId, Guid id)
+        {
+            var price = await _unitOfWork.PharmacyMedicineRepository.GetDetailsByMedicineAndPharmacy(id, pharmacyId);
+            if (price is null)
+            {
+                return null;
+            }
+
+            var batches = await _unitOfWork._batchRepository.GetBatchesByhMedicineId(price.Id);
+            return price.ToDetailsDto(batches);
+        }
+
+        public async Task<MedicineCreateResult> CreateLocalMedicine(Guid pharmacyId, MedicineCreateDto dto)
+        {
+            var globalMatch = await _unitOfWork.MedicineRepository.GetByTradeNameEn(dto.TradeNameEn);
+            if (globalMatch is not null)
+            {
+                return new MedicineCreateResult { ExistingMedicineFound = true, ExistingMedicineId = globalMatch.Id };
+            }
+
+            var localMatch = await _unitOfWork.MedicineRepository.GetLocalByTradeNameEnForPharmacy(pharmacyId, dto.TradeNameEn);
+            if (localMatch is not null)
+            {
+                return new MedicineCreateResult { ExistingMedicineFound = true, ExistingMedicineId = localMatch.Id };
+            }
+
+            var taxLinks = await BuildTaxLinksAsync(pharmacyId, dto.TaxIds);
+            if (taxLinks is null)
+            {
+                return new MedicineCreateResult { InvalidTaxIds = true };
+            }
+
+            var skuResult = await ResolveSkuAsync(pharmacyId, dto.SKU);
+            if (skuResult.Duplicate)
+            {
+                return new MedicineCreateResult { DuplicateSku = true };
+            }
+
+            var medicine = dto.ToMedicineEntity();
+            medicine.Id = Guid.NewGuid();
+            medicine.IsGlobal = false;
+            medicine.OwnerPharmacyId = pharmacyId;
+            medicine.CreatedAt = DateTime.UtcNow;
+            medicine.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.MedicineRepository.Add(medicine);
+
+            var price = new PharmacyMedicine
+            {
+                Id = Guid.NewGuid(),
+                MedicineId = medicine.Id,
+                PharmacyId = pharmacyId,
+                PurchasePrice = dto.PurchasePrice,
+                SellingPrice = dto.SellingPrice,
+                MinStockLevel = dto.MinStockLevel,
+                SKU = skuResult.Sku!,
+                ChangedAt = DateTime.UtcNow,
+            };
+            foreach (var link in taxLinks)
+            {
+                link.PharmacyMedicineId = price.Id;
+                price.PharmacyMedicineTaxes.Add(link);
+            }
+            _unitOfWork.PharmacyMedicineRepository.Add(price);
+
+            try
+            {
+                await _unitOfWork.SaveAsync();
+            }
+            catch (DuplicateSkuException)
+            {
+                return new MedicineCreateResult { DuplicateSku = true };
+            }
+
+            var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(medicine.Id, pharmacyId);
+            return new MedicineCreateResult { Medicine = saved!.ToDto() };
+        }
+
     }
 }

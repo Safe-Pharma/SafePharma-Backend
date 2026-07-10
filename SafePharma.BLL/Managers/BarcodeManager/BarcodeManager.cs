@@ -72,6 +72,11 @@ public class BarcodeManager : IBarcodeManager
 
     public async Task<GeneralResult> AddPharmacyBarcodeAsync(AddPharmacyBarcodeDto dto)
     {
+        var pharmacyId = _currentUser.PharmacyId;
+        if (pharmacyId == Guid.Empty)
+        {
+            return GeneralResult<ScanResultDto>.FailResult("Pharmacy context not found");
+        }
         var validation = await _pharmacyValidator.ValidateAsync(dto);
         if (!validation.IsValid)
         {
@@ -102,13 +107,12 @@ public class BarcodeManager : IBarcodeManager
         }
 
         var pharmacyMedicine = await _unitOfWork.PharmacyMedicineRepository
-            .GetById(dto.PharmacyMedicineId);
+        .GetById(dto.PharmacyMedicineId);
 
-        if (pharmacyMedicine == null || pharmacyMedicine.PharmacyId != _currentUser.PharmacyId)
+        if (pharmacyMedicine == null || pharmacyMedicine.PharmacyId != pharmacyId)
         {
-            return GeneralResult.FailResult("Pharmacy medicine not found");
+            return GeneralResult.FailResult("Pharmacy medicine not found in this Pharmacy");
         }
-
         if (dto.IsPrimary)
         {
             var existingPrimary = await _unitOfWork.PharmacyBarcodeRepository

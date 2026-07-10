@@ -10,7 +10,7 @@
         public int UnitsPerPackage { get; set; }
         public decimal PurchasePrice { get; set; }
         public decimal SellingPrice { get; set; }
-        public Guid TaxId { get; set; }
+        public List<Guid> TaxIds { get; set; } = new();
         public int MinStockLevel { get; set; }
         public bool IsPrescriptionRequired { get; set; }
         public bool IsControlled { get; set; }
@@ -19,5 +19,9 @@
         public string? StorageConditions { get; set; }
         public string? TherapeuticCategory { get; set; }
         public bool IsActive { get; set; } = true;
+        public string DosageForm { get; set; } = string.Empty;
+
+        public string Strength { get; set; } = string.Empty;
+        public string? SKU { get; set; }
     }
 }

@@ -106,7 +106,24 @@ namespace SafePharma.DAL
                     .HasMaxLength(100);
 
                 entity.HasIndex(m => m.ScientificName);
-                entity.HasIndex(m => m.TradeNameEn).IsUnique();
+                entity.Property(m => m.IsGlobal).HasDefaultValue(true);
+
+                entity.HasOne(m => m.OwnerPharmacy)
+                    .WithMany()
+                    .HasForeignKey(m => m.OwnerPharmacyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Global medicines: name unique across the whole catalog.
+                entity.HasIndex(m => m.TradeNameEn)
+                    .IsUnique()
+                    .HasFilter("[IsGlobal] = 1")
+                    .HasDatabaseName("IX_Medicine_TradeNameEn_Global");
+
+                // Local medicines: name only needs to be unique within the owning pharmacy.
+                entity.HasIndex(m => new { m.OwnerPharmacyId, m.TradeNameEn })
+                    .IsUnique()
+                    .HasFilter("[IsGlobal] = 0")
+                    .HasDatabaseName("IX_Medicine_Owner_TradeNameEn_Local");
             });
 
             modelBuilder.Entity<Supplier>(entity =>
@@ -277,10 +294,13 @@ namespace SafePharma.DAL
                     .HasForeignKey(mp => mp.PharmacyId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(mp => mp.Tax)
-                    .WithMany()
-                    .HasForeignKey(mp => mp.TaxId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                entity.Property(mp => mp.SKU)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.HasIndex(mp => new { mp.PharmacyId, mp.SKU })
+                    .IsUnique()
+                    .HasDatabaseName("IX_PharmacyMedicine_Pharmacy_SKU");
 
                 // One current price row per medicine per pharmacy
                 entity.HasIndex(mp => new { mp.MedicineId, mp.PharmacyId }).IsUnique();
@@ -294,6 +314,21 @@ namespace SafePharma.DAL
                         "CK_MedicinePrice_SellingPrice",
                         "[SellingPrice] >= 0");
                 });
+            });
+
+            modelBuilder.Entity<PharmacyMedicineTax>(entity =>
+            {
+                entity.HasKey(x => new { x.PharmacyMedicineId, x.TaxId });
+
+                entity.HasOne(x => x.PharmacyMedicine)
+                    .WithMany(pm => pm.PharmacyMedicineTaxes)
+                    .HasForeignKey(x => x.PharmacyMedicineId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.Tax)
+                    .WithMany()
+                    .HasForeignKey(x => x.TaxId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<ManufacturerBarcode>(entity =>
@@ -385,6 +420,7 @@ namespace SafePharma.DAL
 
         public DbSet<ManufacturerBarcode> ManufacturerBarcodes => Set<ManufacturerBarcode>();
         public DbSet<PharmacyBarcode> PharmacyBarcodes => Set<PharmacyBarcode>();
+        public DbSet<PharmacyMedicineTax> PharmacyMedicineTaxes => Set<PharmacyMedicineTax>();
 
 
     }

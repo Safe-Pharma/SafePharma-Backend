@@ -5,36 +5,35 @@ using SafePharma.BLL;
 
 namespace SafePharma.API.Controllers
 {
-    [Route("api/[controller]")]
+    // Any authenticated pharmacy staff. Everything here is scoped to
+    // the caller's own pharmacy via User.GetPharmacyId() — never global.
+    [Route("api/pharmacy-medicines")]
     [ApiController]
     [Authorize]
-    public class MedicinesController : ControllerBase
+    public class PharmacyMedicinesController : ControllerBase
     {
         private readonly IMedicineManager _manager;
         private readonly IValidator<MedicineCreateDto> _createValidator;
         private readonly IValidator<LinkExistingMedicineDto> _linkValidator;
         private readonly IValidator<PharmacyMedicineUpdateDto> _pharmacyUpdateValidator;
-        private readonly IValidator<GlobalMedicineUpdateDto> _globalUpdateValidator;
 
-        public MedicinesController(
+        public PharmacyMedicinesController(
             IMedicineManager manager,
             IValidator<MedicineCreateDto> createValidator,
             IValidator<LinkExistingMedicineDto> linkValidator,
-            IValidator<PharmacyMedicineUpdateDto> pharmacyUpdateValidator,
-            IValidator<GlobalMedicineUpdateDto> globalUpdateValidator)
+            IValidator<PharmacyMedicineUpdateDto> pharmacyUpdateValidator)
         {
             _manager = manager;
             _createValidator = createValidator;
             _linkValidator = linkValidator;
             _pharmacyUpdateValidator = pharmacyUpdateValidator;
-            _globalUpdateValidator = globalUpdateValidator;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] string? category)
+        public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] string? category, [FromQuery] bool includeInactive = false)
         {
             var pharmacyId = User.GetPharmacyId();
-            var result = await _manager.GetAllMedicines(pharmacyId, search, category);
+            var result = await _manager.GetAllMedicines(pharmacyId, search, category, includeInactive);
             return Ok(result);
         }
 
@@ -46,9 +45,9 @@ namespace SafePharma.API.Controllers
             return Ok(result);
         }
 
-        // STEP 1: Search First
-        [HttpGet("global/search")]
-        public async Task<IActionResult> SearchGlobal([FromQuery] string? query)
+        // STEP 1: Search the global catalog before deciding link-existing vs local.
+        [HttpGet("catalog-search")]
+        public async Task<IActionResult> SearchGlobalCatalog([FromQuery] string? query)
         {
             var pharmacyId = User.GetPharmacyId();
             var result = await _manager.SearchGlobalCatalog(pharmacyId, query);
@@ -64,7 +63,7 @@ namespace SafePharma.API.Controllers
             return Ok(result);
         }
 
-        // STEP 2: Existing Medicine Found -> "Add to Pharmacy"
+        // STEP 2: Global medicine found -> link it into this pharmacy's catalog.
         [HttpPost("link-existing")]
         public async Task<IActionResult> LinkExisting([FromBody] LinkExistingMedicineDto dto)
         {
@@ -76,34 +75,39 @@ namespace SafePharma.API.Controllers
 
             if (result.MedicineNotFound) return NotFound(new { message = "Global medicine not found." });
             if (result.AlreadyLinked) return Conflict(new { message = "This medicine is already in your pharmacy." });
+            if (result.InvalidTaxIds) return BadRequest(new { message = "One or more taxes are invalid for this pharmacy." });
 
             return CreatedAtAction(nameof(GetById), new { id = result.Medicine!.Id }, result.Medicine);
         }
 
-        // STEP 3: Medicine Not Found -> "Create & Add to Pharmacy"
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] MedicineCreateDto dto)
+        // STEP 3: Not found anywhere -> create a medicine scoped ONLY to this pharmacy.
+        [HttpPost("local")]
+        [Authorize(Policy = AuthPolicies.AdminOrOwner)]
+        public async Task<IActionResult> CreateLocal([FromBody] MedicineCreateDto dto)
         {
             var validationResult = await _createValidator.ValidateAsync(dto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
             var pharmacyId = User.GetPharmacyId();
-            var result = await _manager.CreateMedicine(pharmacyId, dto);
+            var result = await _manager.CreateLocalMedicine(pharmacyId, dto);
 
             if (result.ExistingMedicineFound)
             {
                 return Conflict(new
                 {
-                    message = $"\"{dto.TradeNameEn}\" already exists in the global catalog. Use link-existing instead.",
+                    message = $"\"{dto.TradeNameEn}\" already exists. Use link-existing instead.",
                     existingMedicineId = result.ExistingMedicineId
                 });
             }
+            if (result.InvalidTaxIds) return BadRequest(new { message = "One or more taxes are invalid for this pharmacy." });
+            if (result.DuplicateSku) return Conflict(new { message = "That SKU is already in use in your pharmacy." });
 
             return CreatedAtAction(nameof(GetById), new { id = result.Medicine!.Id }, result.Medicine);
         }
 
-        // Pharmacist edit: pharmacy-specific fields only
+        // Admin/Owner edit: pharmacy-specific fields only (price, tax, stock, SKU).
         [HttpPut("{id:guid}")]
+        [Authorize(Policy = AuthPolicies.AdminOrOwner)]
         public async Task<IActionResult> Update(Guid id, [FromBody] PharmacyMedicineUpdateDto dto)
         {
             var validationResult = await _pharmacyUpdateValidator.ValidateAsync(dto);
@@ -113,23 +117,7 @@ namespace SafePharma.API.Controllers
             var result = await _manager.UpdatePharmacyMedicine(pharmacyId, id, dto);
 
             if (result.NotFound) return NotFound();
-            return Ok(result.Medicine);
-        }
-
-        // Admin-only: edit global catalog data
-        [HttpPut("global/{id:guid}")]
-        [Authorize(Policy = AuthPolicies.OwnerOnly)]
-        public async Task<IActionResult> UpdateGlobal(Guid id, [FromBody] GlobalMedicineUpdateDto dto)
-        {
-            var validationResult = await _globalUpdateValidator.ValidateAsync(dto);
-            if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
-
-            var result = await _manager.UpdateGlobalMedicine(id, dto);
-
-            if (result.NotFound) return NotFound();
-            if (result.DuplicateTradeName)
-                return Conflict(new { message = $"\"{dto.TradeNameEn}\" is already in use." });
-
+            if (result.InvalidTaxIds) return BadRequest(new { message = "One or more taxes are invalid for this pharmacy." });
             return Ok(result.Medicine);
         }
 
