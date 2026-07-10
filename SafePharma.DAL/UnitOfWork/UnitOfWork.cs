@@ -1,4 +1,7 @@
-﻿namespace SafePharma.DAL
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+
+namespace SafePharma.DAL
 {
     public class UnitOfWork : IUnitOfWork
     {
@@ -92,7 +95,19 @@
 
         public async Task SaveAsync()
         {
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx &&
+                                                (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+            {
+                if (sqlEx.Message.Contains("IX_PharmacyMedicine_Pharmacy_SKU", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new DuplicateSkuException(ex);
+                }
+                throw;
+            }
         }
     }
 }

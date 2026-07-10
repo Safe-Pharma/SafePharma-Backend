@@ -22,6 +22,6 @@
         public string DosageForm { get; set; } = string.Empty;
 
         public string Strength { get; set; } = string.Empty;
-        public string SKU { get; set; } = string.Empty;
+        public string? SKU { get; set; }
     }
 }

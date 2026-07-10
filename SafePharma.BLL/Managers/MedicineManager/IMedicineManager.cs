@@ -22,6 +22,7 @@ namespace SafePharma.BLL
         Task<Medicine?> ToggleGlobalStatus(Guid id);
 
         Task<MedicineDetailsDto?> GetMedicineDetails(Guid pharmacyId, Guid id);
+        Task<MedicineCreateResult> CreateLocalMedicine(Guid pharmacyId, MedicineCreateDto dto);
     }
 
     public class MedicineCreateResult
@@ -30,6 +31,7 @@ namespace SafePharma.BLL
         public bool ExistingMedicineFound { get; set; }
         public Guid? ExistingMedicineId { get; set; }
         public bool InvalidTaxIds { get; set; }
+        public bool DuplicateSku { get; set; }
     }
 
     public class LinkExistingResult
@@ -38,6 +40,7 @@ namespace SafePharma.BLL
         public bool MedicineNotFound { get; set; }
         public bool AlreadyLinked { get; set; }
         public bool InvalidTaxIds { get; set; }
+        public bool DuplicateSku { get; set; }
     }
 
     public class MedicineUpdateResult
@@ -45,6 +48,7 @@ namespace SafePharma.BLL
         public MedicineDto? Medicine { get; set; }
         public bool NotFound { get; set; }
         public bool InvalidTaxIds { get; set; }
+        public bool DuplicateSku { get; set; }
     }
 
     public class GlobalMedicineUpdateResult

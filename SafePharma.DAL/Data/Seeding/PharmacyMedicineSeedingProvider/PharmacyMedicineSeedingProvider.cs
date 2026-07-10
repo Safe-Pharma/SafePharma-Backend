@@ -27,14 +27,14 @@
 
             foreach (var pharmacyId in pharmacyIds)
             {
+                int skuCounter = 1;
+
                 var pharmacyTaxes = taxes.Where(t => t.PharmacyId == pharmacyId).ToList();
 
                 foreach (var medicine in medicines)
                 {
                     if (!priceSheet.TryGetValue(medicine.TradeNameEn, out var priceInfo))
-                    {
                         continue;
-                    }
 
                     var tax = pharmacyTaxes.First(t => t.Name == priceInfo.TaxName);
 
@@ -48,13 +48,16 @@
                         MinStockLevel = priceInfo.MinStockLevel,
                         ChangedAt = seededAt,
                         ChangedBy = "system",
+                        SKU = $"MED-{skuCounter:D4}"
                     };
+
                     pharmacyMedicine.PharmacyMedicineTaxes.Add(new PharmacyMedicineTax
                     {
                         PharmacyMedicineId = pharmacyMedicine.Id,
                         TaxId = tax.Id,
                     });
 
+                    skuCounter++;
                     prices.Add(pharmacyMedicine);
                 }
             }

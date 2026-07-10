@@ -105,6 +105,31 @@ namespace SafePharma.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Medicine!.Id }, result.Medicine);
         }
 
+        // Admin (or Owner) — medicine doesn't exist globally, create it scoped to this pharmacy only.
+        [HttpPost("local")]
+        [Authorize(Policy = AuthPolicies.AdminOrOwner)]
+        public async Task<IActionResult> CreateLocal([FromBody] MedicineCreateDto dto)
+        {
+            var validationResult = await _createValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.CreateLocalMedicine(pharmacyId, dto);
+
+            if (result.ExistingMedicineFound)
+            {
+                return Conflict(new
+                {
+                    message = $"\"{dto.TradeNameEn}\" already exists. Use link-existing instead.",
+                    existingMedicineId = result.ExistingMedicineId
+                });
+            }
+            if (result.InvalidTaxIds) return BadRequest(new { message = "One or more taxes are invalid for this pharmacy." });
+            if (result.DuplicateSku) return Conflict(new { message = "That SKU is already in use in your pharmacy." });
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Medicine!.Id }, result.Medicine);
+        }
+
         // Pharmacist edit: pharmacy-specific fields only
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] PharmacyMedicineUpdateDto dto)
