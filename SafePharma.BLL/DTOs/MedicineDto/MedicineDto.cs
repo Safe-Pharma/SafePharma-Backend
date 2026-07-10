@@ -3,6 +3,7 @@
     public class MedicineDto
     {
         public Guid Id { get; set; }
+        public Guid PharmacyMedicineId { get; set; }
         public string TradeNameAr { get; set; } = string.Empty;
         public string TradeNameEn { get; set; } = string.Empty;
         public string ScientificName { get; set; } = string.Empty;

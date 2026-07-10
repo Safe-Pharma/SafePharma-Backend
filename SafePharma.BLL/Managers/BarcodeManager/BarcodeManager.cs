@@ -107,7 +107,7 @@ public class BarcodeManager : IBarcodeManager
         }
 
         var pharmacyMedicine = await _unitOfWork.PharmacyMedicineRepository
-        .GetById(dto.PharmacyMedicineId);
+        .GetByIdAndPharmacy(dto.PharmacyMedicineId,pharmacyId);
 
         if (pharmacyMedicine == null || pharmacyMedicine.PharmacyId != pharmacyId)
         {
