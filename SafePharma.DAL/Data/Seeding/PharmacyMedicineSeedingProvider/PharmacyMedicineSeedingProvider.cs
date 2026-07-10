@@ -38,18 +38,24 @@
 
                     var tax = pharmacyTaxes.First(t => t.Name == priceInfo.TaxName);
 
-                    prices.Add(new PharmacyMedicine
+                    var pharmacyMedicine = new PharmacyMedicine
                     {
                         Id = Guid.NewGuid(),
                         MedicineId = medicine.Id,
                         PharmacyId = pharmacyId,
-                        TaxId = tax.Id,
                         PurchasePrice = priceInfo.Purchase,
                         SellingPrice = priceInfo.Selling,
                         MinStockLevel = priceInfo.MinStockLevel,
                         ChangedAt = seededAt,
                         ChangedBy = "system",
+                    };
+                    pharmacyMedicine.PharmacyMedicineTaxes.Add(new PharmacyMedicineTax
+                    {
+                        PharmacyMedicineId = pharmacyMedicine.Id,
+                        TaxId = tax.Id,
                     });
+
+                    prices.Add(pharmacyMedicine);
                 }
             }
 

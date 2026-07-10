@@ -12,9 +12,12 @@ namespace SafePharma.BLL
             RuleFor(x => x.Category).NotEmpty().MaximumLength(50);
             RuleFor(x => x.UnitOfSale).NotEmpty().MaximumLength(50);
             RuleFor(x => x.UnitsPerPackage).GreaterThan(0);
+            RuleFor(x => x.DosageForm).NotEmpty().MaximumLength(50);
+            RuleFor(x => x.Strength).NotEmpty().MaximumLength(50);
             RuleFor(x => x.PurchasePrice).GreaterThanOrEqualTo(0);
             RuleFor(x => x.SellingPrice).GreaterThanOrEqualTo(0);
-            RuleFor(x => x.TaxId).NotEmpty();
+            RuleFor(x => x.TaxIds).NotEmpty().WithMessage("At least one tax is required.");
+            RuleForEach(x => x.TaxIds).NotEmpty();
             RuleFor(x => x.MinStockLevel).GreaterThanOrEqualTo(0);
             RuleFor(x => x.TherapeuticCategory).MaximumLength(100);
             RuleFor(x => x.Manufacturer).MaximumLength(255);

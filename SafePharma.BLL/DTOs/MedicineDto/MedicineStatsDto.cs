@@ -8,5 +8,6 @@
         public int PrescriptionRequired { get; set; }
         public int Controlled { get; set; }
         public int CategoriesCount { get; set; }
+        public int BelowMinStock { get; set; }
     }
 }

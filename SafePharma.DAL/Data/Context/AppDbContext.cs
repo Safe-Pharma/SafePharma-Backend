@@ -277,11 +277,6 @@ namespace SafePharma.DAL
                     .HasForeignKey(mp => mp.PharmacyId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(mp => mp.Tax)
-                    .WithMany()
-                    .HasForeignKey(mp => mp.TaxId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
                 // One current price row per medicine per pharmacy
                 entity.HasIndex(mp => new { mp.MedicineId, mp.PharmacyId }).IsUnique();
 
@@ -294,6 +289,21 @@ namespace SafePharma.DAL
                         "CK_MedicinePrice_SellingPrice",
                         "[SellingPrice] >= 0");
                 });
+            });
+
+            modelBuilder.Entity<PharmacyMedicineTax>(entity =>
+            {
+                entity.HasKey(x => new { x.PharmacyMedicineId, x.TaxId });
+
+                entity.HasOne(x => x.PharmacyMedicine)
+                    .WithMany(pm => pm.PharmacyMedicineTaxes)
+                    .HasForeignKey(x => x.PharmacyMedicineId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.Tax)
+                    .WithMany()
+                    .HasForeignKey(x => x.TaxId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<ManufacturerBarcode>(entity =>
@@ -385,6 +395,7 @@ namespace SafePharma.DAL
 
         public DbSet<ManufacturerBarcode> ManufacturerBarcodes => Set<ManufacturerBarcode>();
         public DbSet<PharmacyBarcode> PharmacyBarcodes => Set<PharmacyBarcode>();
+        public DbSet<PharmacyMedicineTax> PharmacyMedicineTaxes => Set<PharmacyMedicineTax>();
 
 
     }
