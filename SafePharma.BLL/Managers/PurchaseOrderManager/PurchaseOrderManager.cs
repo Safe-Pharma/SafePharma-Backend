@@ -32,7 +32,7 @@ namespace SafePharma.BLL
                 Items = createDto.Items.Select(i => new PurchaseOrderItem
                 {
                     Id = i.Id,
-                    MedicineId = i.MedicineId,
+                    PharmacyMedicineId = i.PharmacyMedicineId,
                     QuantityOrdered = i.QuantityOrdered,
                     UnitPrice = i.UnitPrice
                 }).ToList()
@@ -52,9 +52,9 @@ namespace SafePharma.BLL
                 SupplierName = supplier.Name,
                 Items = po.Items.Select(i => new PurchaseOrderItemReadDto
                  {
-                     MedicineName = i.Medicine?.ScientificName ?? i.Medicine?.TradeNameEn ?? "",
-                     QuantityOrdered = i.QuantityOrdered,
-                     UnitPrice = i.UnitPrice
+                    MedicineName = i.PharmacyMedicine.Medicine.TradeNameEn,
+                    QuantityOrdered = i.QuantityOrdered,
+                    UnitPrice = i.UnitPrice
                  }).ToList()
             });
         }
@@ -75,7 +75,7 @@ namespace SafePharma.BLL
                 Items = po.Items.Select(i => new PurchaseOrderItemReadDto
                 {
                     Id = i.Id,
-                    MedicineName = i.Medicine?.ScientificName ?? "",
+                    MedicineName = i.PharmacyMedicine.Medicine.TradeNameEn,
                     QuantityOrdered = i.QuantityOrdered,
                     UnitPrice = i.UnitPrice
                 }).ToList()

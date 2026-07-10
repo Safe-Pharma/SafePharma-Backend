@@ -6,8 +6,8 @@
         public Guid PurchaseOrderId { get; set; }
         public int QuantityOrdered { get; set; }
         public decimal UnitPrice { get; set; }
-        public Guid MedicineId { get; set; } 
-        public Medicine Medicine { get; set; } = null!;
+        public Guid PharmacyMedicineId { get; set; } 
+        public PharmacyMedicine PharmacyMedicine { get; set; } = null!;
         public PurchaseOrder PurchaseOrder { get; set; } = null!;
     }
 }

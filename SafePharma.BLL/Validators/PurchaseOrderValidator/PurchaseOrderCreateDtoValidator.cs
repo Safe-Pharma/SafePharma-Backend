@@ -20,7 +20,7 @@ namespace SafePharma.BLL
 
             RuleForEach(x => x.Items).ChildRules(item =>
             {
-                item.RuleFor(i => i.MedicineId)
+                item.RuleFor(i => i.PharmacyMedicineId)
                     .NotEmpty()
                     .WithMessage("Medicine is required.");
 

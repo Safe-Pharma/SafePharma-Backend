@@ -166,7 +166,7 @@ namespace SafePharma.DAL
             {
                 entity.Property(m => m.MethodName).HasMaxLength(50);
 
-
+            });
                 modelBuilder.Entity<PurchaseOrder>(entity =>
                 {
                     entity.Property(po => po.TotalAmount)
@@ -188,17 +188,17 @@ namespace SafePharma.DAL
                     entity.Property(i => i.UnitPrice)
                         .HasPrecision(18, 2);
 
-                    entity.HasOne(i => i.Medicine)
+                    entity.HasOne(i => i.PharmacyMedicine)
                         .WithMany()
-                        .HasForeignKey(i => i.MedicineId)
+                        .HasForeignKey(i => i.PharmacyMedicineId)
                         .OnDelete(DeleteBehavior.Restrict);
 
                     entity.HasOne(i => i.PurchaseOrder)
                         .WithMany(po => po.Items)
                         .HasForeignKey(i => i.PurchaseOrderId)
                         .OnDelete(DeleteBehavior.Cascade);
-
                 });
+
                 modelBuilder.Entity<PurchaseReceipt>(entity =>
                 {
                     entity.Property(x => x.InvoiceTotal)
@@ -218,25 +218,27 @@ namespace SafePharma.DAL
                           .OnDelete(DeleteBehavior.Cascade);
                 });
 
-
                 modelBuilder.Entity<PurchaseReceiptItem>(entity =>
                 {
                     entity.Property(x => x.UnitPrice)
-                          .HasPrecision(18, 2);
+                        .HasPrecision(18, 2);
 
                     entity.Property(x => x.MedicineName)
-                          .HasMaxLength(255);
+                        .HasMaxLength(255);
 
                     entity.Property(x => x.BatchNumber)
-                          .HasMaxLength(100);
+                        .HasMaxLength(100);
 
+                    entity.HasOne(x => x.PharmacyMedicine)
+                        .WithMany()
+                        .HasForeignKey(x => x.PharmacyMedicineId)
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     entity.HasOne(x => x.PurchaseOrderItem)
-                          .WithMany()
-                          .HasForeignKey(x => x.PurchaseOrderItemId)
-                          .OnDelete(DeleteBehavior.Restrict);
+                        .WithMany()
+                        .HasForeignKey(x => x.PurchaseOrderItemId)
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
-            });
 
 
             modelBuilder.Entity<SupplierPayment>(entity =>
