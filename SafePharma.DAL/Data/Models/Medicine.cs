@@ -1,4 +1,6 @@
-﻿namespace SafePharma.DAL
+﻿using SafePharma.DAL.Data.Models;
+
+namespace SafePharma.DAL
 {
     public class Medicine : IAuditableEntity
     {
@@ -26,5 +28,8 @@
         public DateTime? UpdatedAt { get; set; }
 
         public ICollection<PharmacyMedicine> PharmacyMedicines { get; set; } = new List<PharmacyMedicine>();
+
+        public virtual ICollection<ManufacturerBarcode> ManufacturerBarcodes { get; set; } = new HashSet<ManufacturerBarcode>();
+
     }
 }

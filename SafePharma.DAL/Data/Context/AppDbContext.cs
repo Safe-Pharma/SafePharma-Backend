@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using SafePharma.DAL.Data.Models;
 
 namespace SafePharma.DAL
 {
@@ -294,6 +295,40 @@ namespace SafePharma.DAL
                         "[SellingPrice] >= 0");
                 });
             });
+
+            modelBuilder.Entity<ManufacturerBarcode>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+
+                entity.Property(x => x.Barcode)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.HasIndex(x => x.Barcode)
+                    .IsUnique();
+
+                entity.HasOne(x => x.Medicine)
+                    .WithMany(m => m.ManufacturerBarcodes)
+                    .HasForeignKey(x => x.MedicineId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<PharmacyBarcode>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+
+                entity.Property(x => x.Barcode)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.HasIndex(x => new { x.PharmacyMedicineId, x.Barcode })
+                    .IsUnique();
+
+                entity.HasOne(x => x.PharmacyMedicine)
+                    .WithMany(pm => pm.PharmacyBarcodes)
+                    .HasForeignKey(x => x.PharmacyMedicineId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
           
 
@@ -347,6 +382,9 @@ namespace SafePharma.DAL
 
         public DbSet<PurchaseReceipt> PurchaseReceipts { get; set; }
         public DbSet<PurchaseReceiptItem> PurchaseReceiptItems { get; set; }
+
+        public DbSet<ManufacturerBarcode> ManufacturerBarcodes => Set<ManufacturerBarcode>();
+        public DbSet<PharmacyBarcode> PharmacyBarcodes => Set<PharmacyBarcode>();
 
 
     }
