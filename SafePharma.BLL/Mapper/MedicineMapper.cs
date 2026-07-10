@@ -175,5 +175,52 @@ namespace SafePharma.BLL
                 Inventory = batches.ToInventorySummary(price.MinStockLevel),
             };
         }
+
+        public static Medicine ToMedicineEntity(this GlobalMedicineCreateDto dto)
+        {
+            return new Medicine
+            {
+                TradeNameAr = dto.TradeNameAr,
+                TradeNameEn = dto.TradeNameEn,
+                ScientificName = dto.ScientificName,
+                Category = dto.Category,
+                UnitOfSale = dto.UnitOfSale,
+                UnitsPerPackage = dto.UnitsPerPackage,
+                DosageForm = dto.DosageForm,
+                Strength = dto.Strength,
+                IsPrescriptionRequired = dto.IsPrescriptionRequired,
+                IsControlled = dto.IsControlled,
+                Manufacturer = dto.Manufacturer,
+                CountryOfOrigin = dto.CountryOfOrigin,
+                StorageConditions = dto.StorageConditions,
+                TherapeuticCategory = dto.TherapeuticCategory,
+                IsActive = dto.IsActive,
+            };
+        }
+
+        public static GlobalMedicineDto ToGlobalDto(this Medicine m)
+        {
+            return new GlobalMedicineDto
+            {
+                Id = m.Id,
+                TradeNameAr = m.TradeNameAr,
+                TradeNameEn = m.TradeNameEn,
+                ScientificName = m.ScientificName,
+                Category = m.Category,
+                UnitOfSale = m.UnitOfSale,
+                UnitsPerPackage = m.UnitsPerPackage,
+                DosageForm = m.DosageForm,
+                Strength = m.Strength,
+                IsPrescriptionRequired = m.IsPrescriptionRequired,
+                IsControlled = m.IsControlled,
+                Manufacturer = m.Manufacturer,
+                CountryOfOrigin = m.CountryOfOrigin,
+                StorageConditions = m.StorageConditions,
+                TherapeuticCategory = m.TherapeuticCategory,
+                IsActive = m.IsActive,
+                CreatedAt = m.CreatedAt,
+                UpdatedAt = m.UpdatedAt,
+            };
+        }
     }
 }
