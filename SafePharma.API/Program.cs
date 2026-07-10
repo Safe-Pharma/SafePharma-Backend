@@ -12,7 +12,7 @@ namespace SafePharma.API
 
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -101,28 +101,12 @@ namespace SafePharma.API
             // Run data seeding that depends on Identity and the final service provider.
             try
             {
-                using var scope = app.Services.CreateScope();
-                var services = scope.ServiceProvider;
-
-                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-                var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
-                var context = services.GetRequiredService<AppDbContext>();
-
-                // Seed users (will create or reset passwords)
-                SafePharma.DAL.Data.Seeding.UserSeedingProvider.UserSeeder
-                    .SeedAsync(userManager, roleManager)
-                    .GetAwaiter().GetResult();
-
-                if (!context.Set<SupplierPayment>().Any())
-                {
-                    var payments = SupplierPaymentSeeding.GetPayments();
-                    context.AddRange(payments);
-                    context.SaveChanges();
-                }
+                await app.Services.UseDALSeedingAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                // ignore seeding errors at startup
+                Console.WriteLine(ex.ToString());
+                throw;
             }
 
             // Configure the HTTP request pipeline.
