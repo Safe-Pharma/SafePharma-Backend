@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260710135335_IntialCreate")]
-    partial class IntialCreate
+    [Migration("20260710173735_BarcodeMigration")]
+    partial class BarcodeMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
