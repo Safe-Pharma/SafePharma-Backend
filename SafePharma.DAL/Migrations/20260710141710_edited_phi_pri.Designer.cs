@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SafePharma.DAL;
 
@@ -11,9 +12,11 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260710141710_edited_phi_pri")]
+    partial class edited_phi_pri
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -452,20 +455,12 @@ namespace SafePharma.DAL.Migrations
                     b.Property<bool>("IsControlled")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsGlobal")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
                     b.Property<bool>("IsPrescriptionRequired")
                         .HasColumnType("bit");
 
                     b.Property<string>("Manufacturer")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
-
-                    b.Property<Guid?>("OwnerPharmacyId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ScientificName")
                         .IsRequired()
@@ -510,14 +505,7 @@ namespace SafePharma.DAL.Migrations
                     b.HasIndex("ScientificName");
 
                     b.HasIndex("TradeNameEn")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Medicine_TradeNameEn_Global")
-                        .HasFilter("[IsGlobal] = 1");
-
-                    b.HasIndex("OwnerPharmacyId", "TradeNameEn")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Medicine_Owner_TradeNameEn_Local")
-                        .HasFilter("[IsGlobal] = 0");
+                        .IsUnique();
 
                     b.ToTable("Medicines");
                 });
@@ -749,8 +737,7 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<string>("SKU")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("SellingPrice")
                         .HasColumnType("decimal(12,2)");
@@ -760,12 +747,10 @@ namespace SafePharma.DAL.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PharmacyId");
+
                     b.HasIndex("MedicineId", "PharmacyId")
                         .IsUnique();
-
-                    b.HasIndex("PharmacyId", "SKU")
-                        .IsUnique()
-                        .HasDatabaseName("IX_PharmacyMedicine_Pharmacy_SKU");
 
                     b.ToTable("PharmacyMedicines", t =>
                         {
@@ -1345,16 +1330,6 @@ namespace SafePharma.DAL.Migrations
                         .IsRequired();
 
                     b.Navigation("Medicine");
-                });
-
-            modelBuilder.Entity("SafePharma.DAL.Medicine", b =>
-                {
-                    b.HasOne("SafePharma.DAL.Pharmacy", "OwnerPharmacy")
-                        .WithMany()
-                        .HasForeignKey("OwnerPharmacyId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("OwnerPharmacy");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.PaymentVerification", b =>

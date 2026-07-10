@@ -32,7 +32,7 @@ namespace SafePharma.BLL
                 return GeneralResult<ReadPurchaseReceiptDto?>.FailResult("User ID is required.");
             }
 
-          
+
             var supplier = await unitOfWork.SupplierRepository.GetById(purchaseOrder.SupplierId);
             if (supplier is null)
             {
@@ -56,8 +56,8 @@ namespace SafePharma.BLL
                         Id = Guid.NewGuid(),
                         PurchaseReceiptId = receiptId,
                         PurchaseOrderItemId = i.Id,
-                        MedicineId = i.MedicineId,
-                        MedicineName = i.Medicine.TradeNameEn,
+                        PharmacyMedicineId = i.PharmacyMedicineId,
+                        MedicineName = i.PharmacyMedicine.Medicine.TradeNameEn,
                         Quantity = i.QuantityOrdered,
                         UnitPrice = i.UnitPrice,
                         BatchNumber = dtoItem.BatchNumber,
@@ -84,19 +84,20 @@ namespace SafePharma.BLL
 
             foreach (var item in receiptItems)
             {
-                var medicinePrice = await unitOfWork.PharmacyMedicineRepository
-                    .GetByMedicineAndPharmacy(item.MedicineId, purchaseOrder.PharmacyId);
+                //var medicinePrice = await unitOfWork.PharmacyMedicineRepository
+                //    .GetByMedicineAndPharmacy(item.PharmacyMedicineId, purchaseOrder.PharmacyId);
 
                 unitOfWork._batchRepository.Add(new Batch
                 {
                     Id = Guid.NewGuid(),
-                    MedicineId = item.MedicineId,
+                    MedicineId = item.PharmacyMedicineId,
+                    PurchaseReceiptItemId = item.Id,
                     BatchNumber = item.BatchNumber,
                     ExpiryDate = item.ExpiryDate,
                     QuantityReceived = item.Quantity,
                     QuantityRemaining = item.Quantity,
                     PurchasePrice = item.UnitPrice,
-                    SellingPrice = medicinePrice?.SellingPrice ?? 0m,
+                    SellingPrice = item.PharmacyMedicine.SellingPrice,
                     CreatedAt = now,
                 });
             }
@@ -104,7 +105,7 @@ namespace SafePharma.BLL
             supplier.Outstanding += (decimal)createDto.InvoiceTotal;
             supplier.UpdatedAt = now;
 
-            
+
             await unitOfWork.SaveAsync();
 
             var dtoResult = new ReadPurchaseReceiptDto

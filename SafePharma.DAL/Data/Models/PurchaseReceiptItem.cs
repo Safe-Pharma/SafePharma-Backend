@@ -5,7 +5,8 @@
         public Guid Id { get; set; }
         public Guid PurchaseReceiptId { get; set; }
         public PurchaseReceipt PurchaseReceipt { get; set; } = null!;
-        public Guid MedicineId { get; set; }
+        public Guid PharmacyMedicineId { get; set; }
+        public PharmacyMedicine PharmacyMedicine { get; set; } = null!;
         public string MedicineName { get; set; } = null;
         public Guid PurchaseOrderItemId { get; set; }
         public PurchaseOrderItem PurchaseOrderItem { get; set; } = null!;

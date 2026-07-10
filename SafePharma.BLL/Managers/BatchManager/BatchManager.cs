@@ -45,7 +45,7 @@ namespace SafePharma.BLL
             var recieptItem = await _unitOfWork.PurchaseReceiptItemRepository.GetById(batchDto!.ReceiptItemId);
             var batch = new Batch
             {
-                MedicineId = recieptItem.MedicineId,
+                MedicineId = recieptItem.PharmacyMedicineId,
                 Medicine = pharmacyMedicine,
 
                 PurchaseReceiptItemId = batchDto.ReceiptItemId,

@@ -138,9 +138,10 @@ namespace SafePharma.DAL
                 if (!await context.Set<PaymentMethod>().AnyAsync())
                 {
                     await context.AddRangeAsync(PaymentMethodSeeding.GetMethods());
-
-                    // 11. Purchase Orders (needs Suppliers to already be seeded)
-                    if (!await context.Set<PurchaseOrder>().AnyAsync())
+                    await context.SaveChangesAsync();
+                }
+                // 11. Purchase Orders (needs Suppliers to already be seeded)
+                if (!await context.Set<PurchaseOrder>().AnyAsync())
                     {
                         var suppliers = await context.Set<Supplier>().ToListAsync();
                         var purchaseOrders = PurchaseOrderSeeding.GetPurchaseOrders(suppliers);
@@ -150,13 +151,17 @@ namespace SafePharma.DAL
                     // 12. Purchase Order Items (needs Medicines and PurchaseOrders to already be seeded)
                     if (!await context.Set<PurchaseOrderItem>().AnyAsync())
                     {
-                        var medicines = await context.Set<Medicine>().ToListAsync();
-                        var purchaseOrderItems = PurchaseOrderItemSeeding.GetPurchaseOrderItems(medicines);
+                        var pharmacyMedicines = await context.Set<PharmacyMedicine>()
+                            .Include(pm => pm.Medicine)
+                            .ToListAsync();
+
+                        var purchaseOrderItems = PurchaseOrderItemSeeding
+                            .GetPurchaseOrderItems(pharmacyMedicines);
+
                         await context.AddRangeAsync(purchaseOrderItems);
 
                         await context.SaveChangesAsync();
                     }
-                }
             }
             catch (Exception ex)
             {
@@ -256,24 +261,29 @@ namespace SafePharma.DAL
                 if (!context.Set<PaymentMethod>().Any())
                 {
                     context.AddRange(PaymentMethodSeeding.GetMethods());
+                    context.SaveChanges();
+                }
+                // 11. Purchase Orders (needs Suppliers to already be seeded)
+                if (!context.Set<PurchaseOrder>().Any())
+                {
+                    var suppliers = context.Set<Supplier>().ToList();
+                    var purchaseOrders = PurchaseOrderSeeding.GetPurchaseOrders(suppliers);
+                    context.AddRange(purchaseOrders);
+                    context.SaveChanges();
+                }
+                // 12. Purchase Order Items (needs Medicines and PurchaseOrders to already be seeded)
+                if (!context.Set<PurchaseOrderItem>().Any())
+                {
+                    var pharmacyMedicines = context.Set<PharmacyMedicine>()
+                        .Include(pm => pm.Medicine)
+                        .ToList();
 
-                    // 11. Purchase Orders (needs Suppliers to already be seeded)
-                    if (!context.Set<PurchaseOrder>().Any())
-                    {
-                        var suppliers = context.Set<Supplier>().ToList();
-                        var purchaseOrders = PurchaseOrderSeeding.GetPurchaseOrders(suppliers);
-                        context.AddRange(purchaseOrders);
-                        context.SaveChanges();
-                    }
-                    // 12. Purchase Order Items (needs Medicines and PurchaseOrders to already be seeded)
-                    if (!context.Set<PurchaseOrderItem>().Any())
-                    {
-                        var medicines = context.Set<Medicine>().ToList();
-                        var purchaseOrderItems = PurchaseOrderItemSeeding.GetPurchaseOrderItems(medicines);
-                        context.AddRange(purchaseOrderItems);
+                    var purchaseOrderItems = PurchaseOrderItemSeeding
+                        .GetPurchaseOrderItems(pharmacyMedicines);
 
-                        context.SaveChanges();
-                    }
+                    context.AddRange(purchaseOrderItems);
+
+                    context.SaveChanges();
                 }
             }
             catch (Exception ex)
