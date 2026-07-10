@@ -11,5 +11,8 @@
         public int UnitsPerPackage { get; set; }
         public string? Manufacturer { get; set; }
         public bool IsAlreadyInPharmacy { get; set; }
+        public string DosageForm { get; set; } = string.Empty;
+
+        public string Strength { get; set; } = string.Empty;
     }
 }

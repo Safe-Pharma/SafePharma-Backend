@@ -52,17 +52,6 @@ namespace SafePharma.BLL
 
             services.AddScoped<IMedicineManager, MedicineManager>();
             services.AddValidatorsFromAssemblyContaining<MedicineCreateDtoValidator>();
-<<<<<<< HEAD
-
-            services.AddValidatorsFromAssemblyContaining<PharmacyMedicineUpdateDtoValidator>();
-            services.AddValidatorsFromAssemblyContaining<GlobalMedicineUpdateDtoValidator>();
-            services.AddValidatorsFromAssemblyContaining<LinkExistingMedicineDtoValidator>();
-
-
-
-            services.AddHttpClient<IEmailService, EmailService>();
-
-=======
             services.AddValidatorsFromAssemblyContaining<PharmacyMedicineUpdateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<GlobalMedicineUpdateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<LinkExistingMedicineDtoValidator>();
@@ -72,9 +61,7 @@ namespace SafePharma.BLL
 
 
             services.AddHttpClient<IEmailService, EmailService>();
->>>>>>> main
 
         }
     }
 }
-

@@ -12,6 +12,9 @@ namespace SafePharma.DAL
 
         public string Category { get; set; } = string.Empty;
         public string UnitOfSale { get; set; } = string.Empty;
+        public string DosageForm { get; set; } = string.Empty;
+
+        public string Strength { get; set; } = string.Empty;
         public int UnitsPerPackage { get; set; }
 
         public bool IsPrescriptionRequired { get; set; }

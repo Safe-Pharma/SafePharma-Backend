@@ -19,5 +19,9 @@
         public string? StorageConditions { get; set; }
         public string? TherapeuticCategory { get; set; }
         public bool IsActive { get; set; } = true;
+        public string DosageForm { get; set; } = string.Empty;
+
+        public string Strength { get; set; } = string.Empty;
+        public string SKU { get; set; } = string.Empty;
     }
 }

@@ -9,6 +9,7 @@
 
         public Guid PharmacyId { get; set; }
         public Pharmacy Pharmacy { get; set; } = null!;
+        public string SKU { get; set; } = string.Empty;
 
         public Guid TaxId { get; set; }
         public Tax Tax { get; set; } = null!;
