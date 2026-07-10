@@ -28,7 +28,9 @@ namespace SafePharma.BLL
             var m = price.Medicine;
             return new MedicineDto
             {
+                ////////defdsfdsfdsfsdfds
                 Id = m.Id,
+                PharmacyMedicineId = price.Id,
                 TradeNameAr = m.TradeNameAr,
                 TradeNameEn = m.TradeNameEn,
                 ScientificName = m.ScientificName,
