@@ -106,7 +106,24 @@ namespace SafePharma.DAL
                     .HasMaxLength(100);
 
                 entity.HasIndex(m => m.ScientificName);
-                entity.HasIndex(m => m.TradeNameEn).IsUnique();
+                entity.Property(m => m.IsGlobal).HasDefaultValue(true);
+
+                entity.HasOne(m => m.OwnerPharmacy)
+                    .WithMany()
+                    .HasForeignKey(m => m.OwnerPharmacyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Global medicines: name unique across the whole catalog.
+                entity.HasIndex(m => m.TradeNameEn)
+                    .IsUnique()
+                    .HasFilter("[IsGlobal] = 1")
+                    .HasDatabaseName("IX_Medicine_TradeNameEn_Global");
+
+                // Local medicines: name only needs to be unique within the owning pharmacy.
+                entity.HasIndex(m => new { m.OwnerPharmacyId, m.TradeNameEn })
+                    .IsUnique()
+                    .HasFilter("[IsGlobal] = 0")
+                    .HasDatabaseName("IX_Medicine_Owner_TradeNameEn_Local");
             });
 
             modelBuilder.Entity<Supplier>(entity =>
@@ -278,6 +295,14 @@ namespace SafePharma.DAL
                     .WithMany()
                     .HasForeignKey(mp => mp.PharmacyId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(mp => mp.SKU)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.HasIndex(mp => new { mp.PharmacyId, mp.SKU })
+                    .IsUnique()
+                    .HasDatabaseName("IX_PharmacyMedicine_Pharmacy_SKU");
 
                 // One current price row per medicine per pharmacy
                 entity.HasIndex(mp => new { mp.MedicineId, mp.PharmacyId }).IsUnique();

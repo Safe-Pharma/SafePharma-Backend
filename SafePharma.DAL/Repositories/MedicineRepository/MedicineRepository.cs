@@ -10,7 +10,9 @@ namespace SafePharma.DAL
 
         public async Task<bool> TradeNameExists(string tradeNameEn, Guid? excludeId = null)
         {
-            var query = _db.Set<Medicine>().Where(m => m.TradeNameEn.ToLower() == tradeNameEn.ToLower());
+            // Only global medicines share this uniqueness rule.
+            var query = _db.Set<Medicine>()
+                .Where(m => m.IsGlobal && m.TradeNameEn == tradeNameEn);
 
             if (excludeId.HasValue)
             {
@@ -23,12 +25,20 @@ namespace SafePharma.DAL
         public async Task<Medicine?> GetByTradeNameEn(string tradeNameEn)
         {
             return await _db.Set<Medicine>()
-                .FirstOrDefaultAsync(m => m.TradeNameEn.ToLower() == tradeNameEn.ToLower());
+                .FirstOrDefaultAsync(m => m.IsGlobal && m.TradeNameEn == tradeNameEn);
+        }
+
+        public async Task<Medicine?> GetLocalByTradeNameEnForPharmacy(Guid pharmacyId, string tradeNameEn)
+        {
+            return await _db.Set<Medicine>()
+                .FirstOrDefaultAsync(m => !m.IsGlobal
+                    && m.OwnerPharmacyId == pharmacyId
+                    && m.TradeNameEn == tradeNameEn);
         }
 
         public async Task<IEnumerable<Medicine>> SearchGlobal(string? query)
         {
-            var medicines = _db.Set<Medicine>().AsNoTracking().AsQueryable();
+            var medicines = _db.Set<Medicine>().AsNoTracking().Where(m => m.IsGlobal).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query))
             {
@@ -37,9 +47,6 @@ namespace SafePharma.DAL
                     m.TradeNameAr.Contains(query) ||
                     m.TradeNameEn.Contains(query) ||
                     m.ScientificName.Contains(query));
-                // TODO: once the Barcode table exists, add:
-                // || m.Barcodes.Any(b => b.Code.Contains(q))
-                // No other layer needs to change for that — only this Where clause.
             }
 
             return await medicines.OrderBy(m => m.TradeNameEn).Take(30).ToListAsync();

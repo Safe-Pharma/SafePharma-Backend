@@ -73,6 +73,8 @@ namespace SafePharma.API
             {
                 options.AddPolicy(SafePharma.BLL.AuthPolicies.OwnerOnly, policy =>
                     policy.RequireRole("Owner"));
+                options.AddPolicy(SafePharma.BLL.AuthPolicies.AdminOrOwner, policy =>
+                    policy.RequireRole("admin", "Owner"));
             });
 
 
