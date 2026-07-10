@@ -463,60 +463,6 @@ namespace SafePharma.DAL.Migrations
                     b.ToTable("Medicines");
                 });
 
-            modelBuilder.Entity("SafePharma.DAL.MedicinePrice", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("ChangedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ChangedBy")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("MedicineId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("MinStockLevel")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("PharmacyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("PurchasePrice")
-                        .HasColumnType("decimal(12,2)");
-
-                    b.Property<decimal>("SellingPrice")
-                        .HasColumnType("decimal(12,2)");
-
-                    b.Property<Guid>("TaxId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PharmacyId");
-
-                    b.HasIndex("TaxId");
-
-                    b.HasIndex("MedicineId", "PharmacyId")
-                        .IsUnique();
-
-                    b.ToTable("MedicinePrices", t =>
-                        {
-                            t.HasCheckConstraint("CK_MedicinePrice_PurchasePrice", "[PurchasePrice] >= 0");
-
-                            t.HasCheckConstraint("CK_MedicinePrice_SellingPrice", "[SellingPrice] >= 0");
-                        });
-                });
-
             modelBuilder.Entity("SafePharma.DAL.PaymentMethod", b =>
                 {
                     b.Property<Guid>("Id")
@@ -681,6 +627,60 @@ namespace SafePharma.DAL.Migrations
                         .HasFilter("[TaxNumber] IS NOT NULL");
 
                     b.ToTable("Pharmacies");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.PharmacyMedicine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ChangedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MedicineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MinStockLevel")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PharmacyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("PurchasePrice")
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<decimal>("SellingPrice")
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<Guid>("TaxId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PharmacyId");
+
+                    b.HasIndex("TaxId");
+
+                    b.HasIndex("MedicineId", "PharmacyId")
+                        .IsUnique();
+
+                    b.ToTable("PharmacyMedicines", t =>
+                        {
+                            t.HasCheckConstraint("CK_MedicinePrice_PurchasePrice", "[PurchasePrice] >= 0");
+
+                            t.HasCheckConstraint("CK_MedicinePrice_SellingPrice", "[SellingPrice] >= 0");
+                        });
                 });
 
             modelBuilder.Entity("SafePharma.DAL.PharmacySettings", b =>
@@ -1219,10 +1219,32 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Country");
                 });
 
-            modelBuilder.Entity("SafePharma.DAL.MedicinePrice", b =>
+            modelBuilder.Entity("SafePharma.DAL.PaymentVerification", b =>
+                {
+                    b.HasOne("SafePharma.DAL.Subscription", "Subscription")
+                        .WithMany("PaymentVerifications")
+                        .HasForeignKey("SubscriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Subscription");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.Pharmacy", b =>
+                {
+                    b.HasOne("SafePharma.DAL.Subscription", "Subscription")
+                        .WithOne("Pharmacy")
+                        .HasForeignKey("SafePharma.DAL.Pharmacy", "SubscriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Subscription");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.PharmacyMedicine", b =>
                 {
                     b.HasOne("SafePharma.DAL.Medicine", "Medicine")
-                        .WithMany("Prices")
+                        .WithMany("PharmacyMedicines")
                         .HasForeignKey("MedicineId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1244,28 +1266,6 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Pharmacy");
 
                     b.Navigation("Tax");
-                });
-
-            modelBuilder.Entity("SafePharma.DAL.PaymentVerification", b =>
-                {
-                    b.HasOne("SafePharma.DAL.Subscription", "Subscription")
-                        .WithMany("PaymentVerifications")
-                        .HasForeignKey("SubscriptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Subscription");
-                });
-
-            modelBuilder.Entity("SafePharma.DAL.Pharmacy", b =>
-                {
-                    b.HasOne("SafePharma.DAL.Subscription", "Subscription")
-                        .WithOne("Pharmacy")
-                        .HasForeignKey("SafePharma.DAL.Pharmacy", "SubscriptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Subscription");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.PharmacySettings", b =>
@@ -1419,7 +1419,7 @@ namespace SafePharma.DAL.Migrations
 
             modelBuilder.Entity("SafePharma.DAL.Medicine", b =>
                 {
-                    b.Navigation("Prices");
+                    b.Navigation("PharmacyMedicines");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.Pharmacy", b =>
