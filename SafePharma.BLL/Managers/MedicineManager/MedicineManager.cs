@@ -187,24 +187,12 @@ namespace SafePharma.BLL
             return new LinkExistingResult { Medicine = saved!.ToDto() };
         }
 
-        public async Task<MedicineCreateResult> CreateMedicine(Guid pharmacyId, MedicineCreateDto dto)
+        public async Task<GlobalMedicineCreateResult> CreateGlobalMedicine(GlobalMedicineCreateDto dto)
         {
             var existing = await _unitOfWork.MedicineRepository.GetByTradeNameEn(dto.TradeNameEn);
             if (existing is not null)
             {
-                return new MedicineCreateResult { ExistingMedicineFound = true, ExistingMedicineId = existing.Id };
-            }
-
-            var taxLinks = await BuildTaxLinksAsync(pharmacyId, dto.TaxIds);
-            if (taxLinks is null)
-            {
-                return new MedicineCreateResult { InvalidTaxIds = true };
-            }
-
-            var skuResult = await ResolveSkuAsync(pharmacyId, dto.SKU);
-            if (skuResult.Duplicate)
-            {
-                return new MedicineCreateResult { DuplicateSku = true };
+                return new GlobalMedicineCreateResult { ExistingMedicineFound = true, ExistingMedicineId = existing.Id };
             }
 
             var medicine = dto.ToMedicineEntity();
@@ -213,37 +201,11 @@ namespace SafePharma.BLL
             medicine.OwnerPharmacyId = null;
             medicine.CreatedAt = DateTime.UtcNow;
             medicine.UpdatedAt = DateTime.UtcNow;
+
             _unitOfWork.MedicineRepository.Add(medicine);
+            await _unitOfWork.SaveAsync();
 
-            var price = new PharmacyMedicine
-            {
-                Id = Guid.NewGuid(),
-                MedicineId = medicine.Id,
-                PharmacyId = pharmacyId,
-                PurchasePrice = dto.PurchasePrice,
-                SellingPrice = dto.SellingPrice,
-                MinStockLevel = dto.MinStockLevel,
-                SKU = skuResult.Sku!,
-                ChangedAt = DateTime.UtcNow,
-            };
-            foreach (var link in taxLinks)
-            {
-                link.PharmacyMedicineId = price.Id;
-                price.PharmacyMedicineTaxes.Add(link);
-            }
-            _unitOfWork.PharmacyMedicineRepository.Add(price);
-
-            try
-            {
-                await _unitOfWork.SaveAsync();
-            }
-            catch (DuplicateSkuException)
-            {
-                return new MedicineCreateResult { DuplicateSku = true };
-            }
-
-            var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(medicine.Id, pharmacyId);
-            return new MedicineCreateResult { Medicine = saved!.ToDto() };
+            return new GlobalMedicineCreateResult { Medicine = medicine.ToGlobalDto() };
         }
 
         public async Task<MedicineUpdateResult> UpdatePharmacyMedicine(Guid pharmacyId, Guid id, PharmacyMedicineUpdateDto dto)
