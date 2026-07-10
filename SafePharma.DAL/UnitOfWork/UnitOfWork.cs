@@ -28,6 +28,9 @@
         public IPurchaseReceiptRepository PurchaseReceiptRepository { get; }
         public IPurchaseReceiptItemRepository PurchaseReceiptItemRepository { get; }
 
+        public IManufacturerBarcodeRepository ManufacturerBarcodeRepository { get; }
+        public IPharmacyBarcodeRepository PharmacyBarcodeRepository { get; }
+
 
 
         public UnitOfWork(
@@ -50,7 +53,13 @@
             IPharmacyMedicineRepository pharmacymedicineRepository,
             IMedicineRepository medicineRepository,
             IPurchaseReceiptRepository purchaseReceiptRepository,
-            IPurchaseReceiptItemRepository purchaseReceiptItemRepository)
+            IPurchaseReceiptItemRepository purchaseReceiptItemRepository,
+            IManufacturerBarcodeRepository manufacturerBarcodeRepository,
+            IPharmacyBarcodeRepository pharmacyBarcodeRepository
+
+
+
+            )
 
 
             
@@ -77,6 +86,8 @@
             MedicineRepository = medicineRepository;
             PurchaseReceiptRepository = purchaseReceiptRepository;
             PurchaseReceiptItemRepository = purchaseReceiptItemRepository;
+            ManufacturerBarcodeRepository = manufacturerBarcodeRepository;
+            PharmacyBarcodeRepository = pharmacyBarcodeRepository;
         }
 
         public async Task SaveAsync()
