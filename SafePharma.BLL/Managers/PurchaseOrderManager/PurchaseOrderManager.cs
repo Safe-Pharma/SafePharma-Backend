@@ -40,16 +40,18 @@ namespace SafePharma.BLL
             _unitOfWork.PurchaseOrderRepository.Add(po);
             await _unitOfWork.SaveAsync();
 
+            var savedOrder = await _unitOfWork.PurchaseOrderRepository.GetByIdWithDetailsAsync(po.Id);
+
             return GeneralResult<PurchaseOrderReadDto>.SuccessResult(new PurchaseOrderReadDto
             {
-                OrderNumber = po.OrderNumber,
-                OrderDate = po.OrderDate,
-                ExpectedDate = po.ExpectedDate,
-                Status = po.Status,
-                TotalAmount = po.TotalAmount,
-                Lines = po.Items.Count,
+                OrderNumber = savedOrder.OrderNumber,
+                OrderDate = savedOrder.OrderDate,
+                ExpectedDate = savedOrder.ExpectedDate,
+                Status = savedOrder.Status,
+                TotalAmount = savedOrder.TotalAmount,
+                Lines = savedOrder.Items.Count,
                 SupplierName = supplier.Name,
-                Items = po.Items.Select(i => new PurchaseOrderItemReadDto
+                Items = savedOrder.Items.Select(i => new PurchaseOrderItemReadDto
                  {
                     MedicineName = i.PharmacyMedicine.Medicine.TradeNameEn,
                     QuantityOrdered = i.QuantityOrdered,

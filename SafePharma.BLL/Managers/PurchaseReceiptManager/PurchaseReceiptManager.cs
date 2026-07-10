@@ -91,6 +91,7 @@ namespace SafePharma.BLL
                 {
                     Id = Guid.NewGuid(),
                     MedicineId = item.PharmacyMedicineId,
+                    PurchaseReceiptItemId = item.Id,
                     BatchNumber = item.BatchNumber,
                     ExpiryDate = item.ExpiryDate,
                     QuantityReceived = item.Quantity,
