@@ -31,7 +31,6 @@ namespace SafePharma.BLL
                 TotalAmount = createDto.Items.Sum(i => i.QuantityOrdered * i.UnitPrice),
                 Items = createDto.Items.Select(i => new PurchaseOrderItem
                 {
-                    Id = i.Id,
                     PharmacyMedicineId = i.PharmacyMedicineId,
                     QuantityOrdered = i.QuantityOrdered,
                     UnitPrice = i.UnitPrice
