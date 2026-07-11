@@ -116,8 +116,58 @@ namespace SafePharma.BLL
                 InvoiceTotal = receipt.InvoiceTotal,
                 ReceivedBy = receipt.ReceivedBy,
                 ReceivedAt = receipt.ReceivedAt,
+                Items = receiptItems.Select(ToItemDto).ToList()
             };
             return GeneralResult<ReadPurchaseReceiptDto?>.SuccessResult(dtoResult);
+        }
+
+
+        public async Task<GeneralResult<IEnumerable<ReadPurchaseReceiptDto>>> GetAllReceipts(Guid pharmacyId)
+        {
+            var receipts = await unitOfWork.PurchaseReceiptRepository.GetAllForPharmacy(pharmacyId);
+            var result = receipts.Select(ToReceiptDto);
+            return GeneralResult<IEnumerable<ReadPurchaseReceiptDto>>.SuccessResult(result);
+        }
+
+        public async Task<GeneralResult<ReadPurchaseReceiptDto?>> GetReceiptById(Guid pharmacyId, Guid id)
+        {
+            var receipt = await unitOfWork.PurchaseReceiptRepository.GetByIdForPharmacy(pharmacyId, id);
+
+            if (receipt is null)
+            {
+                return GeneralResult<ReadPurchaseReceiptDto?>.NotFound("Purchase receipt not found.");
+            }
+
+            return GeneralResult<ReadPurchaseReceiptDto?>.SuccessResult(ToReceiptDto(receipt));
+        }
+
+        private static ReadPurchaseReceiptDto ToReceiptDto(PurchaseReceipt receipt)
+        {
+            return new ReadPurchaseReceiptDto
+            {
+                PurchaseOrderId = receipt.PurchaseOrderId,
+                InvoiceNumber = receipt.InvoiceNumber,
+                InvoiceDate = receipt.InvoiceDate,
+                InvoiceTotal = receipt.InvoiceTotal,
+                ReceivedBy = receipt.ReceivedBy,
+                ReceivedAt = receipt.ReceivedAt,
+                Items = receipt.Items.Select(ToItemDto).ToList()
+            };
+        }
+
+        private static PurchaseReceiptItemReadDto ToItemDto(PurchaseReceiptItem item)
+        {
+            return new PurchaseReceiptItemReadDto
+            {
+                Id = item.Id,
+                PurchaseOrderItemId = item.PurchaseOrderItemId,
+                PharmacyMedicineId = item.PharmacyMedicineId,
+                MedicineName = item.MedicineName,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice,
+                BatchNumber = item.BatchNumber,
+                ExpiryDate = item.ExpiryDate
+            };
         }
     }
 }

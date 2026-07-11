@@ -20,6 +20,29 @@ namespace SafePharma.API.Controllers
             _validator = validator;
         }
 
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _purchaseReceiptManager.GetAllReceipts(pharmacyId);
+            return Ok(result);
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _purchaseReceiptManager.GetReceiptById(pharmacyId, id);
+
+            if (!result.Success)
+            {
+                return NotFound(result);
+            }
+
+            return Ok(result);
+        }
         [HttpPost("{purchaseOrderId:guid}")]
         public async Task<IActionResult> Receive(Guid purchaseOrderId, [FromBody] CreatePurchaseReceiptDto dto)
         {
