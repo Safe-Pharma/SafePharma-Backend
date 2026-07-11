@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SafePharma.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class BarcodeMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -660,15 +660,16 @@ namespace SafePharma.DAL.Migrations
                     PurchaseOrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     QuantityOrdered = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    MedicineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    SellingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PharmacyMedicineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PurchaseOrdersItems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PurchaseOrdersItems_Medicines_MedicineId",
-                        column: x => x.MedicineId,
-                        principalTable: "Medicines",
+                        name: "FK_PurchaseOrdersItems_PharmacyMedicines_PharmacyMedicineId",
+                        column: x => x.PharmacyMedicineId,
+                        principalTable: "PharmacyMedicines",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -708,17 +709,24 @@ namespace SafePharma.DAL.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PurchaseReceiptId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MedicineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PharmacyMedicineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MedicineName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     PurchaseOrderItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     BatchNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    SellingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PurchaseReceiptItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PurchaseReceiptItems_PharmacyMedicines_PharmacyMedicineId",
+                        column: x => x.PharmacyMedicineId,
+                        principalTable: "PharmacyMedicines",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_PurchaseReceiptItems_PurchaseOrdersItems_PurchaseOrderItemId",
                         column: x => x.PurchaseOrderItemId,
@@ -956,14 +964,19 @@ namespace SafePharma.DAL.Migrations
                 column: "SupplierId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PurchaseOrdersItems_MedicineId",
+                name: "IX_PurchaseOrdersItems_PharmacyMedicineId",
                 table: "PurchaseOrdersItems",
-                column: "MedicineId");
+                column: "PharmacyMedicineId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PurchaseOrdersItems_PurchaseOrderId",
                 table: "PurchaseOrdersItems",
                 column: "PurchaseOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReceiptItems_PharmacyMedicineId",
+                table: "PurchaseReceiptItems",
+                column: "PharmacyMedicineId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PurchaseReceiptItems_PurchaseOrderItemId",
@@ -1075,9 +1088,6 @@ namespace SafePharma.DAL.Migrations
                 name: "PurchaseReceiptItems");
 
             migrationBuilder.DropTable(
-                name: "PharmacyMedicines");
-
-            migrationBuilder.DropTable(
                 name: "Taxes");
 
             migrationBuilder.DropTable(
@@ -1090,10 +1100,13 @@ namespace SafePharma.DAL.Migrations
                 name: "PurchaseReceipts");
 
             migrationBuilder.DropTable(
-                name: "Medicines");
+                name: "PharmacyMedicines");
 
             migrationBuilder.DropTable(
                 name: "PurchaseOrders");
+
+            migrationBuilder.DropTable(
+                name: "Medicines");
 
             migrationBuilder.DropTable(
                 name: "Suppliers");

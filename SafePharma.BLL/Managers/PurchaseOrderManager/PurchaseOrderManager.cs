@@ -33,7 +33,8 @@ namespace SafePharma.BLL
                 {
                     PharmacyMedicineId = i.PharmacyMedicineId,
                     QuantityOrdered = i.QuantityOrdered,
-                    UnitPrice = i.UnitPrice
+                    UnitPrice = i.UnitPrice,
+                    SellingPrice = i.SellingPrice
                 }).ToList()
             };
 
@@ -55,7 +56,8 @@ namespace SafePharma.BLL
                  {
                     MedicineName = i.PharmacyMedicine.Medicine.TradeNameEn,
                     QuantityOrdered = i.QuantityOrdered,
-                    UnitPrice = i.UnitPrice
+                    UnitPrice = i.UnitPrice,
+                    SellingPrice = i.SellingPrice
                  }).ToList()
             });
         }
@@ -78,7 +80,8 @@ namespace SafePharma.BLL
                     Id = i.Id,
                     MedicineName = i.PharmacyMedicine.Medicine.TradeNameEn,
                     QuantityOrdered = i.QuantityOrdered,
-                    UnitPrice = i.UnitPrice
+                    UnitPrice = i.UnitPrice,
+                    SellingPrice = i.SellingPrice
                 }).ToList()
 
             });

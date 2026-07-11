@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260710173735_BarcodeMigration")]
-    partial class BarcodeMigration
+    [Migration("20260711144348_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -909,7 +909,7 @@ namespace SafePharma.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("MedicineId")
+                    b.Property<Guid>("PharmacyMedicineId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PurchaseOrderId")
@@ -918,13 +918,16 @@ namespace SafePharma.DAL.Migrations
                     b.Property<int>("QuantityOrdered")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("SellingPrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicineId");
+                    b.HasIndex("PharmacyMedicineId");
 
                     b.HasIndex("PurchaseOrderId");
 
@@ -979,13 +982,13 @@ namespace SafePharma.DAL.Migrations
                     b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("MedicineId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("MedicineName")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid>("PharmacyMedicineId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PurchaseOrderItemId")
                         .HasColumnType("uniqueidentifier");
@@ -996,11 +999,16 @@ namespace SafePharma.DAL.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("SellingPrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PharmacyMedicineId");
 
                     b.HasIndex("PurchaseOrderItemId");
 
@@ -1472,9 +1480,9 @@ namespace SafePharma.DAL.Migrations
 
             modelBuilder.Entity("SafePharma.DAL.PurchaseOrderItem", b =>
                 {
-                    b.HasOne("SafePharma.DAL.Medicine", "Medicine")
+                    b.HasOne("SafePharma.DAL.PharmacyMedicine", "PharmacyMedicine")
                         .WithMany()
-                        .HasForeignKey("MedicineId")
+                        .HasForeignKey("PharmacyMedicineId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1484,7 +1492,7 @@ namespace SafePharma.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Medicine");
+                    b.Navigation("PharmacyMedicine");
 
                     b.Navigation("PurchaseOrder");
                 });
@@ -1502,6 +1510,12 @@ namespace SafePharma.DAL.Migrations
 
             modelBuilder.Entity("SafePharma.DAL.PurchaseReceiptItem", b =>
                 {
+                    b.HasOne("SafePharma.DAL.PharmacyMedicine", "PharmacyMedicine")
+                        .WithMany()
+                        .HasForeignKey("PharmacyMedicineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("SafePharma.DAL.PurchaseOrderItem", "PurchaseOrderItem")
                         .WithMany()
                         .HasForeignKey("PurchaseOrderItemId")
@@ -1513,6 +1527,8 @@ namespace SafePharma.DAL.Migrations
                         .HasForeignKey("PurchaseReceiptId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("PharmacyMedicine");
 
                     b.Navigation("PurchaseOrderItem");
 

@@ -14,5 +14,6 @@
         public string BatchNumber { get; set; } = null!;
         public DateTime ExpiryDate { get; set; }
         public decimal UnitPrice { get; set; }
+        public decimal SellingPrice { get; set; }
     }
 }

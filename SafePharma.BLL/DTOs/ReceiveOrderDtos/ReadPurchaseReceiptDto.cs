@@ -10,5 +10,7 @@ namespace SafePharma.BLL
         public DateTime? InvoiceDate { get; set; }
         public decimal? InvoiceTotal { get; set; }
         public DateTime ReceivedAt { get; set; }
+        public List<ReadPurchaseReceiptItemDto> Items { get; set; } = new();
+
     }
 }

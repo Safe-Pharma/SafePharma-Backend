@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
 using SafePharma.Common;
@@ -6,6 +7,7 @@ using System.Security.Claims;
 
 namespace SafePharma.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PurchaseReceiptController : ControllerBase
@@ -19,6 +21,17 @@ namespace SafePharma.API.Controllers
             _purchaseReceiptManager = purchaseReceiptManager;
             _validator = validator;
         }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _purchaseReceiptManager.GetAllPurchaseReceipts();
+
+            return Ok(result);
+        }
+
 
         [HttpPost("{purchaseOrderId:guid}")]
         public async Task<IActionResult> Receive(Guid purchaseOrderId, [FromBody] CreatePurchaseReceiptDto dto)
@@ -55,6 +68,17 @@ namespace SafePharma.API.Controllers
             {
                 return NotFound(result);
             }
+
+            return Ok(result);
+        }
+
+        [HttpPut("item/{id:guid}")]
+        public async Task<IActionResult> UpdateReceiptItem(Guid id,[FromBody] UpdatePurchaseReceiptItemDto dto)
+        {
+            var result = await _purchaseReceiptManager.UpdateReceiptItem(id, dto);
+
+            if (!result.Success)
+                return NotFound(result);
 
             return Ok(result);
         }
