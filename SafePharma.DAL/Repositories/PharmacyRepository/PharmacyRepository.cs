@@ -23,6 +23,6 @@ namespace SafePharma.DAL
         {
             return await _db.Pharmacies
                 .AnyAsync(p => p.CommercialRegistration == commercialRegistration);
-        }
+        } 
     }
 }

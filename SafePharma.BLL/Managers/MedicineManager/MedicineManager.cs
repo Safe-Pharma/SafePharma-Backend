@@ -323,8 +323,8 @@ namespace SafePharma.BLL
                 return null;
             }
 
-            var batches = await _unitOfWork._batchRepository.GetBatchesByhMedicineId(price.Id);
-            return price.ToDetailsDto(batches);
+            var aggregates = await _unitOfWork._batchRepository.GetStockAggregates(new[] { price.Id });
+            return price.ToDetailsDto(aggregates.FirstOrDefault());
         }
 
         public async Task<MedicineCreateResult> CreateLocalMedicine(Guid pharmacyId, MedicineCreateDto dto)

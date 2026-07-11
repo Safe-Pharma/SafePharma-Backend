@@ -12,7 +12,7 @@
         public string? Manufacturer { get; set; }
         public bool IsAlreadyInPharmacy { get; set; }
         public string DosageForm { get; set; } = string.Empty;
-
+        public List<string> ManufacturerBarcodes { get; set; } = new();
         public string Strength { get; set; } = string.Empty;
     }
 }

@@ -12,6 +12,7 @@
         public int UnitsPerPackage { get; set; }
         public string DosageForm { get; set; } = string.Empty;
         public string Strength { get; set; } = string.Empty;
+        public List<string> PharmacyBarcodes { get; set; } = new();
         public string SKU { get; set; } = string.Empty;
         public decimal PurchasePrice { get; set; }
         public decimal SellingPrice { get; set; }

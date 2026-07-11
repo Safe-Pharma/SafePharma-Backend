@@ -138,5 +138,14 @@ namespace SafePharma.API.Controllers
             if (!deleted) return NotFound();
             return NoContent();
         }
+
+        [HttpGet("{id:guid}/details")]
+        public async Task<IActionResult> GetDetails(Guid id)
+        {
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.GetMedicineDetails(pharmacyId, id);
+            if (result is null) return NotFound();
+            return Ok(result);
+        }
     }
 }

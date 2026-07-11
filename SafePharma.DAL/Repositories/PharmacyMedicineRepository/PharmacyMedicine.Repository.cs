@@ -38,11 +38,10 @@ namespace SafePharma.DAL
                     .ThenInclude(pmt => pmt.Tax)
                 .Include(mp => mp.PharmacyBarcodes)
                 .Where(mp => mp.PharmacyId == pharmacyId);
-
-            if (!includeInactive)
-            {
-                prices = prices.Where(mp => mp.IsActive);
-            }
+            
+            prices = includeInactive? prices.Where(mp => !mp.IsActive): prices.Where(mp => mp.IsActive);
+                
+                
 
             if (!string.IsNullOrWhiteSpace(query))
             {
@@ -98,7 +97,7 @@ namespace SafePharma.DAL
             var query = _db.Set<PharmacyMedicine>()
                 .Where(pm => pm.PharmacyId == pharmacyId && pm.SKU == sku);
 
-            if (excludeId.HasValue)
+            if (excludeId.HasValue)                                
             {
                 query = query.Where(pm => pm.Id != excludeId.Value);
             }
@@ -112,6 +111,6 @@ namespace SafePharma.DAL
                 .FirstOrDefaultAsync(x =>
                     x.Id == pharmacyMedicineId &&
                     x.PharmacyId == pharmacyId);
-        }
+        }    
     }
 }
