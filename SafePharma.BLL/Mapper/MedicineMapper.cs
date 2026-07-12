@@ -28,7 +28,6 @@ namespace SafePharma.BLL
             var m = price.Medicine;
             return new MedicineDto
             {
-                ////////defdsfdsfdsfsdfds
                 Id = m.Id,
                 PharmacyMedicineId = price.Id,
                 TradeNameAr = m.TradeNameAr,
@@ -40,6 +39,7 @@ namespace SafePharma.BLL
                 DosageForm = m.DosageForm,
                 Strength = m.Strength,
                 SKU = price.SKU,
+                PharmacyBarcodes = price.PharmacyBarcodes.Select(b => b.Barcode).ToList(),
                 PurchasePrice = price.PurchasePrice,
                 SellingPrice = price.SellingPrice,
                 Taxes = price.ToTaxSummaries(),
@@ -74,6 +74,7 @@ namespace SafePharma.BLL
                 DosageForm = m.DosageForm,
                 Strength = m.Strength,
                 IsAlreadyInPharmacy = isAlreadyInPharmacy,
+                ManufacturerBarcodes = m.ManufacturerBarcodes.Select(b => b.Barcode).ToList(),
             };
         }
 
@@ -125,23 +126,21 @@ namespace SafePharma.BLL
             entity.IsActive = dto.IsActive;
         }
 
-        public static InventorySummaryDto ToInventorySummary(this IEnumerable<Batch> batches, int minStockLevel, int expiringSoonDays = 90)
+        public static InventorySummaryDto ToInventorySummary(this StockAggregate? aggregate, int minStockLevel)
         {
-            var list = batches.ToList();
-            var expiryThreshold = DateTime.UtcNow.Date.AddDays(expiringSoonDays);
-            var available = list.Sum(b => b.QuantityRemaining);
+            var available = aggregate?.AvailableQuantity ?? 0;
 
             return new InventorySummaryDto
             {
-                TotalStock = list.Sum(b => b.QuantityReceived),
+                TotalStock = aggregate?.TotalStock ?? 0,
                 AvailableQuantity = available,
-                NumberOfBatches = list.Count,
-                ExpiringSoon = list.Count(b => b.QuantityRemaining > 0 && b.ExpiryDate <= expiryThreshold),
+                NumberOfBatches = aggregate?.BatchCount ?? 0,
+                ExpiringSoon = aggregate?.ExpiringSoon ?? 0,
                 StockStatus = available <= 0 ? "Out" : available < minStockLevel ? "Low" : "InStock",
             };
         }
 
-        public static MedicineDetailsDto ToDetailsDto(this PharmacyMedicine price, IEnumerable<Batch> batches)
+        public static MedicineDetailsDto ToDetailsDto(this PharmacyMedicine price, StockAggregate? aggregate)
         {
             var m = price.Medicine;
             return new MedicineDetailsDto
@@ -174,7 +173,7 @@ namespace SafePharma.BLL
                 ManufacturerBarcodes = m.ManufacturerBarcodes.Select(b => b.Barcode).ToList(),
                 PharmacyBarcodes = price.PharmacyBarcodes.Select(b => b.Barcode).ToList(),
 
-                Inventory = batches.ToInventorySummary(price.MinStockLevel),
+                Inventory = aggregate.ToInventorySummary(price.MinStockLevel),
             };
         }
 

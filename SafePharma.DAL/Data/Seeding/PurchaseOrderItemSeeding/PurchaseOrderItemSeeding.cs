@@ -17,7 +17,8 @@
                     PurchaseOrderId = PurchaseOrderSeeding.Po1001Id,
                     PharmacyMedicineId = PharmacyMedicineIdFor("Panadol"),
                     QuantityOrdered = 300,
-                    UnitPrice = 10.50m
+                    UnitPrice = 10.50m,
+                    SellingPrice = 15.00m
                 },
 
                 new PurchaseOrderItem
@@ -26,7 +27,9 @@
                     PurchaseOrderId = PurchaseOrderSeeding.Po1001Id,
                     PharmacyMedicineId = PharmacyMedicineIdFor("Vitamin C Plus Collagen"),
                     QuantityOrdered = 20,
-                    UnitPrice = 195m
+                    UnitPrice = 195m,
+                    SellingPrice = 250m
+
                 },
 
                 new PurchaseOrderItem
@@ -35,7 +38,9 @@
                     PurchaseOrderId = PurchaseOrderSeeding.Po1002Id,
                     PharmacyMedicineId = PharmacyMedicineIdFor("Augmentin"),
                     QuantityOrdered = 80,
-                    UnitPrice = 33m
+                    UnitPrice = 33m,
+                    SellingPrice = 45m
+
                 },
 
                 new PurchaseOrderItem
@@ -44,7 +49,8 @@
                     PurchaseOrderId = PurchaseOrderSeeding.Po1002Id,
                     PharmacyMedicineId = PharmacyMedicineIdFor("Lantus Insulin"),
                     QuantityOrdered = 16,
-                    UnitPrice = 125m
+                    UnitPrice = 125m,
+                    SellingPrice = 150m
                 },
 
                 new PurchaseOrderItem
@@ -53,7 +59,8 @@
                     PurchaseOrderId = PurchaseOrderSeeding.Po1003Id,
                     PharmacyMedicineId = PharmacyMedicineIdFor("Nootropil"),
                     QuantityOrdered = 28,
-                    UnitPrice = 60m
+                    UnitPrice = 60m,
+                    SellingPrice = 80m
                 }
             };
         }

@@ -6,5 +6,6 @@
         public Guid PharmacyMedicineId { get; set; }
         public int QuantityOrdered { get; set; }
         public decimal UnitPrice { get; set; }
+        public decimal SellingPrice { get; set; }
     }
 }

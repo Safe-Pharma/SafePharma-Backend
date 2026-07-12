@@ -18,6 +18,37 @@ namespace SafePharma.BLL
             _purchaseReceiptItemRepository = purchaseReceiptItemRepository;
         }
 
+        public async Task<GeneralResult<IEnumerable<ReadPurchaseReceiptDto>>> GetAllPurchaseReceipts()
+        {
+            var receipts = await _purchaseReceiptRepository.GetAllWithItems();
+
+            var receiptDtos = receipts.Select(r => new ReadPurchaseReceiptDto
+            {
+
+                PurchaseOrderId = r.PurchaseOrderId,
+                InvoiceNumber = r.InvoiceNumber,
+                InvoiceDate = r.InvoiceDate,
+                InvoiceTotal = r.InvoiceTotal,
+                ReceivedBy = r.ReceivedBy,
+                ReceivedAt = r.ReceivedAt,
+
+                Items = r.Items.Select(i => new ReadPurchaseReceiptItemDto
+                {
+                    PurchaseReceiptItemId = i.Id,
+                    PurchaseOrderItemId = i.PurchaseOrderItemId,
+                    BatchNumber = i.BatchNumber,
+                    ExpiryDate = i.ExpiryDate,
+                    MedicineName = i.PurchaseOrderItem.PharmacyMedicine.Medicine.TradeNameEn,
+                    Quantity = i.PurchaseOrderItem.QuantityOrdered,
+                    UnitPrice = i.UnitPrice,
+                    SellingPrice = i.SellingPrice,
+                    PharmacyMedicineId = i.PurchaseOrderItem.PharmacyMedicineId
+                }).ToList()
+            });
+
+            return GeneralResult<IEnumerable<ReadPurchaseReceiptDto>>
+                .SuccessResult(receiptDtos);
+        }
         public async Task<GeneralResult<ReadPurchaseReceiptDto?>> CreatePurchaseReceipt(CreatePurchaseReceiptDto createDto, Guid userId, Guid purchaseOrderId)
         {
             var purchaseOrder = await _purchaseOrderRepository.GetByIdWithDetailsAsync(purchaseOrderId);
@@ -60,6 +91,7 @@ namespace SafePharma.BLL
                         MedicineName = i.PharmacyMedicine.Medicine.TradeNameEn,
                         Quantity = i.QuantityOrdered,
                         UnitPrice = i.UnitPrice,
+                        SellingPrice = i.SellingPrice,
                         BatchNumber = dtoItem.BatchNumber,
                         ExpiryDate = dtoItem.ExpiryDate
                     };
@@ -84,9 +116,6 @@ namespace SafePharma.BLL
 
             foreach (var item in receiptItems)
             {
-                //var medicinePrice = await unitOfWork.PharmacyMedicineRepository
-                //    .GetByMedicineAndPharmacy(item.PharmacyMedicineId, purchaseOrder.PharmacyId);
-
                 unitOfWork._batchRepository.Add(new Batch
                 {
                     Id = Guid.NewGuid(),
@@ -97,7 +126,7 @@ namespace SafePharma.BLL
                     QuantityReceived = item.Quantity,
                     QuantityRemaining = item.Quantity,
                     PurchasePrice = item.UnitPrice,
-                    SellingPrice = item.PharmacyMedicine.SellingPrice,
+                    SellingPrice = item.SellingPrice,
                     CreatedAt = now,
                 });
             }
@@ -121,53 +150,29 @@ namespace SafePharma.BLL
             return GeneralResult<ReadPurchaseReceiptDto?>.SuccessResult(dtoResult);
         }
 
-
-        public async Task<GeneralResult<IEnumerable<ReadPurchaseReceiptDto>>> GetAllReceipts(Guid pharmacyId)
+        public async Task<GeneralResult> UpdateReceiptItem(Guid id, UpdatePurchaseReceiptItemDto dto)
         {
-            var receipts = await unitOfWork.PurchaseReceiptRepository.GetAllForPharmacy(pharmacyId);
-            var result = receipts.Select(ToReceiptDto);
-            return GeneralResult<IEnumerable<ReadPurchaseReceiptDto>>.SuccessResult(result);
-        }
+            var item = await _purchaseReceiptItemRepository.GetById(id);
 
-        public async Task<GeneralResult<ReadPurchaseReceiptDto?>> GetReceiptById(Guid pharmacyId, Guid id)
-        {
-            var receipt = await unitOfWork.PurchaseReceiptRepository.GetByIdForPharmacy(pharmacyId, id);
+            if (item == null)
+                return GeneralResult.FailResult("Receipt Item not found.");
 
-            if (receipt is null)
+            item.UnitPrice = dto.UnitPrice;
+            item.SellingPrice = dto.SellingPrice;
+
+            var batch = await unitOfWork._batchRepository
+                .GetByPurchaseReceiptItemId(id);
+
+            if (batch != null)
             {
-                return GeneralResult<ReadPurchaseReceiptDto?>.NotFound("Purchase receipt not found.");
+                batch.PurchasePrice = dto.UnitPrice;
+                batch.SellingPrice = dto.SellingPrice;
+                batch.UpdatedAt = DateTime.UtcNow;
             }
 
-            return GeneralResult<ReadPurchaseReceiptDto?>.SuccessResult(ToReceiptDto(receipt));
-        }
+            await unitOfWork.SaveAsync();
 
-        private static ReadPurchaseReceiptDto ToReceiptDto(PurchaseReceipt receipt)
-        {
-            return new ReadPurchaseReceiptDto
-            {
-                PurchaseOrderId = receipt.PurchaseOrderId,
-                InvoiceNumber = receipt.InvoiceNumber,
-                InvoiceDate = receipt.InvoiceDate,
-                InvoiceTotal = receipt.InvoiceTotal,
-                ReceivedBy = receipt.ReceivedBy,
-                ReceivedAt = receipt.ReceivedAt,
-                Items = receipt.Items.Select(ToItemDto).ToList()
-            };
-        }
-
-        private static PurchaseReceiptItemReadDto ToItemDto(PurchaseReceiptItem item)
-        {
-            return new PurchaseReceiptItemReadDto
-            {
-                Id = item.Id,
-                PurchaseOrderItemId = item.PurchaseOrderItemId,
-                PharmacyMedicineId = item.PharmacyMedicineId,
-                MedicineName = item.MedicineName,
-                Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice,
-                BatchNumber = item.BatchNumber,
-                ExpiryDate = item.ExpiryDate
-            };
+            return GeneralResult.SuccessResult();
         }
     }
 }
