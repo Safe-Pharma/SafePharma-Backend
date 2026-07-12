@@ -145,7 +145,6 @@ namespace SafePharma.BLL
                 InvoiceTotal = receipt.InvoiceTotal,
                 ReceivedBy = receipt.ReceivedBy,
                 ReceivedAt = receipt.ReceivedAt,
-                Items = receiptItems.Select(ToItemDto).ToList()
             };
             return GeneralResult<ReadPurchaseReceiptDto?>.SuccessResult(dtoResult);
         }
