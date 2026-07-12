@@ -42,11 +42,11 @@ namespace SafePharma.DAL
 
             if (!string.IsNullOrWhiteSpace(query))
             {
-                query = query.Trim();
+                var q = query.Trim().ToLower();
                 medicines = medicines.Where(m =>
-                    m.TradeNameAr.Contains(query) ||
-                    m.TradeNameEn.Contains(query) ||
-                    m.ScientificName.Contains(query));
+                    m.TradeNameAr.ToLower().Contains(q) ||
+                    m.TradeNameEn.ToLower().Contains(q) ||
+                    m.ScientificName.ToLower().Contains(q));
             }
 
             return await medicines.OrderBy(m => m.TradeNameEn).Take(30).ToListAsync();

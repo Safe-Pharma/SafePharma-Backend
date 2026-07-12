@@ -19,10 +19,13 @@ namespace SafePharma.DAL
         {
             return await _db.Set<Batch>().Select(b=>b).Where(m=>m.Id==MId).ToListAsync();
         }
-        public async Task<IEnumerable<StockAggregate>> GetStockAggregates(IEnumerable<Guid> pharmacyMedicineIds)
+        public async Task<IEnumerable<StockAggregate>> GetStockAggregates(IEnumerable<Guid> pharmacyMedicineIds, int expiringSoonDays = 90)
         {
             var ids = pharmacyMedicineIds.ToList();
             if (ids.Count == 0) return Enumerable.Empty<StockAggregate>();
+
+            var today = DateTime.UtcNow.Date;
+            var expiryThreshold = today.AddDays(expiringSoonDays);
 
             return await _db.Set<Batch>()
                 .AsNoTracking()
@@ -31,8 +34,10 @@ namespace SafePharma.DAL
                 .Select(g => new StockAggregate
                 {
                     PharmacyMedicineId = g.Key,
+                    TotalStock = g.Sum(b => b.QuantityReceived),
                     AvailableQuantity = g.Sum(b => b.QuantityRemaining),
-                    BatchCount = g.Count()
+                    BatchCount = g.Count(),
+                    ExpiringSoon = g.Count(b => b.QuantityRemaining > 0 && b.ExpiryDate > today && b.ExpiryDate <= expiryThreshold),
                 })
                 .ToListAsync();
         }
