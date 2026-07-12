@@ -1,3 +1,6 @@
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using SafePharma.Common.Enums;
 using SafePharma.DAL;
 
 namespace SafePharma.BLL
@@ -5,10 +8,12 @@ namespace SafePharma.BLL
     public class TaxManager : ITaxManager
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditManager _auditManager;
 
-        public TaxManager(IUnitOfWork unitOfWork)
+        public TaxManager(IUnitOfWork unitOfWork , IAuditManager auditManager)
         {
             _unitOfWork = unitOfWork;
+            _auditManager = auditManager;
         }
 
         public async Task<IEnumerable<TaxDto>> GetAllTaxes(Guid pharmacyId, string? search = null)
@@ -53,14 +58,15 @@ namespace SafePharma.BLL
 
             _unitOfWork.TaxRepository.Add(entity);
             await _unitOfWork.SaveAsync();
-
+            await _auditManager.CreateAudit(entity,null, ActionsEnum.Create);
             return new TaxCreateResult { Tax = entity.ToDto() };
         }
 
         public async Task<TaxUpdateResult> UpdateTax(Guid pharmacyId, Guid id, TaxUpdateDto dto)
         {
-            var entity = await GetOwnedTax(pharmacyId, id);
-            if (entity is null)
+            var new_entity = await GetOwnedTax(pharmacyId, id);
+
+            if (new_entity is null)
             {
                 return new TaxUpdateResult { NotFound = true };
             }
@@ -69,13 +75,22 @@ namespace SafePharma.BLL
             {
                 return new TaxUpdateResult { DuplicateName = true };
             }
-
-            dto.ApplyTo(entity);
-            entity.UpdatedAt = DateTime.UtcNow;
+            var old_entity = new Tax
+            {
+                Id = new_entity.Id,
+                Name = new_entity.Name,
+                Rate = new_entity.Rate,
+                Status = new_entity.Status,
+                PharmacyId = new_entity.PharmacyId,
+                CreatedAt = new_entity.CreatedAt,
+                UpdatedAt = new_entity.UpdatedAt
+            };
+            dto.ApplyTo(new_entity);
+            new_entity.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveAsync();
-
-            return new TaxUpdateResult { Tax = entity.ToDto() };
+            await _auditManager.CreateAudit(new_entity, old_entity, ActionsEnum.Update);
+            return new TaxUpdateResult { Tax = new_entity.ToDto() };
         }
 
         public async Task<bool> DeleteTax(Guid pharmacyId, Guid id)
@@ -88,6 +103,7 @@ namespace SafePharma.BLL
 
             _unitOfWork.TaxRepository.Delete(entity);
             await _unitOfWork.SaveAsync();
+           // await _auditManager.CreateAudit(null, entity, ActionsEnum.Delete);
             return true;
         }
 

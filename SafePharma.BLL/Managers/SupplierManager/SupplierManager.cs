@@ -1,3 +1,4 @@
+using SafePharma.Common.Enums;
 using SafePharma.DAL;
 
 namespace SafePharma.BLL
@@ -5,10 +6,11 @@ namespace SafePharma.BLL
     public class SupplierManager : ISupplierManager
     {
         private readonly IUnitOfWork _unitOfWork;
-
-        public SupplierManager(IUnitOfWork unitOfWork)
+        private readonly IAuditManager _auditManager;
+        public SupplierManager(IUnitOfWork unitOfWork, IAuditManager auditManager)
         {
             _unitOfWork = unitOfWork;
+            _auditManager = auditManager;
         }
 
         public async Task<IEnumerable<SupplierDto>> GetAllSuppliers(Guid pharmacyId, string? search = null)
@@ -57,7 +59,7 @@ namespace SafePharma.BLL
             await _unitOfWork.SaveAsync();
 
             var saved = await _unitOfWork.SupplierRepository.GetByIdWithCountry(entity.Id);
-
+            await _auditManager.CreateAudit(saved, null, ActionsEnum.Create);
             return new SupplierCreateResult { Supplier = saved!.ToDto() };
         }
 
@@ -73,14 +75,26 @@ namespace SafePharma.BLL
             {
                 return new SupplierUpdateResult { DuplicateName = true };
             }
-
+            var oldEntity = new Supplier
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                ContactPerson = entity.ContactPerson,
+                Email = entity.Email,
+                Address = entity.Address,
+                CountryId = entity.CountryId,
+                Status = entity.Status,
+                CreatedAt = entity.CreatedAt,
+                UpdatedAt = entity.UpdatedAt,
+                PharmacyId = entity.PharmacyId
+            };
             dto.ApplyTo(entity);
             entity.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveAsync();
 
             var saved = await _unitOfWork.SupplierRepository.GetByIdWithCountry(entity.Id);
-
+            await _auditManager.CreateAudit(saved, oldEntity, ActionsEnum.Update);
             return new SupplierUpdateResult { Supplier = saved!.ToDto() };
         }
 
@@ -94,6 +108,8 @@ namespace SafePharma.BLL
 
             _unitOfWork.SupplierRepository.Delete(entity);
             await _unitOfWork.SaveAsync();
+            var deleted = await _unitOfWork.SupplierRepository.GetByIdWithCountry(entity.Id);
+            //await _auditManager.CreateAudit(deleted, entity, ActionsEnum.Delete);
             return true;
         }
 
