@@ -40,11 +40,8 @@ namespace SafePharma.DAL
                     ExpiringSoon = g.Count(b => b.QuantityRemaining > 0 && b.ExpiryDate > today && b.ExpiryDate <= expiryThreshold),
                 })
                 .ToListAsync();
-        }
-        public async Task<Batch?> GetByPurchaseReceiptItemId(Guid purchaseReceiptItemId)
-        {
-            return await _db.Set<Batch>()
-                .FirstOrDefaultAsync(b => b.PurchaseReceiptItemId == purchaseReceiptItemId);
+
+            ////////test
         }
     }
 
