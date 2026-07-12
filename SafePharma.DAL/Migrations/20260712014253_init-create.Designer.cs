@@ -12,7 +12,7 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260710235659_init-create")]
+    [Migration("20260712014253_init-create")]
     partial class initcreate
     {
         /// <inheritdoc />
@@ -918,6 +918,9 @@ namespace SafePharma.DAL.Migrations
                     b.Property<int>("QuantityOrdered")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("SellingPrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -995,6 +998,9 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("SellingPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
