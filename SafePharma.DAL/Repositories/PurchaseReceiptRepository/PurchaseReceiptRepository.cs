@@ -8,23 +8,14 @@ namespace SafePharma.DAL
         {
         }
 
-        public async Task<IEnumerable<PurchaseReceipt>> GetAllForPharmacy(Guid pharmacyId)
+        public async Task<IEnumerable<PurchaseReceipt>> GetAllWithItems()
         {
-            return await _db.Set<PurchaseReceipt>()
-                .AsNoTracking()
-                .Include(r => r.Items)
-                .Where(r => r.PurchaseOrder.PharmacyId == pharmacyId)
-                .OrderByDescending(r => r.ReceivedAt)
+            return await _db.PurchaseReceipts
+                .Include(x => x.Items)
+                    .ThenInclude(x => x.PurchaseOrderItem)
+                        .ThenInclude(x => x.PharmacyMedicine)
+                            .ThenInclude(x => x.Medicine)
                 .ToListAsync();
         }
-
-        public async Task<PurchaseReceipt?> GetByIdForPharmacy(Guid pharmacyId, Guid id)
-        {
-            return await _db.Set<PurchaseReceipt>()
-                .AsNoTracking()
-                .Include(r => r.Items)
-                .FirstOrDefaultAsync(r => r.Id == id && r.PurchaseOrder.PharmacyId == pharmacyId);
-        }
-
     }
 }

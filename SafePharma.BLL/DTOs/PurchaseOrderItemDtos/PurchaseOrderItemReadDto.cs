@@ -6,5 +6,6 @@
         public string MedicineName { get; set; } = null!;
         public int QuantityOrdered { get; set; }
         public decimal UnitPrice { get; set; }
+        public decimal SellingPrice { get; set; }
     }
 }

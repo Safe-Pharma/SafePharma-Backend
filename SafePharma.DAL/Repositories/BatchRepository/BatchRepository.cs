@@ -41,6 +41,11 @@ namespace SafePharma.DAL
                 })
                 .ToListAsync();
         }
+        public async Task<Batch?> GetByPurchaseReceiptItemId(Guid purchaseReceiptItemId)
+        {
+            return await _db.Set<Batch>()
+                .FirstOrDefaultAsync(b => b.PurchaseReceiptItemId == purchaseReceiptItemId);
+        }
     }
 
 
