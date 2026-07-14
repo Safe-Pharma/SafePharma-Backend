@@ -48,6 +48,7 @@ namespace SafePharma.BLL
             services.AddScoped<IPaymentMethodManager, PaymentMethodManager>();
             services.AddScoped<IPurchaseReceiptManager, PurchaseReceiptManager>();
             services.AddScoped<IBatchManager, BatchManager>();
+            services.AddScoped<IMedicineSearchService, MedicineSearchService>();
 
             services.AddValidatorsFromAssemblyContaining<SubscriptionPlanUpsertDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<PaymentMethodUpsertDtoValidator>();

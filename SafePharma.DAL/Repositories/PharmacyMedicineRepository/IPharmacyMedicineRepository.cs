@@ -9,5 +9,6 @@
         Task<int> GetHighestAutoSkuNumber(Guid pharmacyId, string prefix);
         Task<bool> SkuExistsForPharmacy(Guid pharmacyId, string sku, Guid? excludeId = null);
         Task<PharmacyMedicine?> GetByIdAndPharmacy(Guid pharmacyMedicineId, Guid pharmacyId);
+        Task<(IEnumerable<PharmacyMedicine>, int)> SearchAsync(Guid pharmacyId, string query, int pageNumber, int pageSize);
     }
 }

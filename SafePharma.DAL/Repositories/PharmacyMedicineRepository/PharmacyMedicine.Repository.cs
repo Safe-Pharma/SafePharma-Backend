@@ -111,6 +111,36 @@ namespace SafePharma.DAL
                 .FirstOrDefaultAsync(x =>
                     x.Id == pharmacyMedicineId &&
                     x.PharmacyId == pharmacyId);
-        }    
+        }
+
+        public async Task<(IEnumerable<PharmacyMedicine>, int)> SearchAsync(Guid pharmacyId, string query, int pageNumber, int pageSize)
+        {
+            var baseQuery = _db.PharmacyMedicines
+                .Include(pm => pm.Medicine)
+                .Include(pm => pm.PharmacyBarcodes)
+                .Include(pm => pm.Medicine.ManufacturerBarcodes)
+                .Where(pm => pm.PharmacyId == pharmacyId && pm.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                baseQuery = baseQuery.Where(pm =>
+                    pm.Medicine.TradeNameEn.Contains(query) ||
+                    pm.Medicine.TradeNameAr.Contains(query) ||
+                    pm.Medicine.ScientificName.Contains(query) ||
+                    pm.PharmacyBarcodes.Any(b => b.Barcode == query) ||
+                    pm.Medicine.ManufacturerBarcodes.Any(b => b.Barcode == query));
+            }
+
+            var totalCount = await baseQuery.CountAsync();
+
+            var items = await baseQuery
+                .OrderBy(pm => pm.Medicine.TradeNameEn)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+
+        }
     }
 }
