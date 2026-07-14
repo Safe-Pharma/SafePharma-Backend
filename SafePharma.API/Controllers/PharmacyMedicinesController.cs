@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
+using System.Security.Claims;
 
 namespace SafePharma.API.Controllers
 {
@@ -16,17 +17,21 @@ namespace SafePharma.API.Controllers
         private readonly IValidator<MedicineCreateDto> _createValidator;
         private readonly IValidator<LinkExistingMedicineDto> _linkValidator;
         private readonly IValidator<PharmacyMedicineUpdateDto> _pharmacyUpdateValidator;
+        private readonly IMedicineSearchService _medicineSearchService;
+
 
         public PharmacyMedicinesController(
             IMedicineManager manager,
             IValidator<MedicineCreateDto> createValidator,
             IValidator<LinkExistingMedicineDto> linkValidator,
-            IValidator<PharmacyMedicineUpdateDto> pharmacyUpdateValidator)
+            IValidator<PharmacyMedicineUpdateDto> pharmacyUpdateValidator,
+            IMedicineSearchService medicineSearchService)
         {
             _manager = manager;
             _createValidator = createValidator;
             _linkValidator = linkValidator;
             _pharmacyUpdateValidator = pharmacyUpdateValidator;
+            _medicineSearchService = medicineSearchService;
         }
 
         [HttpGet]
@@ -145,6 +150,18 @@ namespace SafePharma.API.Controllers
             var pharmacyId = User.GetPharmacyId();
             var result = await _manager.GetMedicineDetails(pharmacyId, id);
             if (result is null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] MedicineSearchRequestDto requestDto)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+
+            if (string.IsNullOrEmpty(pharmacyIdClaim) || !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+                return Unauthorized();
+
+            var result = await _medicineSearchService.SearchAsync(pharmacyId, requestDto);
             return Ok(result);
         }
     }
