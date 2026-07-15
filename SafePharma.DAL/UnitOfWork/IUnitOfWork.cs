@@ -24,6 +24,8 @@
         public IMedicineRepository MedicineRepository { get; }
         public IPurchaseReceiptRepository PurchaseReceiptRepository { get; }
         public IPurchaseReceiptItemRepository PurchaseReceiptItemRepository { get; }
+        public ISaleRepository SaleRepository { get; }
+
 
         IManufacturerBarcodeRepository ManufacturerBarcodeRepository { get; }
         IPharmacyBarcodeRepository PharmacyBarcodeRepository { get; }
