@@ -1,21 +1,20 @@
-﻿namespace SafePharma.DAL
+﻿namespace SafePharma.BLL
 {
-    public class SaleItem
+    public class ReadSaleItemsDto
     {
-        public Guid Id { get; set; }
-        public Guid SaleId { get; set; }
-        public Sale Sale { get; set; } = null!;
         public Guid PharmacyMedicineId { get; set; }
-        public PharmacyMedicine PharmacyMedicine { get; set; } = null!;
+        public string MedicineName { get; set; } = string.Empty;
+
         public Guid? CustomerId { get; set; }
-        //public Customer customer { get; set; } = null!;
+        public string CustomerName { get; set; } = string.Empty;
+
         public Guid BatchId { get; set; }
-        public Batch Batch { get; set; } = null!;
+        public string BatchNumber { get; set; } = string.Empty;
+
         public int Quantity { get; set; }
         public decimal LineTotal { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal Discount { get; set; }
         public decimal TaxAmount { get; set; }
-
     }
 }

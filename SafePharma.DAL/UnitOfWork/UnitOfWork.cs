@@ -33,6 +33,7 @@ namespace SafePharma.DAL
 
         public IManufacturerBarcodeRepository ManufacturerBarcodeRepository { get; }
         public IPharmacyBarcodeRepository PharmacyBarcodeRepository { get; }
+        public ISaleRepository SaleRepository { get; }
 
 
 
