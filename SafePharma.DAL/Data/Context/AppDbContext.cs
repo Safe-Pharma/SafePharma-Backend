@@ -366,6 +366,30 @@ namespace SafePharma.DAL
                     .HasForeignKey(x => x.PharmacyMedicineId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
+
+            modelBuilder.Entity<Sale>()
+                .HasOne(s => s.ApplicationUser)
+                .WithMany()
+                .HasForeignKey(s => s.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Sale>()
+                .HasOne(s => s.Pharmacy)
+                .WithMany()
+                .HasForeignKey(s => s.PharmacyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SaleItem>()
+                .HasOne(si => si.Batch)
+                .WithMany()
+                .HasForeignKey(si => si.BatchId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SaleItem>()
+                .HasOne(si => si.PharmacyMedicine)
+                .WithMany()
+                .HasForeignKey(si => si.PharmacyMedicineId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
           
 
@@ -423,7 +447,8 @@ namespace SafePharma.DAL
         public DbSet<ManufacturerBarcode> ManufacturerBarcodes => Set<ManufacturerBarcode>();
         public DbSet<PharmacyBarcode> PharmacyBarcodes => Set<PharmacyBarcode>();
         public DbSet<PharmacyMedicineTax> PharmacyMedicineTaxes => Set<PharmacyMedicineTax>();
-
+        public DbSet<Sale> Sales { get; set; }
+        public DbSet<SaleItem> SaleItems { get; set; }
 
     }
 }
