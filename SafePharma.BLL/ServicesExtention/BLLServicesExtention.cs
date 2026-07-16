@@ -71,6 +71,7 @@ namespace SafePharma.BLL
 
             //services.AddHttpContextAccessor();
             services.AddScoped<IBarcodeManager, BarcodeManager>();
+            services.AddScoped<ISaleManager, SaleManager>();
 
 
 
