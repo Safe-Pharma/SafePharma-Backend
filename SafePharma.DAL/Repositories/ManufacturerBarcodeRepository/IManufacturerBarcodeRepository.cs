@@ -1,5 +1,4 @@
 ﻿using SafePharma.DAL;
-using SafePharma.DAL.Data.Models;
 
 public interface IManufacturerBarcodeRepository : IGenircRepository<ManufacturerBarcode>
 {

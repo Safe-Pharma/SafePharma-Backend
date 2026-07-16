@@ -1,6 +1,4 @@
-﻿using ecommerce.DAL;
-
-namespace SafePharma.DAL
+﻿namespace SafePharma.DAL
 {
     public class ChronicCondition
     {

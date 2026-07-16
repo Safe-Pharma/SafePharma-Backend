@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SafePharma.DAL.Data.Models;
+using SafePharma.DAL;
 
 public class ManufacturerBarcodeConfiguration : IEntityTypeConfiguration<ManufacturerBarcode>
 {

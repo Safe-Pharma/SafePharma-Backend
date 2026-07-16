@@ -1,7 +1,6 @@
-﻿using ecommerce.DAL;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using SafePharma.DAL.Data.Models;
+
 
 namespace SafePharma.DAL
 {
@@ -14,6 +13,10 @@ namespace SafePharma.DAL
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+
+
             modelBuilder.Entity<Tax>(entity =>
             {
                 entity.Property(t => t.Status)
@@ -396,22 +399,25 @@ namespace SafePharma.DAL
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<ManufacturerBarcode>(entity =>
-            {
-                entity.HasKey(x => x.Id);
 
-                entity.Property(x => x.Barcode)
-                    .IsRequired()
-                    .HasMaxLength(100);
+            // alreafy in configuration class, so commented out here
 
-                entity.HasIndex(x => x.Barcode)
-                    .IsUnique();
+            //modelBuilder.Entity<ManufacturerBarcode>(entity =>
+            //{
+            //    entity.HasKey(x => x.Id);
 
-                entity.HasOne(x => x.Medicine)
-                    .WithMany(m => m.ManufacturerBarcodes)
-                    .HasForeignKey(x => x.MedicineId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
+            //    entity.Property(x => x.Barcode)
+            //        .IsRequired()
+            //        .HasMaxLength(100);
+
+            //    entity.HasIndex(x => x.Barcode)
+            //        .IsUnique();
+
+            //    entity.HasOne(x => x.Medicine)
+            //        .WithMany(m => m.ManufacturerBarcodes)
+            //        .HasForeignKey(x => x.MedicineId)
+            //        .OnDelete(DeleteBehavior.Cascade);
+            //});
 
             modelBuilder.Entity<PharmacyBarcode>(entity =>
             {

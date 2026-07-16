@@ -165,6 +165,19 @@ namespace SafePharma.DAL
 
                     await context.SaveChangesAsync();
                 }
+
+                //------------
+                if (!await context.Set<Allergy>().AnyAsync())
+                {
+                    await context.AddRangeAsync(AllergySeeding.GetAllergies());
+                    await context.SaveChangesAsync();
+                }
+
+                if (!await context.Set<ChronicCondition>().AnyAsync())
+                {
+                    await context.AddRangeAsync(ChronicConditionSeeding.GetConditions());
+                    await context.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -286,6 +299,22 @@ namespace SafePharma.DAL
 
                     context.AddRange(purchaseOrderItems);
 
+                    context.SaveChanges();
+                }
+
+
+
+
+                // ------------
+                if (!context.Set<Allergy>().Any())
+                {
+                    context.AddRange(AllergySeeding.GetAllergies());
+                    context.SaveChanges();
+                }
+
+                if (!context.Set<ChronicCondition>().Any())
+                {
+                    context.AddRange(ChronicConditionSeeding.GetConditions());
                     context.SaveChanges();
                 }
             }

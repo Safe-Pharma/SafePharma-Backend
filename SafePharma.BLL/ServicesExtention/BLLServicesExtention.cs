@@ -60,6 +60,7 @@ namespace SafePharma.BLL
             services.AddValidatorsFromAssemblyContaining<UpdateUserValidator>();
 
             services.AddScoped<IMedicineManager, MedicineManager>();
+            services.AddScoped<IMedicineSearchService, MedicineSearchService>();
             services.AddValidatorsFromAssemblyContaining<MedicineCreateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<PharmacyMedicineUpdateDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<GlobalMedicineUpdateDtoValidator>();
