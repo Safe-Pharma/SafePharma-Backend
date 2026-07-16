@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SafePharma.DAL;
 
@@ -11,9 +12,11 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260716143940_AddInvoiceNumberAndCustomerLinks")]
+    partial class AddInvoiceNumberAndCustomerLinks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,54 +24,6 @@ namespace SafePharma.DAL.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Customer", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<decimal>("TotalPaid")
-                        .HasColumnType("decimal(12,2)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Phone")
-                        .IsUnique();
-
-                    b.ToTable("Customers");
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
@@ -171,30 +126,6 @@ namespace SafePharma.DAL.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("SafePharma.DAL.Allergy", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NameAr")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Allergies", (string)null);
                 });
 
             modelBuilder.Entity("SafePharma.DAL.ApplicationRole", b =>
@@ -420,30 +351,6 @@ namespace SafePharma.DAL.Migrations
                     b.ToTable("Batches");
                 });
 
-            modelBuilder.Entity("SafePharma.DAL.ChronicCondition", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NameAr")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ChronicConditions", (string)null);
-                });
-
             modelBuilder.Entity("SafePharma.DAL.City", b =>
                 {
                     b.Property<Guid>("Id")
@@ -490,34 +397,52 @@ namespace SafePharma.DAL.Migrations
                     b.ToTable("Countries");
                 });
 
-            modelBuilder.Entity("SafePharma.DAL.CustomerAllergy", b =>
+            modelBuilder.Entity("SafePharma.DAL.Customer", b =>
                 {
-                    b.Property<Guid>("CustomerId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AllergyId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("CustomerId", "AllergyId");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.HasIndex("AllergyId");
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
 
-                    b.ToTable("CustomerAllergies", (string)null);
-                });
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
 
-            modelBuilder.Entity("SafePharma.DAL.CustomerChronicCondition", b =>
-                {
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("ChronicConditionId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("CustomerId", "ChronicConditionId");
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasIndex("ChronicConditionId");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
-                    b.ToTable("CustomerChronicConditions", (string)null);
+                    b.Property<decimal>("TotalPaid")
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Phone")
+                        .IsUnique();
+
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.CustomerMedicineHistory", b =>
@@ -575,9 +500,7 @@ namespace SafePharma.DAL.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("bit");
@@ -871,9 +794,7 @@ namespace SafePharma.DAL.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("bit");
@@ -1679,47 +1600,9 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Country");
                 });
 
-            modelBuilder.Entity("SafePharma.DAL.CustomerAllergy", b =>
-                {
-                    b.HasOne("SafePharma.DAL.Allergy", "Allergy")
-                        .WithMany("CustomerAllergies")
-                        .HasForeignKey("AllergyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Customer", "Customer")
-                        .WithMany("CustomerAllergies")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Allergy");
-
-                    b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("SafePharma.DAL.CustomerChronicCondition", b =>
-                {
-                    b.HasOne("SafePharma.DAL.ChronicCondition", "ChronicCondition")
-                        .WithMany("CustomerChronicConditions")
-                        .HasForeignKey("ChronicConditionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Customer", "Customer")
-                        .WithMany("CustomerChronicConditions")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ChronicCondition");
-
-                    b.Navigation("Customer");
-                });
-
             modelBuilder.Entity("SafePharma.DAL.CustomerMedicineHistory", b =>
                 {
-                    b.HasOne("Customer", "Customer")
+                    b.HasOne("SafePharma.DAL.Customer", "Customer")
                         .WithMany("MedicineHistory")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2033,33 +1916,19 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Pharmacy");
                 });
 
-            modelBuilder.Entity("Customer", b =>
-                {
-                    b.Navigation("CustomerAllergies");
-
-                    b.Navigation("CustomerChronicConditions");
-
-                    b.Navigation("MedicineHistory");
-                });
-
-            modelBuilder.Entity("SafePharma.DAL.Allergy", b =>
-                {
-                    b.Navigation("CustomerAllergies");
-                });
-
             modelBuilder.Entity("SafePharma.DAL.ApplicationUser", b =>
                 {
                     b.Navigation("AuditList");
                 });
 
-            modelBuilder.Entity("SafePharma.DAL.ChronicCondition", b =>
-                {
-                    b.Navigation("CustomerChronicConditions");
-                });
-
             modelBuilder.Entity("SafePharma.DAL.Country", b =>
                 {
                     b.Navigation("Cities");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.Customer", b =>
+                {
+                    b.Navigation("MedicineHistory");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.Medicine", b =>

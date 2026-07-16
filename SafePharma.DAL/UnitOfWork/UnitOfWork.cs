@@ -64,7 +64,8 @@ namespace SafePharma.DAL
             IPurchaseReceiptItemRepository purchaseReceiptItemRepository,
             IManufacturerBarcodeRepository manufacturerBarcodeRepository,
             IPharmacyBarcodeRepository pharmacyBarcodeRepository
-
+,
+            ISaleRepository saleRepository
 
 
             )
@@ -98,6 +99,7 @@ namespace SafePharma.DAL
             PurchaseReceiptItemRepository = purchaseReceiptItemRepository;
             ManufacturerBarcodeRepository = manufacturerBarcodeRepository;
             PharmacyBarcodeRepository = pharmacyBarcodeRepository;
+            SaleRepository = saleRepository;
         }
 
         public async Task SaveAsync()

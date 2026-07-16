@@ -448,6 +448,13 @@ namespace SafePharma.DAL
                 .HasForeignKey(s => s.PharmacyId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Sale>()
+                .HasOne(s => s.Customer)
+                .WithMany()
+                .HasForeignKey(s => s.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
             modelBuilder.Entity<SaleItem>()
                 .HasOne(si => si.Batch)
                 .WithMany()
@@ -458,6 +465,12 @@ namespace SafePharma.DAL
                 .HasOne(si => si.PharmacyMedicine)
                 .WithMany()
                 .HasForeignKey(si => si.PharmacyMedicineId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SaleItem>()
+                .HasOne(si => si.Customer)
+                .WithMany()
+                .HasForeignKey(si => si.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
 
