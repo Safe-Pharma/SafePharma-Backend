@@ -1,4 +1,5 @@
-﻿using SafePharma.DAL;
+﻿using ecommerce.DAL;
+using SafePharma.DAL;
 
 public enum CustomerStatus
 {
@@ -24,4 +25,12 @@ public class Customer : IAuditableEntity
     public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<CustomerMedicineHistory> MedicineHistory { get; set; } = new HashSet<CustomerMedicineHistory>();
+
+
+
+    public ICollection<CustomerAllergy> CustomerAllergies { get; set; }
+    = new List<CustomerAllergy>();
+
+    public ICollection<CustomerChronicCondition> CustomerChronicConditions { get; set; }
+        = new List<CustomerChronicCondition>();
 }

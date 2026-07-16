@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using ecommerce.DAL;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SafePharma.DAL.Data.Models;
 
@@ -513,6 +514,17 @@ namespace SafePharma.DAL
         public DbSet<PharmacyMedicineTax> PharmacyMedicineTaxes => Set<PharmacyMedicineTax>();
         public DbSet<Sale> Sales { get; set; }
         public DbSet<SaleItem> SaleItems { get; set; }
+
+
+
+
+        public DbSet<Allergy> Allergies => Set<Allergy>();
+
+        public DbSet<ChronicCondition> ChronicConditions => Set<ChronicCondition>();
+
+        public DbSet<CustomerAllergy> CustomerAllergies => Set<CustomerAllergy>();
+
+        public DbSet<CustomerChronicCondition> CustomerChronicConditions => Set<CustomerChronicCondition>();
 
     }
 }
