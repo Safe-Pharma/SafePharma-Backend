@@ -96,5 +96,6 @@ namespace SafePharma.API.Controllers
 
             return Ok(result);
         }
+        
     }
 }
