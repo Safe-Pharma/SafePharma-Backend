@@ -1,4 +1,4 @@
-﻿namespace SafePharma.DAL.Data.Models
+﻿namespace SafePharma.DAL
 {
     public class ManufacturerBarcode
     {

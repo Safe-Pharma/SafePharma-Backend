@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using SafePharma.Common;
 using SafePharma.DAL;
-using SafePharma.DAL.Data.Models;
+
 
 public class BarcodeManager : IBarcodeManager
 {

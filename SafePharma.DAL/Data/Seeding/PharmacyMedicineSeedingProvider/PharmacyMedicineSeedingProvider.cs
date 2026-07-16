@@ -48,7 +48,25 @@
                         MinStockLevel = priceInfo.MinStockLevel,
                         ChangedAt = seededAt,
                         ChangedBy = "system",
-                        SKU = $"MED-{skuCounter:D4}"
+                        SKU = $"MED-{skuCounter:D4}",
+
+                        // PharmacyMedicine carries its own copy of the descriptive fields
+                        // (see MedicineMapper.CopyDescriptiveFieldsTo) — without this, every
+                        // seeded row has empty TradeNameEn/etc, breaking any lookup by name.
+                        TradeNameAr = medicine.TradeNameAr,
+                        TradeNameEn = medicine.TradeNameEn,
+                        ScientificName = medicine.ScientificName,
+                        Category = medicine.Category,
+                        UnitOfSale = medicine.UnitOfSale,
+                        DosageForm = medicine.DosageForm,
+                        Strength = medicine.Strength,
+                        UnitsPerPackage = medicine.UnitsPerPackage,
+                        IsPrescriptionRequired = medicine.IsPrescriptionRequired,
+                        IsControlled = medicine.IsControlled,
+                        Manufacturer = medicine.Manufacturer,
+                        CountryOfOrigin = medicine.CountryOfOrigin,
+                        StorageConditions = medicine.StorageConditions,
+                        TherapeuticCategory = medicine.TherapeuticCategory,
                     };
 
                     pharmacyMedicine.PharmacyMedicineTaxes.Add(new PharmacyMedicineTax
