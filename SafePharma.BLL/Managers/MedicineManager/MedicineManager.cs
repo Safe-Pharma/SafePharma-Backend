@@ -67,7 +67,9 @@ namespace SafePharma.BLL
 
         public async Task<MedicineDto?> GetMedicineById(Guid pharmacyId, Guid id)
         {
-            var price = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(id, pharmacyId);
+            // `id` is the PharmacyMedicine.Id — the canonical identifier now, since
+            // local (non-imported) medicines have no global Medicine.Id at all.
+            var price = await _unitOfWork.PharmacyMedicineRepository.GetByIdAndPharmacy(id, pharmacyId, includeDetails: true);
             if (price is null) return null;
 
             var aggregates = (await _unitOfWork._batchRepository.GetStockAggregates(new[] { price.Id })).ToList();
@@ -78,7 +80,7 @@ namespace SafePharma.BLL
         public async Task<MedicineStatsDto> GetStats(Guid pharmacyId)
         {
             var prices = (await _unitOfWork.PharmacyMedicineRepository.GetAllForPharmacy(pharmacyId)).ToList();
-            var active = prices.Count(p => p.Medicine.IsActive && p.IsActive);
+            var active = prices.Count(p => p.IsActive);
 
             var aggregates = (await _unitOfWork._batchRepository.GetStockAggregates(prices.Select(p => p.Id)))
                 .ToDictionary(a => a.PharmacyMedicineId);
@@ -95,9 +97,9 @@ namespace SafePharma.BLL
                 TotalMedicines = prices.Count,
                 Active = active,
                 Inactive = prices.Count - active,
-                PrescriptionRequired = prices.Count(p => p.Medicine.IsPrescriptionRequired),
-                Controlled = prices.Count(p => p.Medicine.IsControlled),
-                CategoriesCount = prices.Select(p => p.Medicine.Category).Distinct().Count(),
+                PrescriptionRequired = prices.Count(p => p.IsPrescriptionRequired),
+                Controlled = prices.Count(p => p.IsControlled),
+                CategoriesCount = prices.Select(p => p.Category).Distinct().Count(),
                 BelowMinStock = belowMinStock,
             };
         }
@@ -108,7 +110,10 @@ namespace SafePharma.BLL
             if (medicines.Count == 0) return Enumerable.Empty<GlobalMedicineSearchResultDto>();
 
             var pharmacyMedicines = await _unitOfWork.PharmacyMedicineRepository.GetAllForPharmacy(pharmacyId);
-            var linkedIds = pharmacyMedicines.Select(p => p.MedicineId).ToHashSet();
+            var linkedIds = pharmacyMedicines
+                .Where(p => p.MedicineId.HasValue)
+                .Select(p => p.MedicineId!.Value)
+                .ToHashSet();
 
             return medicines.Select(m => m.ToSearchResultDto(linkedIds.Contains(m.Id)));
         }
@@ -128,6 +133,9 @@ namespace SafePharma.BLL
             return taxIds.Distinct().Select(id => new PharmacyMedicineTax { TaxId = id }).ToList();
         }
 
+        // STEP 2: global medicine found by the pharmacist -> import it into this pharmacy's
+        // catalog. Descriptive fields are copied onto the new PharmacyMedicine row so the
+        // pharmacy's own list is self-contained (no join needed to read/search it later).
         public async Task<LinkExistingResult> LinkExistingMedicine(Guid pharmacyId, LinkExistingMedicineDto dto)
         {
             var medicine = await _unitOfWork.MedicineRepository.GetById(dto.MedicineId);
@@ -166,6 +174,8 @@ namespace SafePharma.BLL
                 SKU = skuResult.Sku!,
                 ChangedAt = DateTime.UtcNow,
             };
+            medicine.CopyDescriptiveFieldsTo(price);
+
             foreach (var link in taxLinks)
             {
                 link.PharmacyMedicineId = price.Id;
@@ -183,7 +193,7 @@ namespace SafePharma.BLL
                 return new LinkExistingResult { DuplicateSku = true };
             }
 
-            var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(medicine.Id, pharmacyId);
+            var saved = await _unitOfWork.PharmacyMedicineRepository.GetByIdAndPharmacy(price.Id, pharmacyId, includeDetails: true);
             return new LinkExistingResult { Medicine = saved!.ToDto() };
         }
 
@@ -210,7 +220,7 @@ namespace SafePharma.BLL
 
         public async Task<MedicineUpdateResult> UpdatePharmacyMedicine(Guid pharmacyId, Guid id, PharmacyMedicineUpdateDto dto)
         {
-            var price = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(id, pharmacyId);
+            var price = await _unitOfWork.PharmacyMedicineRepository.GetByIdAndPharmacy(id, pharmacyId, includeDetails: true);
             if (price is null)
             {
                 return new MedicineUpdateResult { NotFound = true };
@@ -248,7 +258,7 @@ namespace SafePharma.BLL
                 return new MedicineUpdateResult { DuplicateSku = true };
             }
 
-            var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(id, pharmacyId);
+            var saved = await _unitOfWork.PharmacyMedicineRepository.GetByIdAndPharmacy(id, pharmacyId, includeDetails: true);
             return new MedicineUpdateResult { Medicine = saved!.ToDto() };
         }
 
@@ -274,7 +284,7 @@ namespace SafePharma.BLL
 
         public async Task<bool> DeleteMedicine(Guid pharmacyId, Guid id)
         {
-            var price = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(id, pharmacyId);
+            var price = await _unitOfWork.PharmacyMedicineRepository.GetByIdAndPharmacy(id, pharmacyId);
             if (price is null)
             {
                 return false;
@@ -287,7 +297,7 @@ namespace SafePharma.BLL
 
         public async Task<MedicineDto?> ToggleStatus(Guid pharmacyId, Guid id)
         {
-            var price = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(id, pharmacyId);
+            var price = await _unitOfWork.PharmacyMedicineRepository.GetByIdAndPharmacy(id, pharmacyId, includeDetails: true);
             if (price is null)
             {
                 return null;
@@ -317,7 +327,7 @@ namespace SafePharma.BLL
 
         public async Task<MedicineDetailsDto?> GetMedicineDetails(Guid pharmacyId, Guid id)
         {
-            var price = await _unitOfWork.PharmacyMedicineRepository.GetDetailsByMedicineAndPharmacy(id, pharmacyId);
+            var price = await _unitOfWork.PharmacyMedicineRepository.GetDetailsByIdAndPharmacy(id, pharmacyId);
             if (price is null)
             {
                 return null;
@@ -327,6 +337,8 @@ namespace SafePharma.BLL
             return price.ToDetailsDto(aggregates.FirstOrDefault());
         }
 
+        // STEP 3: not found anywhere in the global catalog -> create a medicine that lives
+        // ONLY in this pharmacy's PharmacyMedicine table (MedicineId stays null).
         public async Task<MedicineCreateResult> CreateLocalMedicine(Guid pharmacyId, MedicineCreateDto dto)
         {
             var globalMatch = await _unitOfWork.MedicineRepository.GetByTradeNameEn(dto.TradeNameEn);
@@ -335,10 +347,9 @@ namespace SafePharma.BLL
                 return new MedicineCreateResult { ExistingMedicineFound = true, ExistingMedicineId = globalMatch.Id };
             }
 
-            var localMatch = await _unitOfWork.MedicineRepository.GetLocalByTradeNameEnForPharmacy(pharmacyId, dto.TradeNameEn);
-            if (localMatch is not null)
+            if (await _unitOfWork.PharmacyMedicineRepository.TradeNameExistsForPharmacy(pharmacyId, dto.TradeNameEn))
             {
-                return new MedicineCreateResult { ExistingMedicineFound = true, ExistingMedicineId = localMatch.Id };
+                return new MedicineCreateResult { DuplicateTradeNameInPharmacy = true };
             }
 
             var taxLinks = await BuildTaxLinksAsync(pharmacyId, dto.TaxIds);
@@ -353,25 +364,15 @@ namespace SafePharma.BLL
                 return new MedicineCreateResult { DuplicateSku = true };
             }
 
-            var medicine = dto.ToMedicineEntity();
-            medicine.Id = Guid.NewGuid();
-            medicine.IsGlobal = false;
-            medicine.OwnerPharmacyId = pharmacyId;
-            medicine.CreatedAt = DateTime.UtcNow;
-            medicine.UpdatedAt = DateTime.UtcNow;
-            _unitOfWork.MedicineRepository.Add(medicine);
+            var price = dto.ToPharmacyMedicineEntity();
+            price.Id = Guid.NewGuid();
+            price.PharmacyId = pharmacyId;
+            price.MedicineId = null;
+            price.SKU = skuResult.Sku!;
+            price.ChangedAt = DateTime.UtcNow;
+            price.CreatedAt = DateTime.UtcNow;
+            price.UpdatedAt = DateTime.UtcNow;
 
-            var price = new PharmacyMedicine
-            {
-                Id = Guid.NewGuid(),
-                MedicineId = medicine.Id,
-                PharmacyId = pharmacyId,
-                PurchasePrice = dto.PurchasePrice,
-                SellingPrice = dto.SellingPrice,
-                MinStockLevel = dto.MinStockLevel,
-                SKU = skuResult.Sku!,
-                ChangedAt = DateTime.UtcNow,
-            };
             foreach (var link in taxLinks)
             {
                 link.PharmacyMedicineId = price.Id;
@@ -388,7 +389,7 @@ namespace SafePharma.BLL
                 return new MedicineCreateResult { DuplicateSku = true };
             }
 
-            var saved = await _unitOfWork.PharmacyMedicineRepository.GetByMedicineAndPharmacy(medicine.Id, pharmacyId);
+            var saved = await _unitOfWork.PharmacyMedicineRepository.GetByIdAndPharmacy(price.Id, pharmacyId, includeDetails: true);
             return new MedicineCreateResult { Medicine = saved!.ToDto() };
         }
 

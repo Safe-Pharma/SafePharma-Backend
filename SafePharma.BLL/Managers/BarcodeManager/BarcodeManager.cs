@@ -159,7 +159,7 @@ public class BarcodeManager : IBarcodeManager
             {
                 MedicineId = pharmacyBarcode.PharmacyMedicine.MedicineId,
                 PharmacyMedicineId = pharmacyBarcode.PharmacyMedicineId,
-                MedicineName = pharmacyBarcode.PharmacyMedicine.Medicine.TradeNameEn,
+                MedicineName = pharmacyBarcode.PharmacyMedicine.TradeNameEn,
                 Price = pharmacyBarcode.PharmacyMedicine.SellingPrice,
                 BarcodeSource = "PharmacyBarcode"
             };

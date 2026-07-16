@@ -27,6 +27,8 @@ namespace SafePharma.DAL
             services.AddScoped<ITaxRepository, TaxRepository>();
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<ISupplierRepository, SupplierRepository>();
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<ICustomerMedicineHistoryRepository, CustomerMedicineHistoryRepository>();
             services.AddScoped<ISupplierPaymentRepository, SupplierPaymentRepository>();
             services.AddScoped<IPaymentVerificationRepository, PaymentVerificationRepository>();
             services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
@@ -142,26 +144,26 @@ namespace SafePharma.DAL
                 }
                 // 11. Purchase Orders (needs Suppliers to already be seeded)
                 if (!await context.Set<PurchaseOrder>().AnyAsync())
-                    {
-                        var suppliers = await context.Set<Supplier>().ToListAsync();
-                        var purchaseOrders = PurchaseOrderSeeding.GetPurchaseOrders(suppliers);
-                        await context.AddRangeAsync(purchaseOrders);
-                        await context.SaveChangesAsync();
-                    }
-                    // 12. Purchase Order Items (needs Medicines and PurchaseOrders to already be seeded)
-                    if (!await context.Set<PurchaseOrderItem>().AnyAsync())
-                    {
-                        var pharmacyMedicines = await context.Set<PharmacyMedicine>()
-                            .Include(pm => pm.Medicine)
-                            .ToListAsync();
+                {
+                    var suppliers = await context.Set<Supplier>().ToListAsync();
+                    var purchaseOrders = PurchaseOrderSeeding.GetPurchaseOrders(suppliers);
+                    await context.AddRangeAsync(purchaseOrders);
+                    await context.SaveChangesAsync();
+                }
+                // 12. Purchase Order Items (needs Medicines and PurchaseOrders to already be seeded)
+                if (!await context.Set<PurchaseOrderItem>().AnyAsync())
+                {
+                    var pharmacyMedicines = await context.Set<PharmacyMedicine>()
+                        .Include(pm => pm.Medicine)
+                        .ToListAsync();
 
-                        var purchaseOrderItems = PurchaseOrderItemSeeding
-                            .GetPurchaseOrderItems(pharmacyMedicines);
+                    var purchaseOrderItems = PurchaseOrderItemSeeding
+                        .GetPurchaseOrderItems(pharmacyMedicines);
 
-                        await context.AddRangeAsync(purchaseOrderItems);
+                    await context.AddRangeAsync(purchaseOrderItems);
 
-                        await context.SaveChangesAsync();
-                    }
+                    await context.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -320,7 +322,7 @@ namespace SafePharma.DAL
                 Console.WriteLine("Error during UseDALSeedingAsync: " + ex);
                 throw;
             }
-           
+
 
         }
     }

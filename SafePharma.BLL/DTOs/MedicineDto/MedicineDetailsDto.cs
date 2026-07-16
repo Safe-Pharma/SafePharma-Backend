@@ -2,8 +2,10 @@
 {
     public class MedicineDetailsDto
     {
-        // Global medicine info
+        // Global medicine info (only meaningful when GlobalMedicineId is set)
         public Guid Id { get; set; }
+        public Guid? GlobalMedicineId { get; set; }
+        public bool IsLocal { get; set; }
         public string TradeNameAr { get; set; } = string.Empty;
         public string TradeNameEn { get; set; } = string.Empty;
         public string ScientificName { get; set; } = string.Empty;
@@ -18,7 +20,7 @@
         public bool IsControlled { get; set; }
         public string DosageForm { get; set; } = string.Empty;
         public string Strength { get; set; } = string.Empty;
-        public bool IsGlobalActive { get; set; }
+        public bool? IsGlobalActive { get; set; }
 
         // Pharmacy-specific info
         public Guid PharmacyMedicineId { get; set; }

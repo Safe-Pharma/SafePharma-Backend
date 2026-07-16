@@ -6,7 +6,7 @@
         {
             Guid PharmacyMedicineIdFor(string tradeNameEn) =>
                 pharmacyMedicines
-                    .First(pm => pm.Medicine.TradeNameEn == tradeNameEn)
+                    .First(pm => pm.TradeNameEn == tradeNameEn)
                     .Id;
 
             return new List<PurchaseOrderItem>
