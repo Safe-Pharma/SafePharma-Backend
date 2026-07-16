@@ -1,6 +1,6 @@
 ﻿public class ScanResultDto
 {
-    public Guid MedicineId { get; set; }
+    public Guid? MedicineId { get; set; }
 
     public Guid? PharmacyMedicineId { get; set; }
 

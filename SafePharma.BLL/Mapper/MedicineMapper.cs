@@ -23,33 +23,36 @@ namespace SafePharma.BLL
             return "InStock";
         }
 
+        // PharmacyMedicine now carries its own descriptive fields (denormalized at
+        // creation time, whether imported from the global catalog or added locally),
+        // so this reads straight off `price` — no join to Medicine required.
         public static MedicineDto ToDto(this PharmacyMedicine price, int availableQuantity = 0, int batchCount = 0)
         {
-            var m = price.Medicine;
             return new MedicineDto
             {
-                Id = m.Id,
+                Id = price.Id,
                 PharmacyMedicineId = price.Id,
-                TradeNameAr = m.TradeNameAr,
-                TradeNameEn = m.TradeNameEn,
-                ScientificName = m.ScientificName,
-                Category = m.Category,
-                UnitOfSale = m.UnitOfSale,
-                UnitsPerPackage = m.UnitsPerPackage,
-                DosageForm = m.DosageForm,
-                Strength = m.Strength,
+                GlobalMedicineId = price.MedicineId,
+                TradeNameAr = price.TradeNameAr,
+                TradeNameEn = price.TradeNameEn,
+                ScientificName = price.ScientificName,
+                Category = price.Category,
+                UnitOfSale = price.UnitOfSale,
+                UnitsPerPackage = price.UnitsPerPackage,
+                DosageForm = price.DosageForm,
+                Strength = price.Strength,
                 SKU = price.SKU,
                 PharmacyBarcodes = price.PharmacyBarcodes.Select(b => b.Barcode).ToList(),
                 PurchasePrice = price.PurchasePrice,
                 SellingPrice = price.SellingPrice,
                 Taxes = price.ToTaxSummaries(),
                 MinStockLevel = price.MinStockLevel,
-                IsPrescriptionRequired = m.IsPrescriptionRequired,
-                IsControlled = m.IsControlled,
-                Manufacturer = m.Manufacturer,
-                CountryOfOrigin = m.CountryOfOrigin,
-                StorageConditions = m.StorageConditions,
-                TherapeuticCategory = m.TherapeuticCategory,
+                IsPrescriptionRequired = price.IsPrescriptionRequired,
+                IsControlled = price.IsControlled,
+                Manufacturer = price.Manufacturer,
+                CountryOfOrigin = price.CountryOfOrigin,
+                StorageConditions = price.StorageConditions,
+                TherapeuticCategory = price.TherapeuticCategory,
                 IsActive = price.IsActive,
                 ChangedAt = price.ChangedAt,
                 ChangedBy = price.ChangedBy,
@@ -78,9 +81,11 @@ namespace SafePharma.BLL
             };
         }
 
-        public static Medicine ToMedicineEntity(this MedicineCreateDto dto)
+        // STEP 3 (local, no global match): build a PharmacyMedicine directly from the
+        // create DTO. MedicineId is left null by the caller — this is a pharmacy-only record.
+        public static PharmacyMedicine ToPharmacyMedicineEntity(this MedicineCreateDto dto)
         {
-            return new Medicine
+            return new PharmacyMedicine
             {
                 TradeNameAr = dto.TradeNameAr,
                 TradeNameEn = dto.TradeNameEn,
@@ -96,8 +101,31 @@ namespace SafePharma.BLL
                 CountryOfOrigin = dto.CountryOfOrigin,
                 StorageConditions = dto.StorageConditions,
                 TherapeuticCategory = dto.TherapeuticCategory,
+                PurchasePrice = dto.PurchasePrice,
+                SellingPrice = dto.SellingPrice,
+                MinStockLevel = dto.MinStockLevel,
                 IsActive = dto.IsActive,
             };
+        }
+
+        // STEP 2 (import): copy the global medicine's descriptive fields onto the new
+        // PharmacyMedicine at link time. MedicineId/pricing/etc. are set by the caller.
+        public static void CopyDescriptiveFieldsTo(this Medicine medicine, PharmacyMedicine price)
+        {
+            price.TradeNameAr = medicine.TradeNameAr;
+            price.TradeNameEn = medicine.TradeNameEn;
+            price.ScientificName = medicine.ScientificName;
+            price.Category = medicine.Category;
+            price.UnitOfSale = medicine.UnitOfSale;
+            price.DosageForm = medicine.DosageForm;
+            price.Strength = medicine.Strength;
+            price.UnitsPerPackage = medicine.UnitsPerPackage;
+            price.IsPrescriptionRequired = medicine.IsPrescriptionRequired;
+            price.IsControlled = medicine.IsControlled;
+            price.Manufacturer = medicine.Manufacturer;
+            price.CountryOfOrigin = medicine.CountryOfOrigin;
+            price.StorageConditions = medicine.StorageConditions;
+            price.TherapeuticCategory = medicine.TherapeuticCategory;
         }
 
         public static void ApplyTo(this PharmacyMedicineUpdateDto dto, PharmacyMedicine price)
@@ -105,6 +133,28 @@ namespace SafePharma.BLL
             price.PurchasePrice = dto.PurchasePrice;
             price.SellingPrice = dto.SellingPrice;
             price.MinStockLevel = dto.MinStockLevel;
+
+            // Descriptive fields only make sense to edit here for local records.
+            // Linked records should be corrected via the global catalog instead.
+            if (price.MedicineId is not null)
+            {
+                return;
+            }
+
+            if (dto.TradeNameAr is not null) price.TradeNameAr = dto.TradeNameAr;
+            if (dto.TradeNameEn is not null) price.TradeNameEn = dto.TradeNameEn;
+            if (dto.ScientificName is not null) price.ScientificName = dto.ScientificName;
+            if (dto.Category is not null) price.Category = dto.Category;
+            if (dto.UnitOfSale is not null) price.UnitOfSale = dto.UnitOfSale;
+            if (dto.DosageForm is not null) price.DosageForm = dto.DosageForm;
+            if (dto.Strength is not null) price.Strength = dto.Strength;
+            if (dto.UnitsPerPackage.HasValue) price.UnitsPerPackage = dto.UnitsPerPackage.Value;
+            if (dto.IsPrescriptionRequired.HasValue) price.IsPrescriptionRequired = dto.IsPrescriptionRequired.Value;
+            if (dto.IsControlled.HasValue) price.IsControlled = dto.IsControlled.Value;
+            if (dto.Manufacturer is not null) price.Manufacturer = dto.Manufacturer;
+            if (dto.CountryOfOrigin is not null) price.CountryOfOrigin = dto.CountryOfOrigin;
+            if (dto.StorageConditions is not null) price.StorageConditions = dto.StorageConditions;
+            if (dto.TherapeuticCategory is not null) price.TherapeuticCategory = dto.TherapeuticCategory;
         }
 
         public static void ApplyTo(this GlobalMedicineUpdateDto dto, Medicine entity)
@@ -142,25 +192,27 @@ namespace SafePharma.BLL
 
         public static MedicineDetailsDto ToDetailsDto(this PharmacyMedicine price, StockAggregate? aggregate)
         {
-            var m = price.Medicine;
             return new MedicineDetailsDto
             {
-                Id = m.Id,
-                TradeNameAr = m.TradeNameAr,
-                TradeNameEn = m.TradeNameEn,
-                ScientificName = m.ScientificName,
-                Category = m.Category,
-                Manufacturer = m.Manufacturer,
-                CountryOfOrigin = m.CountryOfOrigin,
-                TherapeuticCategory = m.TherapeuticCategory,
-                StorageConditions = m.StorageConditions,
-                UnitOfSale = m.UnitOfSale,
-                UnitsPerPackage = m.UnitsPerPackage,
-                IsPrescriptionRequired = m.IsPrescriptionRequired,
-                IsControlled = m.IsControlled,
-                DosageForm = m.DosageForm,
-                Strength = m.Strength,
-                IsGlobalActive = m.IsActive,
+                Id = price.Id,
+                GlobalMedicineId = price.MedicineId,
+                IsLocal = price.MedicineId is null,
+
+                TradeNameAr = price.TradeNameAr,
+                TradeNameEn = price.TradeNameEn,
+                ScientificName = price.ScientificName,
+                Category = price.Category,
+                Manufacturer = price.Manufacturer,
+                CountryOfOrigin = price.CountryOfOrigin,
+                TherapeuticCategory = price.TherapeuticCategory,
+                StorageConditions = price.StorageConditions,
+                UnitOfSale = price.UnitOfSale,
+                UnitsPerPackage = price.UnitsPerPackage,
+                IsPrescriptionRequired = price.IsPrescriptionRequired,
+                IsControlled = price.IsControlled,
+                DosageForm = price.DosageForm,
+                Strength = price.Strength,
+                IsGlobalActive = price.Medicine?.IsActive,
 
                 PharmacyMedicineId = price.Id,
                 SKU = price.SKU,
@@ -170,7 +222,7 @@ namespace SafePharma.BLL
                 MinStockLevel = price.MinStockLevel,
                 IsPharmacyActive = price.IsActive,
 
-                ManufacturerBarcodes = m.ManufacturerBarcodes.Select(b => b.Barcode).ToList(),
+                ManufacturerBarcodes = price.Medicine?.ManufacturerBarcodes.Select(b => b.Barcode).ToList() ?? new(),
                 PharmacyBarcodes = price.PharmacyBarcodes.Select(b => b.Barcode).ToList(),
 
                 Inventory = aggregate.ToInventorySummary(price.MinStockLevel),

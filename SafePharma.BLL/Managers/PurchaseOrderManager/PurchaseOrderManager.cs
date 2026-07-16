@@ -54,7 +54,7 @@ namespace SafePharma.BLL
                 SupplierName = supplier.Name,
                 Items = savedOrder.Items.Select(i => new PurchaseOrderItemReadDto
                  {
-                    MedicineName = i.PharmacyMedicine.Medicine.TradeNameEn,
+                    MedicineName = i.PharmacyMedicine.TradeNameEn,
                     QuantityOrdered = i.QuantityOrdered,
                     UnitPrice = i.UnitPrice,
                     SellingPrice = i.SellingPrice
@@ -78,7 +78,7 @@ namespace SafePharma.BLL
                 Items = po.Items.Select(i => new PurchaseOrderItemReadDto
                 {
                     Id = i.Id,
-                    MedicineName = i.PharmacyMedicine.Medicine.TradeNameEn,
+                    MedicineName = i.PharmacyMedicine.TradeNameEn,
                     QuantityOrdered = i.QuantityOrdered,
                     UnitPrice = i.UnitPrice,
                     SellingPrice = i.SellingPrice

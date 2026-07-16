@@ -4,6 +4,8 @@
     {
         public Guid Id { get; set; }
         public Guid PharmacyMedicineId { get; set; }
+        // Set when this record is linked to the global catalog; null for pharmacy-local medicines.
+        public Guid? GlobalMedicineId { get; set; }
         public string TradeNameAr { get; set; } = string.Empty;
         public string TradeNameEn { get; set; } = string.Empty;
         public string ScientificName { get; set; } = string.Empty;

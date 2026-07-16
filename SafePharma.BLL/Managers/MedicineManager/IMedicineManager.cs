@@ -27,6 +27,7 @@ namespace SafePharma.BLL
         public MedicineDto? Medicine { get; set; }
         public bool ExistingMedicineFound { get; set; }
         public Guid? ExistingMedicineId { get; set; }
+        public bool DuplicateTradeNameInPharmacy { get; set; }
         public bool InvalidTaxIds { get; set; }
         public bool DuplicateSku { get; set; }
     }

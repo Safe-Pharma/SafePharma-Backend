@@ -45,11 +45,10 @@ namespace SafePharma.BLL
                 .Select(pm => new MedicineSearchResultDto
                 {
                     PharmacyMedicineId = pm.Id,
-                    TradeNameAr = pm.Medicine.TradeNameAr,
-                    TradeNameEn = pm.Medicine.TradeNameEn,
-                    ScientificName = pm.Medicine.ScientificName,
-                    Barcode = pm.PharmacyBarcodes.FirstOrDefault(b => b.IsPrimary)?.Barcode
-                          ?? pm.Medicine.ManufacturerBarcodes.FirstOrDefault(b => b.IsPrimary)?.Barcode,
+                    TradeNameAr = pm.TradeNameAr,
+                    TradeNameEn = pm.TradeNameEn,
+                    ScientificName = pm.ScientificName,
+                    Barcode = pm.PharmacyBarcodes.FirstOrDefault(b => b.IsPrimary)?.Barcode,
                     SellingPrice = pm.SellingPrice,
                     StockQuantity = stockMap.TryGetValue(pm.Id, out var qty) ? qty : 0
                 }).ToList();

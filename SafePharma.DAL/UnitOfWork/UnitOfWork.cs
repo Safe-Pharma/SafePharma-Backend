@@ -17,6 +17,8 @@ namespace SafePharma.DAL
         public ICountryRepository CountryRepository { get; }
 
         public ISupplierRepository SupplierRepository { get; }
+        public ICustomerRepository CustomerRepository { get; }
+        public ICustomerMedicineHistoryRepository CustomerMedicineHistoryRepository { get; }
         public IPaymentVerificationRepository PaymentVerificationRepository { get; }
         public ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
         public IPaymentMethodRepository PaymentMethodRepository { get; }
@@ -47,6 +49,8 @@ namespace SafePharma.DAL
             ITaxRepository taxRepository,
             ICountryRepository countryRepository,
             ISupplierRepository supplierRepository,
+            ICustomerRepository customerRepository,
+            ICustomerMedicineHistoryRepository customerMedicineHistoryRepository,
 
             IPaymentVerificationRepository paymentVerificationRepository,
             ISubscriptionPlanRepository subscriptionPlanRepository,
@@ -66,7 +70,7 @@ namespace SafePharma.DAL
             )
 
 
-            
+
 
         {
             _auditRepository = auditRepository;
@@ -78,15 +82,17 @@ namespace SafePharma.DAL
             PrimaryContactRepository = primaryContactRepository;
             CountryRepository = countryRepository;
             SupplierRepository = supplierRepository;
+            CustomerRepository = customerRepository;
+            CustomerMedicineHistoryRepository = customerMedicineHistoryRepository;
 
             PaymentVerificationRepository = paymentVerificationRepository;
             SubscriptionPlanRepository = subscriptionPlanRepository;
             PaymentMethodRepository = paymentMethodRepository;
 
             PurchaseOrderRepository = purchaseOrderRepository;
-            _batchRepository= batchRepository;
+            _batchRepository = batchRepository;
             SupplierPaymentRepository = supplierPaymentRepository;
-            PharmacyMedicineRepository= pharmacymedicineRepository;
+            PharmacyMedicineRepository = pharmacymedicineRepository;
             MedicineRepository = medicineRepository;
             PurchaseReceiptRepository = purchaseReceiptRepository;
             PurchaseReceiptItemRepository = purchaseReceiptItemRepository;

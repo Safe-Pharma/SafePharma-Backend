@@ -4,9 +4,9 @@ using SafePharma.DAL.Data.Models;
 
 namespace SafePharma.DAL
 {
-    public class AppDbContext : IdentityDbContext<ApplicationUser ,ApplicationRole ,Guid>
+    public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
-        
+
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
@@ -32,15 +32,15 @@ namespace SafePharma.DAL
 
 
             modelBuilder.Entity<Subscription>(entity =>
-                {
-                    entity.Property(s => s.Status).HasConversion<string>().HasMaxLength(20);
-                    entity.Property(s => s.PlanTier).HasMaxLength(20);
-                    entity.Property(s => s.BillingCycle).HasMaxLength(10);
+            {
+                entity.Property(s => s.Status).HasConversion<string>().HasMaxLength(20);
+                entity.Property(s => s.PlanTier).HasMaxLength(20);
+                entity.Property(s => s.BillingCycle).HasMaxLength(10);
 
-                    entity.HasOne(s => s.Pharmacy)
-                          .WithOne(p => p.Subscription)
-                          .HasForeignKey<Pharmacy>(p => p.SubscriptionId);
-                });
+                entity.HasOne(s => s.Pharmacy)
+                      .WithOne(p => p.Subscription)
+                      .HasForeignKey<Pharmacy>(p => p.SubscriptionId);
+            });
 
             modelBuilder.Entity<PrimaryContact>(entity =>
             {
@@ -148,6 +148,40 @@ namespace SafePharma.DAL
                 entity.HasIndex(s => new { s.PharmacyId, s.Name }).IsUnique();
             });
 
+            modelBuilder.Entity<Customer>(entity =>
+            {
+                entity.Property(c => c.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                entity.Property(c => c.TotalPaid)
+                    .HasColumnType("decimal(12,2)");
+
+                // Global entity: phone is unique across the whole platform, not per pharmacy.
+                entity.HasIndex(c => c.Phone).IsUnique();
+            });
+
+            modelBuilder.Entity<CustomerMedicineHistory>(entity =>
+            {
+                entity.HasOne(h => h.Customer)
+                    .WithMany(c => c.MedicineHistory)
+                    .HasForeignKey(h => h.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Optional: null means the medicine wasn't found in the global catalog,
+                // and ScientificName below carries the pharmacist's free-text entry instead.
+                entity.HasOne(h => h.Medicine)
+                    .WithMany()
+                    .HasForeignKey(h => h.MedicineId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.Property(h => h.ScientificName)
+                    .HasMaxLength(255);
+
+                entity.HasIndex(h => new { h.CustomerId, h.IsActive });
+            });
+
             modelBuilder.Entity<PaymentVerification>(entity =>
             {
                 entity.Property(p => p.Status).HasConversion<string>().HasMaxLength(20);
@@ -184,78 +218,78 @@ namespace SafePharma.DAL
                 entity.Property(m => m.MethodName).HasMaxLength(50);
 
             });
-                modelBuilder.Entity<PurchaseOrder>(entity =>
-                {
-                    entity.Property(po => po.TotalAmount)
-                        .HasPrecision(18, 2);
+            modelBuilder.Entity<PurchaseOrder>(entity =>
+            {
+                entity.Property(po => po.TotalAmount)
+                    .HasPrecision(18, 2);
 
-                    entity.HasOne(po => po.Pharmacy)
-                        .WithMany(p => p.PurchaseOrders)
-                        .HasForeignKey(po => po.PharmacyId)
-                        .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(po => po.Pharmacy)
+                    .WithMany(p => p.PurchaseOrders)
+                    .HasForeignKey(po => po.PharmacyId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
-                    entity.HasOne(po => po.Supplier)
-                        .WithMany()
-                        .HasForeignKey(po => po.SupplierId)
-                        .OnDelete(DeleteBehavior.Restrict);
-                });
+                entity.HasOne(po => po.Supplier)
+                    .WithMany()
+                    .HasForeignKey(po => po.SupplierId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
-                modelBuilder.Entity<PurchaseOrderItem>(entity =>
-                {
-                    entity.Property(i => i.UnitPrice)
-                        .HasPrecision(18, 2);
+            modelBuilder.Entity<PurchaseOrderItem>(entity =>
+            {
+                entity.Property(i => i.UnitPrice)
+                    .HasPrecision(18, 2);
 
-                    entity.HasOne(i => i.PharmacyMedicine)
-                        .WithMany()
-                        .HasForeignKey(i => i.PharmacyMedicineId)
-                        .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(i => i.PharmacyMedicine)
+                    .WithMany()
+                    .HasForeignKey(i => i.PharmacyMedicineId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                    entity.HasOne(i => i.PurchaseOrder)
-                        .WithMany(po => po.Items)
-                        .HasForeignKey(i => i.PurchaseOrderId)
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
+                entity.HasOne(i => i.PurchaseOrder)
+                    .WithMany(po => po.Items)
+                    .HasForeignKey(i => i.PurchaseOrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
-                modelBuilder.Entity<PurchaseReceipt>(entity =>
-                {
-                    entity.Property(x => x.InvoiceTotal)
-                          .HasPrecision(18, 2);
+            modelBuilder.Entity<PurchaseReceipt>(entity =>
+            {
+                entity.Property(x => x.InvoiceTotal)
+                      .HasPrecision(18, 2);
 
-                    entity.Property(x => x.InvoiceNumber)
-                          .HasMaxLength(100);
+                entity.Property(x => x.InvoiceNumber)
+                      .HasMaxLength(100);
 
-                    entity.HasOne(x => x.PurchaseOrder)
-                          .WithMany()
-                          .HasForeignKey(x => x.PurchaseOrderId)
-                          .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(x => x.PurchaseOrder)
+                      .WithMany()
+                      .HasForeignKey(x => x.PurchaseOrderId)
+                      .OnDelete(DeleteBehavior.Restrict);
 
-                    entity.HasMany(x => x.Items)
-                          .WithOne(x => x.PurchaseReceipt)
-                          .HasForeignKey(x => x.PurchaseReceiptId)
-                          .OnDelete(DeleteBehavior.Cascade);
-                });
+                entity.HasMany(x => x.Items)
+                      .WithOne(x => x.PurchaseReceipt)
+                      .HasForeignKey(x => x.PurchaseReceiptId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
 
-                modelBuilder.Entity<PurchaseReceiptItem>(entity =>
-                {
-                    entity.Property(x => x.UnitPrice)
-                        .HasPrecision(18, 2);
+            modelBuilder.Entity<PurchaseReceiptItem>(entity =>
+            {
+                entity.Property(x => x.UnitPrice)
+                    .HasPrecision(18, 2);
 
-                    entity.Property(x => x.MedicineName)
-                        .HasMaxLength(255);
+                entity.Property(x => x.MedicineName)
+                    .HasMaxLength(255);
 
-                    entity.Property(x => x.BatchNumber)
-                        .HasMaxLength(100);
+                entity.Property(x => x.BatchNumber)
+                    .HasMaxLength(100);
 
-                    entity.HasOne(x => x.PharmacyMedicine)
-                        .WithMany()
-                        .HasForeignKey(x => x.PharmacyMedicineId)
-                        .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(x => x.PharmacyMedicine)
+                    .WithMany()
+                    .HasForeignKey(x => x.PharmacyMedicineId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                    entity.HasOne(x => x.PurchaseOrderItem)
-                        .WithMany()
-                        .HasForeignKey(x => x.PurchaseOrderItemId)
-                        .OnDelete(DeleteBehavior.Restrict);
-                });
+                entity.HasOne(x => x.PurchaseOrderItem)
+                    .WithMany()
+                    .HasForeignKey(x => x.PurchaseOrderItemId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
 
             modelBuilder.Entity<SupplierPayment>(entity =>
@@ -286,10 +320,36 @@ namespace SafePharma.DAL
                 entity.Property(mp => mp.ChangedBy)
                     .HasMaxLength(255);
 
+                entity.Property(mp => mp.TradeNameAr)
+                    .HasMaxLength(255)
+                    .IsRequired();
+                entity.Property(mp => mp.TradeNameEn)
+                    .HasMaxLength(255)
+                    .IsRequired();
+                entity.Property(mp => mp.ScientificName)
+                    .HasMaxLength(255)
+                    .IsRequired();
+                entity.Property(mp => mp.Category)
+                    .HasMaxLength(50)
+                    .IsRequired();
+                entity.Property(mp => mp.UnitOfSale)
+                    .HasMaxLength(50)
+                    .IsRequired();
+                entity.Property(mp => mp.TherapeuticCategory)
+                    .HasMaxLength(100);
+                entity.Property(mp => mp.Manufacturer)
+                    .HasMaxLength(255);
+                entity.Property(mp => mp.CountryOfOrigin)
+                    .HasMaxLength(100);
+                entity.Property(mp => mp.StorageConditions)
+                    .HasMaxLength(100);
+
+                // Optional now: a pharmacy-local medicine (no global counterpart) has MedicineId = null.
                 entity.HasOne(mp => mp.Medicine)
                     .WithMany(m => m.PharmacyMedicines)
                     .HasForeignKey(mp => mp.MedicineId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(mp => mp.Pharmacy)
                     .WithMany()
@@ -304,7 +364,9 @@ namespace SafePharma.DAL
                     .IsUnique()
                     .HasDatabaseName("IX_PharmacyMedicine_Pharmacy_SKU");
 
-                // One current price row per medicine per pharmacy
+                // One row per linked global medicine per pharmacy. SQL Server treats each
+                // NULL as distinct, so this does not restrict how many local (MedicineId = null)
+                // medicines a pharmacy can have.
                 entity.HasIndex(mp => new { mp.MedicineId, mp.PharmacyId }).IsUnique();
 
                 entity.ToTable(t =>
@@ -391,7 +453,7 @@ namespace SafePharma.DAL
                 .HasForeignKey(si => si.PharmacyMedicineId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
-          
+
 
 
 
@@ -427,6 +489,8 @@ namespace SafePharma.DAL
         public DbSet<City> Cities => Set<City>();
         public DbSet<Medicine> Medicines => Set<Medicine>();
         public DbSet<Supplier> Suppliers => Set<Supplier>();
+        public DbSet<Customer> Customers => Set<Customer>();
+        public DbSet<CustomerMedicineHistory> CustomerMedicineHistories => Set<CustomerMedicineHistory>();
 
         public DbSet<PaymentVerification> PaymentVerifications => Set<PaymentVerification>();
         public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();

@@ -11,6 +11,8 @@
         public ITaxRepository TaxRepository { get; }
         ICountryRepository CountryRepository { get; }
         public ISupplierRepository SupplierRepository { get; }
+        public ICustomerRepository CustomerRepository { get; }
+        public ICustomerMedicineHistoryRepository CustomerMedicineHistoryRepository { get; }
 
         public IPaymentVerificationRepository PaymentVerificationRepository { get; }
         public ISubscriptionPlanRepository SubscriptionPlanRepository { get; }

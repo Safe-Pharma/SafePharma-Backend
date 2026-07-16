@@ -22,6 +22,9 @@ namespace SafePharma.BLL
             services.AddScoped<IPasswordHasher<PrimaryContact>, PasswordHasher<PrimaryContact>>();
             services.AddScoped<ITaxManager, TaxManager>();
             services.AddScoped<ISupplierManager, SupplierManager>();
+            services.AddScoped<ICustomerManager, CustomerManager>();
+            services.AddValidatorsFromAssemblyContaining<CustomerCreateDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<CustomerUpdateDtoValidator>();
             services.AddScoped<IAuthManager, AuthManager>();
             services.AddScoped<IPurchaseOrderManager, PurchaseOrderManager>();
             services.AddValidatorsFromAssemblyContaining<LoginValidator>();
@@ -48,7 +51,6 @@ namespace SafePharma.BLL
             services.AddScoped<IPaymentMethodManager, PaymentMethodManager>();
             services.AddScoped<IPurchaseReceiptManager, PurchaseReceiptManager>();
             services.AddScoped<IBatchManager, BatchManager>();
-            services.AddScoped<IMedicineSearchService, MedicineSearchService>();
 
             services.AddValidatorsFromAssemblyContaining<SubscriptionPlanUpsertDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<PaymentMethodUpsertDtoValidator>();
