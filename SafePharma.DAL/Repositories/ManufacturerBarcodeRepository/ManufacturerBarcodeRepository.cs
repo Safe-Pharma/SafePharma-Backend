@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SafePharma.DAL;
-using SafePharma.DAL.Data.Models;
 
 public class ManufacturerBarcodeRepository
     : GenircRepository<ManufacturerBarcode>, IManufacturerBarcodeRepository

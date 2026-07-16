@@ -111,6 +111,7 @@ namespace SafePharma.API.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Policy = AuthPolicies.OwnerOnly)]
         public async Task<IActionResult> Delete(Guid id)
         {
             var deleted = await _manager.DeleteCustomer(id);
@@ -170,8 +171,9 @@ namespace SafePharma.API.Controllers
         }
 
         [HttpDelete("{customerId:guid}/medicine-history/{historyId:guid}")]
+        [Authorize(Policy = AuthPolicies.OwnerOnly)]
         public async Task<IActionResult> DeleteMedicineHistory(Guid customerId, Guid historyId)
-        {
+        { 
             var deleted = await _manager.DeleteMedicineHistory(customerId, historyId);
             if (!deleted)
             {

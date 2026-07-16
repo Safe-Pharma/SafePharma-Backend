@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using SafePharma.DAL.Data.Models;
+
 
 namespace SafePharma.DAL
 {
