@@ -1255,8 +1255,17 @@ namespace SafePharma.DAL.Migrations
                     b.Property<decimal>("AmountPaid")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("AmountPaidByCard")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AmountPaidByCash")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<Guid>("ApplicationUserId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Change")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -1267,25 +1276,26 @@ namespace SafePharma.DAL.Migrations
                     b.Property<decimal>("Discount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("GrandTotal")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("InvoiceNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("PharmacyId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
-                    b.Property<decimal>("Tax")
+                    b.Property<decimal>("SubTotal")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("Total")
+                    b.Property<decimal>("Tax")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1932,7 +1942,7 @@ namespace SafePharma.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SafePharma.DAL.Customer", "Customer")
+                    b.HasOne("Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -1958,7 +1968,7 @@ namespace SafePharma.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SafePharma.DAL.Customer", "Customer")
+                    b.HasOne("Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict);

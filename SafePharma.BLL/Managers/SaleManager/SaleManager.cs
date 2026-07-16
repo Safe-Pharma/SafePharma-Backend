@@ -20,13 +20,17 @@ namespace SafePharma.BLL
                 InvoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMddHHmmss}",
                 ApplicationUserId = userId,
 
-                Status = "Open",
-                PaymentMethod = "Cash",
+                Status = SaleStatus.Open,
+                PaymentMethod = SalePaymentMethod.Cash,
 
                 Tax = 0,
                 Discount = 0,
-                Total = 0,
+                SubTotal = 0,
+                GrandTotal = 0,
+                AmountPaidByCard = 0,
+                AmountPaidByCash = 0,
                 AmountPaid = 0,
+                Change = 0,
 
                 CreatedAt = DateTime.UtcNow
             };
@@ -44,9 +48,12 @@ namespace SafePharma.BLL
                 PaymentMethod = sale.PaymentMethod,
                 Tax = sale.Tax,
                 Discount = sale.Discount,
-                Total = sale.Total,
+                SubTotal = sale.SubTotal,
+                GrandTotal = sale.GrandTotal,
                 AmountPaid = sale.AmountPaid,
-                RemainingAmount = 0,
+                AmountPaidByCash = sale.AmountPaidByCash,
+                AmountPaidByCard = sale.AmountPaidByCard,
+                Change = sale.Change,
                 CreatedAt = sale.CreatedAt,
                 Items = new List<ReadSaleItemsDto>()
             };
@@ -68,7 +75,7 @@ namespace SafePharma.BLL
             if (sale == null || sale.PharmacyId != pharmacyId)
                 return GeneralResult<ReadSaleDto>.FailResult("Sale not found");
 
-            if (sale.Status != "Open")
+            if (sale.Status != SaleStatus.Open)
                 return GeneralResult<ReadSaleDto>.FailResult("Cannot modify a closed sale");
 
             if (dto.Quantity <= 0)
@@ -121,7 +128,7 @@ namespace SafePharma.BLL
 
             sale.Discount = sale.SaleItems.Sum(i => i.Discount);
             sale.Tax = sale.SaleItems.Sum(i => i.TaxAmount);
-            sale.Total = sale.SaleItems.Sum(i => i.LineTotal);
+            sale.SubTotal = sale.SaleItems.Sum(i => i.LineTotal);
 
             sale.UpdatedAt = DateTime.UtcNow;
             sale.UpdatedBy = userId.ToString();
@@ -139,7 +146,7 @@ namespace SafePharma.BLL
             if (sale == null || sale.PharmacyId != pharmacyId)
                 return GeneralResult<ReadSaleDto>.FailResult("Sale not found");
 
-            if (sale.Status != "Open")
+            if (sale.Status != SaleStatus.Open)
                 return GeneralResult<ReadSaleDto>.FailResult("Cannot modify a closed sale");
 
             var item = sale.SaleItems.FirstOrDefault(i => i.Id == itemId);
@@ -160,7 +167,7 @@ namespace SafePharma.BLL
 
             sale.Discount = sale.SaleItems.Sum(i => i.Discount);
             sale.Tax = sale.SaleItems.Sum(i => i.TaxAmount);
-            sale.Total = sale.SaleItems.Sum(i => i.LineTotal);
+            sale.SubTotal = sale.SaleItems.Sum(i => i.LineTotal);
 
             sale.UpdatedAt = DateTime.UtcNow;
             sale.UpdatedBy = userId.ToString();
@@ -176,7 +183,7 @@ namespace SafePharma.BLL
             if (sale == null || sale.PharmacyId != pharmacyId)
                 return GeneralResult<ReadSaleDto>.FailResult("Sale not found");
 
-            if (sale.Status != "Open")
+            if (sale.Status != SaleStatus.Open)
                 return GeneralResult<ReadSaleDto>.FailResult("Cannot modify a closed sale");
 
             var item = sale.SaleItems.FirstOrDefault(i => i.Id == itemId);
@@ -187,7 +194,7 @@ namespace SafePharma.BLL
 
             sale.Discount = sale.SaleItems.Sum(i => i.Discount);
             sale.Tax = sale.SaleItems.Sum(i => i.TaxAmount);
-            sale.Total = sale.SaleItems.Sum(i => i.LineTotal);
+            sale.SubTotal = sale.SaleItems.Sum(i => i.LineTotal);
 
             sale.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.SaveAsync();
@@ -206,9 +213,12 @@ namespace SafePharma.BLL
                 PaymentMethod = sale.PaymentMethod,
                 Tax = sale.Tax,
                 Discount = sale.Discount,
-                Total = sale.Total,
+                SubTotal = sale.SubTotal,
+                GrandTotal = sale.GrandTotal,
+                AmountPaidByCard = sale.AmountPaidByCard,
+                AmountPaidByCash = sale.AmountPaidByCash,
                 AmountPaid = sale.AmountPaid,
-                RemainingAmount = sale.Total - sale.AmountPaid,
+                Change = sale.GrandTotal - sale.AmountPaid,
                 Status = sale.Status,
                 CreatedAt = sale.CreatedAt,
                 Items = sale.SaleItems.Select(item => new ReadSaleItemsDto
@@ -226,6 +236,139 @@ namespace SafePharma.BLL
                     LineTotal = item.LineTotal
                 }).ToList()
             };
-       } 
+       }
+
+
+
+
+        public async Task<GeneralResult<ReadSaleDto>> ApplyTax(Guid saleId, ApplySaleTaxDto dto, Guid pharmacyId)
+        {
+            var sale = await _unitOfWork.SaleRepository.GetByIdWithItemsAsync(saleId);
+
+            if (sale == null || sale.PharmacyId != pharmacyId)
+                return GeneralResult<ReadSaleDto>.FailResult("Sale not found");
+
+            if (sale.Status != SaleStatus.Open)
+                return GeneralResult<ReadSaleDto>.FailResult("Cannot modify a closed sale");
+
+            var tax = await _unitOfWork.TaxRepository.GetById(dto.TaxId);
+            if (tax == null || tax.PharmacyId != pharmacyId)
+                return GeneralResult<ReadSaleDto>.FailResult("Tax not found");
+
+            var subTotal = sale.SaleItems.Sum(i => i.UnitPrice * i.Quantity);
+            var taxAmount = Math.Round(subTotal * (tax.Rate / 100m), 2);
+
+            sale.Tax = taxAmount;
+            sale.GrandTotal = subTotal - sale.Discount + sale.Tax;
+            sale.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.SaveAsync();
+
+            return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
+        }
+
+        public async Task<GeneralResult<ReadSaleDto>> ApplyDiscount(Guid saleId, ApplySaleDiscountDto dto, Guid pharmacyId)
+        {
+            var sale = await _unitOfWork.SaleRepository.GetByIdWithItemsAsync(saleId);
+
+            if (sale == null || sale.PharmacyId != pharmacyId)
+                return GeneralResult<ReadSaleDto>.FailResult("Sale not found");
+
+            if (sale.Status != SaleStatus.Open)
+                return GeneralResult<ReadSaleDto>.FailResult("Cannot modify a closed sale");
+
+            if (dto.DiscountAmount < 0)
+                return GeneralResult<ReadSaleDto>.FailResult("Discount cannot be negative");
+
+            var subTotal = sale.SaleItems.Sum(i => i.UnitPrice * i.Quantity);
+
+            if (dto.DiscountAmount > subTotal)
+                return GeneralResult<ReadSaleDto>.FailResult("Discount cannot exceed the sale subtotal");
+
+            sale.Discount = dto.DiscountAmount;
+            sale.GrandTotal = subTotal - sale.Discount + sale.Tax;
+            sale.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.SaveAsync();
+
+            return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
+        }
+
+        public async Task<GeneralResult<ReadSaleDto>> Pay(Guid saleId, PaySaleDto dto, Guid pharmacyId, Guid userId)
+        {
+            var sale = await _unitOfWork.SaleRepository.GetByIdWithItemsAsync(saleId);
+
+            if (sale == null || sale.PharmacyId != pharmacyId)
+                return GeneralResult<ReadSaleDto>.FailResult("Sale not found");
+
+            if (sale.Status != SaleStatus.Open)
+                return GeneralResult<ReadSaleDto>.FailResult("This sale is not open for payment");
+
+            if (sale.SaleItems.Count == 0)
+                return GeneralResult<ReadSaleDto>.FailResult("Cannot pay a sale with no items");
+
+            if (dto.AmountPaidByCash < 0 || dto.AmountPaidByCard < 0)
+                return GeneralResult<ReadSaleDto>.FailResult("Payment amounts cannot be negative");
+
+            var totalPaid = dto.AmountPaidByCash + dto.AmountPaidByCard;
+
+            if (totalPaid < sale.GrandTotal)
+                return GeneralResult<ReadSaleDto>.FailResult(
+                    $"Amount paid ({totalPaid}) is less than the sale total ({sale.GrandTotal}).");
+
+            // re-check stock right before committing — protects against another sale
+            // draining the same batch between "add item" time and "pay" time
+            foreach (var item in sale.SaleItems)
+            {
+                var batch = await _unitOfWork._batchRepository.GetById(item.BatchId);
+                if (batch == null || batch.QuantityRemaining < item.Quantity)
+                {
+                    return GeneralResult<ReadSaleDto>.FailResult(
+                        $"Insufficient stock remaining for {item.PharmacyMedicine?.TradeNameEn ?? "one of the items"}.");
+                }
+            }
+
+            foreach (var item in sale.SaleItems)
+            {
+                var batch = await _unitOfWork._batchRepository.GetById(item.BatchId);
+                batch!.QuantityRemaining -= item.Quantity;
+            }
+
+            sale.AmountPaidByCash = dto.AmountPaidByCash;
+            sale.AmountPaidByCard = dto.AmountPaidByCard;
+            sale.AmountPaid = totalPaid;
+            sale.PaymentMethod = dto.AmountPaidByCash > 0 && dto.AmountPaidByCard > 0
+                ? SalePaymentMethod.Mixed
+                : dto.AmountPaidByCard > 0
+                    ? SalePaymentMethod.Card
+                    : SalePaymentMethod.Cash;
+            sale.Status = SaleStatus.Completed;
+            sale.UpdatedAt = DateTime.UtcNow;
+            sale.UpdatedBy = userId.ToString();
+
+            await _unitOfWork.SaveAsync();
+
+            return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
+        }
+
+        public async Task<GeneralResult<ReadSaleDto>> CancelSale(Guid saleId, Guid pharmacyId)
+        {
+            var sale = await _unitOfWork.SaleRepository.GetByIdWithItemsAsync(saleId);
+
+            if (sale == null || sale.PharmacyId != pharmacyId)
+                return GeneralResult<ReadSaleDto>.FailResult("Sale not found");
+
+            if (sale.Status == SaleStatus.Cancelled)
+                return GeneralResult<ReadSaleDto>.FailResult("Sale is already cancelled");
+
+            sale.Status = SaleStatus.Cancelled;
+            sale.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.SaveAsync();
+
+            return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
+        }
+
+       
     }
 }
