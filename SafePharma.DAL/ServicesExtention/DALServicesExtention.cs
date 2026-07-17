@@ -43,6 +43,8 @@ namespace SafePharma.DAL
             services.AddScoped<IManufacturerBarcodeRepository, ManufacturerBarcodeRepository>();
             services.AddScoped<IPharmacyBarcodeRepository, PharmacyBarcodeRepository>();
             services.AddScoped<ISaleRepository, SaleRepository>();
+            services.AddScoped<IGenircRepository<Allergy>, GenircRepository<Allergy>>();
+            services.AddScoped<IGenircRepository<ChronicCondition>, GenircRepository<ChronicCondition>>();
 
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();

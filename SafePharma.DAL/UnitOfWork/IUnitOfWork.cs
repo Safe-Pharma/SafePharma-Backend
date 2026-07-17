@@ -32,6 +32,8 @@
 
         IManufacturerBarcodeRepository ManufacturerBarcodeRepository { get; }
         IPharmacyBarcodeRepository PharmacyBarcodeRepository { get; }
+        public IGenircRepository<Allergy> AllergyRepository { get; }
+        public IGenircRepository<ChronicCondition> ChronicConditionRepository { get; }
 
         Task SaveAsync();
     }
