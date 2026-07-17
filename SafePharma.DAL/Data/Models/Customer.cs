@@ -1,12 +1,10 @@
-﻿
-using SafePharma.DAL;
-
+﻿namespace SafePharma.DAL
+{
     public enum CustomerStatus
     {
         Active,
         Inactive
     }
-
 
     public class Customer : IAuditableEntity
     {
@@ -19,19 +17,12 @@ using SafePharma.DAL;
         public string? Notes { get; set; }
         public CustomerStatus Status { get; set; } = CustomerStatus.Active;
 
-        public decimal TotalPaid { get; set; }
-
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
-
-
-
-    public ICollection<CustomerAllergy> CustomerAllergies { get; set; } = new HashSet<CustomerAllergy>();
-
-    public ICollection<CustomerChronicCondition> CustomerChronicConditions { get; set; } = new HashSet<CustomerChronicCondition>();
-
-    public virtual ICollection<CustomerMedicineHistory> MedicineHistory { get; set; } = new HashSet<CustomerMedicineHistory>();
-
-
+        public ICollection<CustomerAllergy> CustomerAllergies { get; set; } = new HashSet<CustomerAllergy>();
+        public ICollection<CustomerChronicCondition> CustomerChronicConditions { get; set; } = new HashSet<CustomerChronicCondition>();
+        public virtual ICollection<CustomerMedicineHistory> MedicineHistory { get; set; } = new HashSet<CustomerMedicineHistory>();
+        public virtual ICollection<CustomerPharmacyBalance> PharmacyBalances { get; set; } = new HashSet<CustomerPharmacyBalance>();
+    }
 }

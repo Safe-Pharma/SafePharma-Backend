@@ -10,6 +10,6 @@
         public DateTime? DateOfBirth { get; set; }
         public string Notes { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty; // "Active" | "Inactive"
-        //public decimal Outstanding { get; set; }
+        public decimal TotalPaid { get; set; }
     }
 }

@@ -158,11 +158,27 @@ namespace SafePharma.DAL
                     .HasConversion<string>()
                     .HasMaxLength(20);
 
-                entity.Property(c => c.TotalPaid)
-                    .HasColumnType("decimal(12,2)");
-
                 // Global entity: phone is unique across the whole platform, not per pharmacy.
                 entity.HasIndex(c => c.Phone).IsUnique();
+            });
+
+            modelBuilder.Entity<CustomerPharmacyBalance>(entity =>
+            {
+                entity.Property(b => b.TotalPaid)
+                    .HasColumnType("decimal(12,2)");
+
+                entity.HasOne(b => b.Customer)
+                    .WithMany(c => c.PharmacyBalances)
+                    .HasForeignKey(b => b.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(b => b.Pharmacy)
+                    .WithMany()
+                    .HasForeignKey(b => b.PharmacyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // One balance row per (customer, pharmacy) pair.
+                entity.HasIndex(b => new { b.CustomerId, b.PharmacyId }).IsUnique();
             });
 
             modelBuilder.Entity<CustomerMedicineHistory>(entity =>
@@ -510,6 +526,7 @@ namespace SafePharma.DAL
         public DbSet<Medicine> Medicines => Set<Medicine>();
         public DbSet<Supplier> Suppliers => Set<Supplier>();
         public DbSet<Customer> Customers => Set<Customer>();
+        public DbSet<CustomerPharmacyBalance> CustomerPharmacyBalances => Set<CustomerPharmacyBalance>();
         public DbSet<CustomerMedicineHistory> CustomerMedicineHistories => Set<CustomerMedicineHistory>();
 
         public DbSet<PaymentVerification> PaymentVerifications => Set<PaymentVerification>();

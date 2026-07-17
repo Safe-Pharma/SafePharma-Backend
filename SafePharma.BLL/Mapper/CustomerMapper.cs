@@ -4,7 +4,7 @@ namespace SafePharma.BLL
 {
     public static class CustomerMapper
     {
-        public static CustomerDto ToDto(this Customer entity)
+        public static CustomerDto ToDto(this Customer entity, decimal totalPaid = 0m)
         {
             return new CustomerDto
             {
@@ -16,7 +16,7 @@ namespace SafePharma.BLL
                 DateOfBirth = entity.DateOfBirth,
                 Notes = entity.Notes ?? string.Empty,
                 Status = entity.Status.ToString(),
-                //Outstanding = entity.Outstanding,
+                TotalPaid = totalPaid,
             };
         }
 
@@ -31,7 +31,6 @@ namespace SafePharma.BLL
                 DateOfBirth = dto.DateOfBirth,
                 Notes = dto.Notes,
                 Status = ParseStatus(dto.Status),
-                //Outstanding = dto.Outstanding,
             };
         }
 
@@ -44,7 +43,6 @@ namespace SafePharma.BLL
             entity.DateOfBirth = dto.DateOfBirth;
             entity.Notes = dto.Notes;
             entity.Status = ParseStatus(dto.Status);
-            //entity.Outstanding = dto.Outstanding;
         }
 
         private static CustomerStatus ParseStatus(string status)

@@ -22,54 +22,6 @@ namespace SafePharma.DAL.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Customer", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<decimal>("TotalPaid")
-                        .HasColumnType("decimal(12,2)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Phone")
-                        .IsUnique();
-
-                    b.ToTable("Customers");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
@@ -490,6 +442,51 @@ namespace SafePharma.DAL.Migrations
                     b.ToTable("Countries");
                 });
 
+            modelBuilder.Entity("SafePharma.DAL.Customer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Phone")
+                        .IsUnique();
+
+                    b.ToTable("Customers");
+                });
+
             modelBuilder.Entity("SafePharma.DAL.CustomerAllergy", b =>
                 {
                     b.Property<Guid>("CustomerId")
@@ -561,6 +558,40 @@ namespace SafePharma.DAL.Migrations
                     b.HasIndex("CustomerId", "IsActive");
 
                     b.ToTable("CustomerMedicineHistories");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.CustomerPharmacyBalance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastPaymentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PharmacyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("TotalPaid")
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PharmacyId");
+
+                    b.HasIndex("CustomerId", "PharmacyId")
+                        .IsUnique();
+
+                    b.ToTable("CustomerPharmacyBalances");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.ManufacturerBarcode", b =>
@@ -1697,7 +1728,7 @@ namespace SafePharma.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Customer", "Customer")
+                    b.HasOne("SafePharma.DAL.Customer", "Customer")
                         .WithMany("CustomerAllergies")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1716,7 +1747,7 @@ namespace SafePharma.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Customer", "Customer")
+                    b.HasOne("SafePharma.DAL.Customer", "Customer")
                         .WithMany("CustomerChronicConditions")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1729,7 +1760,7 @@ namespace SafePharma.DAL.Migrations
 
             modelBuilder.Entity("SafePharma.DAL.CustomerMedicineHistory", b =>
                 {
-                    b.HasOne("Customer", "Customer")
+                    b.HasOne("SafePharma.DAL.Customer", "Customer")
                         .WithMany("MedicineHistory")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1743,6 +1774,25 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Medicine");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.CustomerPharmacyBalance", b =>
+                {
+                    b.HasOne("SafePharma.DAL.Customer", "Customer")
+                        .WithMany("PharmacyBalances")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SafePharma.DAL.Pharmacy", "Pharmacy")
+                        .WithMany()
+                        .HasForeignKey("PharmacyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Pharmacy");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.ManufacturerBarcode", b =>
@@ -1942,7 +1992,7 @@ namespace SafePharma.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Customer", "Customer")
+                    b.HasOne("SafePharma.DAL.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -1968,7 +2018,7 @@ namespace SafePharma.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Customer", "Customer")
+                    b.HasOne("SafePharma.DAL.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -2043,15 +2093,6 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Pharmacy");
                 });
 
-            modelBuilder.Entity("Customer", b =>
-                {
-                    b.Navigation("CustomerAllergies");
-
-                    b.Navigation("CustomerChronicConditions");
-
-                    b.Navigation("MedicineHistory");
-                });
-
             modelBuilder.Entity("SafePharma.DAL.Allergy", b =>
                 {
                     b.Navigation("CustomerAllergies");
@@ -2070,6 +2111,17 @@ namespace SafePharma.DAL.Migrations
             modelBuilder.Entity("SafePharma.DAL.Country", b =>
                 {
                     b.Navigation("Cities");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.Customer", b =>
+                {
+                    b.Navigation("CustomerAllergies");
+
+                    b.Navigation("CustomerChronicConditions");
+
+                    b.Navigation("MedicineHistory");
+
+                    b.Navigation("PharmacyBalances");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.Medicine", b =>
