@@ -18,37 +18,43 @@ namespace SafePharma.API.Controllers
         private readonly IValidator<CustomerCreateDto> _createValidator;
         private readonly IValidator<CustomerUpdateDto> _updateValidator;
         private readonly IValidator<CreateCustomerMedicineHistoryDto> _historyValidator;
+        private readonly IValidator<RecordCustomerPaymentDto> _paymentValidator;
 
         public CustomersController(
             ICustomerManager manager,
             IValidator<CustomerCreateDto> createValidator,
             IValidator<CustomerUpdateDto> updateValidator,
-            IValidator<CreateCustomerMedicineHistoryDto> historyValidator)
+            IValidator<CreateCustomerMedicineHistoryDto> historyValidator,
+            IValidator<RecordCustomerPaymentDto> paymentValidator)
         {
             _manager = manager;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _historyValidator = historyValidator;
+            _paymentValidator = paymentValidator;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string? search)
         {
-            var result = await _manager.GetAllCustomers(search);
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.GetAllCustomers(pharmacyId, search);
             return Ok(result);
         }
 
         [HttpGet("stats")]
         public async Task<IActionResult> GetStats()
         {
-            var result = await _manager.GetStats();
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.GetStats(pharmacyId);
             return Ok(result);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var result = await _manager.GetCustomerById(id);
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.GetCustomerById(pharmacyId, id);
             if (result is null)
             {
                 return NotFound();
@@ -102,12 +108,35 @@ namespace SafePharma.API.Controllers
         [HttpPatch("{id:guid}/status")]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
-            var result = await _manager.ToggleStatus(id);
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.ToggleStatus(pharmacyId, id);
             if (result is null)
             {
                 return NotFound();
             }
             return Ok(result);
+        }
+
+        // Records a payment from this customer AT THIS PHARMACY. Any pharmacist can do
+        // this — it's routine, and it's additive (no destructive effect on other pharmacies).
+        [HttpPost("{id:guid}/payments")]
+        public async Task<IActionResult> RecordPayment(Guid id, [FromBody] RecordCustomerPaymentDto dto)
+        {
+            var validationResult = await _paymentValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
+            var pharmacyId = User.GetPharmacyId();
+            var result = await _manager.RecordPayment(pharmacyId, id, dto.Amount);
+
+            if (result.CustomerNotFound)
+            {
+                return NotFound();
+            }
+
+            return Ok(result.Customer);
         }
 
         [HttpDelete("{id:guid}")]
@@ -173,7 +202,7 @@ namespace SafePharma.API.Controllers
         [HttpDelete("{customerId:guid}/medicine-history/{historyId:guid}")]
         [Authorize(Policy = AuthPolicies.OwnerOnly)]
         public async Task<IActionResult> DeleteMedicineHistory(Guid customerId, Guid historyId)
-        { 
+        {
             var deleted = await _manager.DeleteMedicineHistory(customerId, historyId);
             if (!deleted)
             {

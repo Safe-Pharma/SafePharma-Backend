@@ -12,6 +12,7 @@
         ICountryRepository CountryRepository { get; }
         public ISupplierRepository SupplierRepository { get; }
         public ICustomerRepository CustomerRepository { get; }
+        public ICustomerPharmacyBalanceRepository CustomerPharmacyBalanceRepository { get; }
         public ICustomerMedicineHistoryRepository CustomerMedicineHistoryRepository { get; }
 
         public IPaymentVerificationRepository PaymentVerificationRepository { get; }

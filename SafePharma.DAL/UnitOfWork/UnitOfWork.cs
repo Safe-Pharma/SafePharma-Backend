@@ -18,6 +18,7 @@ namespace SafePharma.DAL
 
         public ISupplierRepository SupplierRepository { get; }
         public ICustomerRepository CustomerRepository { get; }
+        public ICustomerPharmacyBalanceRepository CustomerPharmacyBalanceRepository { get; }
         public ICustomerMedicineHistoryRepository CustomerMedicineHistoryRepository { get; }
         public IPaymentVerificationRepository PaymentVerificationRepository { get; }
         public ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
@@ -50,6 +51,7 @@ namespace SafePharma.DAL
             ICountryRepository countryRepository,
             ISupplierRepository supplierRepository,
             ICustomerRepository customerRepository,
+            ICustomerPharmacyBalanceRepository customerPharmacyBalanceRepository,
             ICustomerMedicineHistoryRepository customerMedicineHistoryRepository,
 
             IPaymentVerificationRepository paymentVerificationRepository,
@@ -84,6 +86,7 @@ namespace SafePharma.DAL
             CountryRepository = countryRepository;
             SupplierRepository = supplierRepository;
             CustomerRepository = customerRepository;
+            CustomerPharmacyBalanceRepository = customerPharmacyBalanceRepository;
             CustomerMedicineHistoryRepository = customerMedicineHistoryRepository;
 
             PaymentVerificationRepository = paymentVerificationRepository;

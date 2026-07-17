@@ -1,4 +1,5 @@
-﻿namespace SafePharma.BLL
+﻿// CustomerCreateDto.cs
+namespace SafePharma.BLL
 {
     public class CustomerCreateDto
     {
@@ -9,6 +10,5 @@
         public DateTime? DateOfBirth { get; set; }
         public string? Notes { get; set; }
         public string Status { get; set; } = "Active"; // "Active" | "Inactive"
-        //public decimal Outstanding { get; set; }
     }
 }

@@ -11,30 +11,45 @@ namespace SafePharma.BLL
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<CustomerDto>> GetAllCustomers(string? search = null)
+        public async Task<IEnumerable<CustomerDto>> GetAllCustomers(Guid pharmacyId, string? search = null)
         {
-            var customers = await _unitOfWork.CustomerRepository.Search(search);
-            return customers.Select(c => c.ToDto());
+            var customers = (await _unitOfWork.CustomerRepository.Search(search)).ToList();
+            if (customers.Count == 0) return Enumerable.Empty<CustomerDto>();
+
+            var balancesByCustomer = (await _unitOfWork.CustomerPharmacyBalanceRepository.GetForPharmacy(pharmacyId))
+                .ToDictionary(b => b.CustomerId, b => b.TotalPaid);
+
+            return customers.Select(c =>
+                c.ToDto(balancesByCustomer.TryGetValue(c.Id, out var paid) ? paid : 0m));
         }
 
-        public async Task<CustomerDto?> GetCustomerById(Guid id)
+        public async Task<CustomerDto?> GetCustomerById(Guid pharmacyId, Guid id)
         {
             var customer = await _unitOfWork.CustomerRepository.GetById(id);
-            return customer?.ToDto();
+            if (customer is null)
+            {
+                return null;
+            }
+
+            var balance = await _unitOfWork.CustomerPharmacyBalanceRepository.GetByCustomerAndPharmacy(id, pharmacyId);
+            return customer.ToDto(balance?.TotalPaid ?? 0m);
         }
 
-        public async Task<CustomerStatsDto> GetStats()
+        public async Task<CustomerStatsDto> GetStats(Guid pharmacyId)
         {
             var customers = (await _unitOfWork.CustomerRepository.GetAll()).ToList();
-
             var active = customers.Count(c => c.Status == CustomerStatus.Active);
+
+            // Only this pharmacy's own balances count toward "total paid" here —
+            // TotalPaid is per-pharmacy, not a global sum across the whole platform.
+            var balances = await _unitOfWork.CustomerPharmacyBalanceRepository.GetForPharmacy(pharmacyId);
 
             return new CustomerStatsDto
             {
                 TotalCustomers = customers.Count,
                 Active = active,
                 Inactive = customers.Count - active,
-                TotalPaidAllCustomers = customers.Sum(c => c.TotalPaid)
+                TotalPaidAllCustomers = balances.Sum(b => b.TotalPaid)
             };
         }
 
@@ -90,7 +105,7 @@ namespace SafePharma.BLL
             return true;
         }
 
-        public async Task<CustomerDto?> ToggleStatus(Guid id)
+        public async Task<CustomerDto?> ToggleStatus(Guid pharmacyId, Guid id)
         {
             var entity = await _unitOfWork.CustomerRepository.GetById(id);
             if (entity is null)
@@ -103,7 +118,43 @@ namespace SafePharma.BLL
 
             await _unitOfWork.SaveAsync();
 
-            return entity.ToDto();
+            var balance = await _unitOfWork.CustomerPharmacyBalanceRepository.GetByCustomerAndPharmacy(id, pharmacyId);
+            return entity.ToDto(balance?.TotalPaid ?? 0m);
+        }
+
+        public async Task<RecordCustomerPaymentResult> RecordPayment(Guid pharmacyId, Guid customerId, decimal amount)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
+            if (customer is null)
+            {
+                return new RecordCustomerPaymentResult { CustomerNotFound = true };
+            }
+
+            var balance = await _unitOfWork.CustomerPharmacyBalanceRepository.GetByCustomerAndPharmacy(customerId, pharmacyId);
+            if (balance is null)
+            {
+                balance = new CustomerPharmacyBalance
+                {
+                    Id = Guid.NewGuid(),
+                    CustomerId = customerId,
+                    PharmacyId = pharmacyId,
+                    TotalPaid = amount,
+                    LastPaymentAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
+                _unitOfWork.CustomerPharmacyBalanceRepository.Add(balance);
+            }
+            else
+            {
+                balance.TotalPaid += amount;
+                balance.LastPaymentAt = DateTime.UtcNow;
+                balance.UpdatedAt = DateTime.UtcNow;
+            }
+
+            await _unitOfWork.SaveAsync();
+
+            return new RecordCustomerPaymentResult { Customer = customer.ToDto(balance.TotalPaid) };
         }
 
         public async Task<IEnumerable<CustomerMedicineHistoryDto>?> GetMedicineHistory(Guid customerId, bool? isActive = null)
