@@ -126,9 +126,10 @@ namespace SafePharma.BLL
                 });
             }
 
-            sale.Discount = sale.SaleItems.Sum(i => i.Discount);
-            sale.Tax = sale.SaleItems.Sum(i => i.TaxAmount);
+            
             sale.SubTotal = sale.SaleItems.Sum(i => i.LineTotal);
+            sale.GrandTotal = sale.SubTotal - sale.Discount + sale.Tax;
+
 
             sale.UpdatedAt = DateTime.UtcNow;
             sale.UpdatedBy = userId.ToString();
@@ -165,9 +166,10 @@ namespace SafePharma.BLL
             item.TaxAmount = dto.TaxAmount;
             item.LineTotal = (item.UnitPrice * dto.Quantity) - dto.Discount + dto.TaxAmount;
 
-            sale.Discount = sale.SaleItems.Sum(i => i.Discount);
-            sale.Tax = sale.SaleItems.Sum(i => i.TaxAmount);
+           
             sale.SubTotal = sale.SaleItems.Sum(i => i.LineTotal);
+            sale.GrandTotal = sale.SubTotal - sale.Discount + sale.Tax;
+
 
             sale.UpdatedAt = DateTime.UtcNow;
             sale.UpdatedBy = userId.ToString();
@@ -192,9 +194,10 @@ namespace SafePharma.BLL
 
             sale.SaleItems.Remove(item);
 
-            sale.Discount = sale.SaleItems.Sum(i => i.Discount);
-            sale.Tax = sale.SaleItems.Sum(i => i.TaxAmount);
+           
             sale.SubTotal = sale.SaleItems.Sum(i => i.LineTotal);
+            sale.GrandTotal = sale.SubTotal - sale.Discount + sale.Tax;
+
 
             sale.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.SaveAsync();
@@ -255,11 +258,11 @@ namespace SafePharma.BLL
             if (tax == null || tax.PharmacyId != pharmacyId)
                 return GeneralResult<ReadSaleDto>.FailResult("Tax not found");
 
-            var subTotal = sale.SaleItems.Sum(i => i.UnitPrice * i.Quantity);
-            var taxAmount = Math.Round(subTotal * (tax.Rate / 100m), 2);
+           // var subTotal = sale.SaleItems.Sum(i => i.UnitPrice * i.Quantity);
+            var taxAmount = Math.Round(sale.SubTotal * (tax.Rate / 100m), 2);
 
             sale.Tax = taxAmount;
-            sale.GrandTotal = subTotal - sale.Discount + sale.Tax;
+            sale.GrandTotal = sale.SubTotal - sale.Discount + sale.Tax;
             sale.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveAsync();
@@ -280,13 +283,13 @@ namespace SafePharma.BLL
             if (dto.DiscountAmount < 0)
                 return GeneralResult<ReadSaleDto>.FailResult("Discount cannot be negative");
 
-            var subTotal = sale.SaleItems.Sum(i => i.UnitPrice * i.Quantity);
+           // var subTotal = sale.SaleItems.Sum(i => i.UnitPrice * i.Quantity);
 
-            if (dto.DiscountAmount > subTotal)
+            if (dto.DiscountAmount > sale.SubTotal)
                 return GeneralResult<ReadSaleDto>.FailResult("Discount cannot exceed the sale subtotal");
 
             sale.Discount = dto.DiscountAmount;
-            sale.GrandTotal = subTotal - sale.Discount + sale.Tax;
+            sale.GrandTotal = sale.SubTotal - sale.Discount + sale.Tax;
             sale.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveAsync();
