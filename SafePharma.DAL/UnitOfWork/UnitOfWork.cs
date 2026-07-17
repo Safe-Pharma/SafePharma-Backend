@@ -73,8 +73,6 @@ namespace SafePharma.DAL
             IPharmacyBarcodeRepository pharmacyBarcodeRepository,
             IGenircRepository<Allergy> allergyRepository,
             IGenircRepository<ChronicCondition> chronicConditionRepository,
-
-,
             ISaleRepository saleRepository
 
 
