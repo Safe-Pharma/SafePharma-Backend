@@ -20,11 +20,17 @@ namespace SafePharma.BLL
             Guid pharmacyId, MedicineSearchRequestDto requestDto)
         {
             var (items, totalCount) = await _pharmacyMedicineRepository.SearchAsync(
-                pharmacyId, requestDto.Query, requestDto.PageNumber, requestDto.PageSize);
+                pharmacyId,
+                requestDto.Query,
+                requestDto.PageNumber,
+                requestDto.PageSize);
 
             var itemsList = items.ToList();
 
-            var metadata = BuildMetadata(requestDto.PageNumber, requestDto.PageSize, totalCount);
+            var metadata = BuildMetadata(
+                requestDto.PageNumber,
+                requestDto.PageSize,
+                totalCount);
 
             if (!itemsList.Any())
             {
@@ -36,22 +42,48 @@ namespace SafePharma.BLL
                     });
             }
 
-            var medicineIds = itemsList.Select(pm => pm.Id).ToList();
+            // FIX: Batch.MedicineId is actually a FK to PharmacyMedicine.Id
+            // (see the [ForeignKey("Medicine")] navigation typed as PharmacyMedicine in Batch.cs),
+            // so we must pass PharmacyMedicine.Id here, not the catalog Medicine.Id.
+            var pharmacyMedicineIds = itemsList
+                .Select(pm => pm.Id)
+                .ToList();
 
-            var stockAggregates = await _unitOfWork._batchRepository.GetStockAggregates(medicineIds);
-            var stockMap = stockAggregates.ToDictionary(s => s.PharmacyMedicineId, s => s.AvailableQuantity);
+            var stockAggregates = await _unitOfWork
+                ._batchRepository
+                .GetStockAggregates(pharmacyMedicineIds);
+
+            var stockMap = stockAggregates
+                .ToDictionary(
+                    s => s.PharmacyMedicineId,
+                    s => s.AvailableQuantity
+                );
 
             var resultDtos = itemsList
                 .Select(pm => new MedicineSearchResultDto
                 {
                     PharmacyMedicineId = pm.Id,
+
                     TradeNameAr = pm.TradeNameAr,
+
                     TradeNameEn = pm.TradeNameEn,
+
                     ScientificName = pm.ScientificName,
-                    Barcode = pm.PharmacyBarcodes.FirstOrDefault(b => b.IsPrimary)?.Barcode,
+
+                    Barcode = pm.PharmacyBarcodes?
+                        .FirstOrDefault(b => b.IsPrimary)?
+                        .Barcode,
+
                     SellingPrice = pm.SellingPrice,
-                    StockQuantity = stockMap.TryGetValue(pm.Id, out var qty) ? qty : 0
-                }).ToList();
+
+                    // FIX: look up by pm.Id (PharmacyMedicine.Id), matching the key
+                    // produced by GetStockAggregates / stockMap above.
+                    StockQuantity = stockMap.TryGetValue(pm.Id, out var qty)
+                        ? qty
+                        : 0
+
+                })
+                .ToList();
 
             var pagedResult = new PagedResult<MedicineSearchResultDto>
             {
@@ -59,19 +91,30 @@ namespace SafePharma.BLL
                 Metadata = metadata
             };
 
-            return GeneralResult<PagedResult<MedicineSearchResultDto>>.SuccessResult(pagedResult);
+            return GeneralResult<PagedResult<MedicineSearchResultDto>>
+                .SuccessResult(pagedResult);
         }
 
-        private static PaginationMetaData BuildMetadata(int pageNumber, int pageSize, int totalCount)
+        private static PaginationMetaData BuildMetadata(
+            int pageNumber,
+            int pageSize,
+            int totalCount)
         {
-            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            var totalPages = (int)Math.Ceiling(
+                totalCount / (double)pageSize);
+
             return new PaginationMetaData
             {
                 CurrentPage = pageNumber,
+
                 PageSize = pageSize,
+
                 TotalCount = totalCount,
+
                 TotalPages = totalPages,
+
                 HasNext = pageNumber < totalPages,
+
                 HasPrev = pageNumber > 1
             };
         }
