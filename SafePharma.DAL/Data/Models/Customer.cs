@@ -24,5 +24,6 @@
         public ICollection<CustomerChronicCondition> CustomerChronicConditions { get; set; } = new HashSet<CustomerChronicCondition>();
         public virtual ICollection<CustomerMedicineHistory> MedicineHistory { get; set; } = new HashSet<CustomerMedicineHistory>();
         public virtual ICollection<CustomerPharmacyBalance> PharmacyBalances { get; set; } = new HashSet<CustomerPharmacyBalance>();
+        public ICollection<CustomerOrganFunction> CustomerOrganFunctions { get; set; } = new HashSet<CustomerOrganFunction>();
     }
 }
