@@ -96,6 +96,70 @@ namespace SafePharma.API.Controllers
 
             return Ok(result);
         }
-        
+
+        [HttpPatch("{saleId}/tax")]
+        public async Task<IActionResult> ApplyTax(Guid saleId, ApplySaleTaxDto dto)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.ApplyTax(saleId, dto, pharmacyId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPatch("{saleId}/discount")]
+        public async Task<IActionResult> ApplyDiscount(Guid saleId, ApplySaleDiscountDto dto)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.ApplyDiscount(saleId, dto, pharmacyId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("{saleId}/pay")]
+        public async Task<IActionResult> Pay(Guid saleId, PaySaleDto dto)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim) ||
+                !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.Pay(saleId, dto, pharmacyId, userId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("{saleId}/cancel")]
+        public async Task<IActionResult> CancelSale(Guid saleId)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.CancelSale(saleId, pharmacyId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+
     }
 }
