@@ -28,6 +28,7 @@ namespace SafePharma.DAL
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<ISupplierRepository, SupplierRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<ICustomerPharmacyBalanceRepository, CustomerPharmacyBalanceRepository>();
             services.AddScoped<ICustomerMedicineHistoryRepository, CustomerMedicineHistoryRepository>();
             services.AddScoped<ISupplierPaymentRepository, SupplierPaymentRepository>();
             services.AddScoped<IPaymentVerificationRepository, PaymentVerificationRepository>();
@@ -118,6 +119,22 @@ namespace SafePharma.DAL
                     await context.AddRangeAsync(pharmacyMedicines);
                     await context.SaveChangesAsync();
                 }
+                // 6c. Customers (global — independent of pharmacies/medicines)
+                if (!await context.Set<Customer>().AnyAsync())
+                {
+                    var customers = CustomerSeeding.GetCustomers();
+                    await context.AddRangeAsync(customers);
+                    await context.SaveChangesAsync();
+                }
+
+                // 6d. Customer payment balances (needs Customers + Pharmacies already seeded)
+                if (!await context.Set<CustomerPharmacyBalance>().AnyAsync())
+                {
+                    var balances = CustomerPharmacyBalanceSeeding.GetBalances();
+                    await context.AddRangeAsync(balances);
+                    await context.SaveChangesAsync();
+                }
+
                 // 7. Suppliers
                 if (!await context.Set<Supplier>().AnyAsync())
                 {
@@ -255,6 +272,22 @@ namespace SafePharma.DAL
                     context.AddRange(pharmacyMedicines);
                     context.SaveChanges();
                 }
+                // 6c. Customers (global — independent of pharmacies/medicines)
+                if (!context.Set<Customer>().Any())
+                {
+                    var customers = CustomerSeeding.GetCustomers();
+                    context.AddRange(customers);
+                    context.SaveChanges();
+                }
+
+                // 6d. Customer payment balances (needs Customers + Pharmacies already seeded)
+                if (!context.Set<CustomerPharmacyBalance>().Any())
+                {
+                    var balances = CustomerPharmacyBalanceSeeding.GetBalances();
+                    context.AddRange(balances);
+                    context.SaveChanges();
+                }
+
                 // 7. Suppliers 
                 if (!context.Set<Supplier>().Any())
                 {
