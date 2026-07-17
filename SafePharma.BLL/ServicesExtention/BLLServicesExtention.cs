@@ -73,6 +73,10 @@ namespace SafePharma.BLL
             services.AddScoped<IBarcodeManager, BarcodeManager>();
 
 
+            services.AddScoped<IAllergyManager, AllergyManager>();
+            services.AddScoped<IChronicConditionManager, ChronicConditionManager>();
+
+
 
 
             services.AddHttpClient<IEmailService, EmailService>();

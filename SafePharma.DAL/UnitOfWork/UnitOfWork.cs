@@ -37,6 +37,11 @@ namespace SafePharma.DAL
         public IPharmacyBarcodeRepository PharmacyBarcodeRepository { get; }
         public ISaleRepository SaleRepository { get; }
 
+        public IGenircRepository<Allergy> AllergyRepository { get; }
+        public IGenircRepository<ChronicCondition> ChronicConditionRepository { get; }
+
+
+
 
 
         public UnitOfWork(
@@ -63,7 +68,9 @@ namespace SafePharma.DAL
             IPurchaseReceiptRepository purchaseReceiptRepository,
             IPurchaseReceiptItemRepository purchaseReceiptItemRepository,
             IManufacturerBarcodeRepository manufacturerBarcodeRepository,
-            IPharmacyBarcodeRepository pharmacyBarcodeRepository
+            IPharmacyBarcodeRepository pharmacyBarcodeRepository,
+            IGenircRepository<Allergy> allergyRepository,
+            IGenircRepository<ChronicCondition> chronicConditionRepository
 
 
 
@@ -98,6 +105,8 @@ namespace SafePharma.DAL
             PurchaseReceiptItemRepository = purchaseReceiptItemRepository;
             ManufacturerBarcodeRepository = manufacturerBarcodeRepository;
             PharmacyBarcodeRepository = pharmacyBarcodeRepository;
+            AllergyRepository = allergyRepository;
+            ChronicConditionRepository = chronicConditionRepository;
         }
 
         public async Task SaveAsync()
