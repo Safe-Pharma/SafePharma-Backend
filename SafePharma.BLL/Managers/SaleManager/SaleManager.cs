@@ -81,14 +81,14 @@ namespace SafePharma.BLL
             if (dto.Quantity <= 0)
                 return GeneralResult<ReadSaleDto>.FailResult("Quantity must be greater than zero");
 
-            var batch = await _unitOfWork._batchRepository.GetById(dto.BatchId);
+            var batch = await _unitOfWork._batchRepository.GetNearestExpiryBatchAsync(dto.PharmacyMedicineId);
 
-            if (batch == null || batch.MedicineId != dto.PharmacyMedicineId)
-                return GeneralResult<ReadSaleDto>.FailResult("Batch not found or does not belong to this medicine");
+            if (batch == null)
+                return GeneralResult<ReadSaleDto>.FailResult("No available stock for this medicine");
 
             var existingItem = sale.SaleItems.FirstOrDefault(i =>
                 i.PharmacyMedicineId == dto.PharmacyMedicineId &&
-                i.BatchId == dto.BatchId);
+                i.BatchId == batch.Id);
 
             if (existingItem != null)
             {
@@ -116,7 +116,7 @@ namespace SafePharma.BLL
                 {
                     SaleId = sale.Id,
                     PharmacyMedicineId = dto.PharmacyMedicineId,
-                    BatchId = dto.BatchId,
+                    BatchId = batch.Id,
                     CustomerId = dto.CustomerId == Guid.Empty ? null : dto.CustomerId,
                     Quantity = dto.Quantity,
                     UnitPrice = unitPrice,
@@ -136,6 +136,7 @@ namespace SafePharma.BLL
 
             await _unitOfWork.SaveAsync();
 
+            _unitOfWork.ClearTracking();
             var updatedSale = await _unitOfWork.SaleRepository.GetByIdWithItemsAsync(saleId);
 
             return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(updatedSale!));
@@ -161,6 +162,7 @@ namespace SafePharma.BLL
             if (batch == null || batch.QuantityRemaining < dto.Quantity)
                 return GeneralResult<ReadSaleDto>.FailResult($"Only {batch?.QuantityRemaining ?? 0} units available");
 
+            item.CustomerId = dto.CustomerId == Guid.Empty ? null : dto.CustomerId;
             item.Quantity = dto.Quantity;
             item.Discount = dto.Discount;
             item.TaxAmount = dto.TaxAmount;
@@ -175,7 +177,10 @@ namespace SafePharma.BLL
             sale.UpdatedBy = userId.ToString();
             await _unitOfWork.SaveAsync();
 
-            return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
+            _unitOfWork.ClearTracking();
+            var updatedSale = await _unitOfWork.SaleRepository.GetByIdWithItemsAsync(saleId);
+
+            return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(updatedSale!));
         }
 
         public async Task<GeneralResult<ReadSaleDto>> RemoveSaleItem(Guid saleId, Guid itemId, Guid pharmacyId)
@@ -213,6 +218,7 @@ namespace SafePharma.BLL
                 PharmacyId = sale.PharmacyId,
                 ApplicationUserId = sale.ApplicationUserId,
                 CustomerId = sale.CustomerId,
+                CustomerName = sale.Customer != null ? sale.Customer.Name : string.Empty,
                 PaymentMethod = sale.PaymentMethod,
                 Tax = sale.Tax,
                 Discount = sale.Discount,
@@ -226,6 +232,7 @@ namespace SafePharma.BLL
                 CreatedAt = sale.CreatedAt,
                 Items = sale.SaleItems.Select(item => new ReadSaleItemsDto
                 {
+                    Id = item.Id,
                     PharmacyMedicineId = item.PharmacyMedicineId,
                     MedicineName = item.PharmacyMedicine.TradeNameEn,
                     CustomerId = item.CustomerId,
@@ -372,6 +379,25 @@ namespace SafePharma.BLL
             return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
         }
 
-       
+        public async Task<GeneralResult<ReadSaleDto>> SetCustomer(Guid saleId, SetSaleCustomerDto dto, Guid pharmacyId)
+        {
+            var sale = await _unitOfWork.SaleRepository.GetByIdWithItemsAsync(saleId);
+
+            if (sale == null || sale.PharmacyId != pharmacyId)
+                return GeneralResult<ReadSaleDto>.FailResult("Sale not found");
+
+            if (sale.Status != SaleStatus.Open)
+                return GeneralResult<ReadSaleDto>.FailResult("Cannot modify a closed sale");
+
+            sale.CustomerId = dto.CustomerId == Guid.Empty ? null : dto.CustomerId;
+            sale.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.SaveAsync();
+
+            var updatedSale = await _unitOfWork.SaleRepository.GetByIdWithItemsAsync(saleId);
+            return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(updatedSale!));
+        }
+
+
     }
 }

@@ -136,5 +136,9 @@ namespace SafePharma.DAL
                 throw;
             }
         }
+        public void ClearTracking()
+        {
+            _db.ChangeTracker.Clear();
+        }
     }
 }

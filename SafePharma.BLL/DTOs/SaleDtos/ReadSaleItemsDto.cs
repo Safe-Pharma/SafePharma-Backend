@@ -2,6 +2,7 @@
 {
     public class ReadSaleItemsDto
     {
+        public Guid Id { get; set; }
         public Guid PharmacyMedicineId { get; set; }
         public string MedicineName { get; set; } = string.Empty;
 

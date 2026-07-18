@@ -39,5 +39,8 @@
         public IGenircRepository<OrganImpairmentLevel> OrganImpairmentLevelRepository { get; }
 
         Task SaveAsync();
+
+        void ClearTracking();
+
     }
 }
