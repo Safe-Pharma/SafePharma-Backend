@@ -7,6 +7,11 @@
         Task<Batch?> GetByPurchaseReceiptItemId(Guid purchaseReceiptItemId);
         Task<IEnumerable<StockAggregate>> GetStockAggregates(IEnumerable<Guid> pharmacyMedicineIds, int expiringSoonDays = 90);
 
+        //------------
+        Task<IEnumerable<Batch>> GetBatchesForExpiryNotifications();
+
+        Task<int> GetAvailableQuantity(Guid pharmacyMedicineId);
+
         Task<Batch?> GetNearestExpiryBatchAsync(Guid pharmacyMedicineId);
     }
 }

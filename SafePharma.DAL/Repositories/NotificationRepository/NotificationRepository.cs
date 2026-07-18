@@ -9,7 +9,13 @@ namespace SafePharma.DAL
         {
         }
 
-
+        public async Task<IEnumerable<Notification>> GetAll(Guid pharmacyId)
+        {
+            return await _db.Notifications
+                .Where(x => x.PharmacyId == pharmacyId)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+        }
         public async Task<bool> ExistsAsync(Guid pharmacyId ,NotificationType type ,Guid referenceId)
         {
             return await _db.Notifications.AnyAsync(x =>
