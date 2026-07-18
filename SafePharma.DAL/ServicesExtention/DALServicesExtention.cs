@@ -47,6 +47,7 @@ namespace SafePharma.DAL
             services.AddScoped<IGenircRepository<ChronicCondition>, GenircRepository<ChronicCondition>>();
             services.AddScoped<IGenircRepository<Organ>, GenircRepository<Organ>>();
             services.AddScoped<IGenircRepository<OrganImpairmentLevel>, GenircRepository<OrganImpairmentLevel>>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 

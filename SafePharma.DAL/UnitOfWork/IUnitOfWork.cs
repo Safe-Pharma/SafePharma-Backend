@@ -37,6 +37,7 @@
         public IGenircRepository<Organ> OrganRepository { get; }
 
         public IGenircRepository<OrganImpairmentLevel> OrganImpairmentLevelRepository { get; }
+        public INotificationRepository Notifications { get; }
 
         Task SaveAsync();
     }
