@@ -1,4 +1,5 @@
 ﻿using SafePharma.Common;
+using SafePharma.DAL;
 
 namespace SafePharma.BLL
 {
@@ -14,5 +15,9 @@ namespace SafePharma.BLL
         Task<GeneralResult<ReadSaleDto>> ApplyDiscount(Guid saleId, ApplySaleDiscountDto dto, Guid pharmacyId);
         Task<GeneralResult<ReadSaleDto>> Pay(Guid saleId, PaySaleDto dto, Guid pharmacyId, Guid userId);
         Task<GeneralResult<ReadSaleDto>> CancelSale(Guid saleId, Guid pharmacyId);
+        Task<GeneralResult<ReadSaleDto>> SetCustomer(Guid saleId, SetSaleCustomerDto dto, Guid pharmacyId);
+
+        Task<GeneralResult<ReadSaleDto>> GetSaleById(Guid saleId, Guid pharmacyId);
+        Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetAllSales(Guid pharmacyId, SaleStatus? status = null);
     }
 }

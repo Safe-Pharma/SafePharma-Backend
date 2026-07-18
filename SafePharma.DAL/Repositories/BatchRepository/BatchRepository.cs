@@ -49,6 +49,13 @@ namespace SafePharma.DAL
                 .FirstOrDefaultAsync(b => b.PurchaseReceiptItemId == purchaseReceiptItemId);
 
         }
+        public async Task<Batch?> GetNearestExpiryBatchAsync(Guid pharmacyMedicineId)
+        {
+            return await _db.Set<Batch>()
+                .Where(b => b.MedicineId == pharmacyMedicineId && b.QuantityRemaining > 0)
+                .OrderBy(b => b.ExpiryDate)
+                .FirstOrDefaultAsync();
+        }
 
         //------------
         public async Task<IEnumerable<Batch>> GetBatchesForExpiryNotifications()

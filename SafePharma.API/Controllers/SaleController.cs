@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
+using SafePharma.DAL;
 using System.Security.Claims;
 
 namespace SafePharma.API.Controllers
@@ -15,6 +16,40 @@ namespace SafePharma.API.Controllers
         public SaleController(ISaleManager manager)
         {
             _manager = manager;
+        }
+
+        // GET api/Sale?status=Open
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] SaleStatus? status)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.GetAllSales(pharmacyId, status);
+            return Ok(result);
+        }
+
+        // GET api/Sale/{saleId}
+        [HttpGet("{saleId}")]
+        public async Task<IActionResult> GetById(Guid saleId)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.GetSaleById(saleId, pharmacyId);
+
+            if (!result.Success)
+                return NotFound(result);
+
+            return Ok(result);
         }
 
         [HttpPost("{saleId}/items")]
@@ -160,6 +195,19 @@ namespace SafePharma.API.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
+        [HttpPatch("{saleId}/customer")]
+        public async Task<IActionResult> SetCustomer(Guid saleId, SetSaleCustomerDto dto)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.SetCustomer(saleId, dto, pharmacyId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
 
     }
 }

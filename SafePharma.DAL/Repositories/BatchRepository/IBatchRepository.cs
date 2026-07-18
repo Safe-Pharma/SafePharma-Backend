@@ -12,5 +12,6 @@
 
         Task<int> GetAvailableQuantity(Guid pharmacyMedicineId);
 
+        Task<Batch?> GetNearestExpiryBatchAsync(Guid pharmacyMedicineId);
     }
 }

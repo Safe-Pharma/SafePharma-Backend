@@ -40,5 +40,8 @@
         public INotificationRepository Notifications { get; }
 
         Task SaveAsync();
+
+        void ClearTracking();
+
     }
 }
