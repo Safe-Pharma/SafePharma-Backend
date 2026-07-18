@@ -160,6 +160,19 @@ namespace SafePharma.API.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
+        [HttpPatch("{saleId}/customer")]
+        public async Task<IActionResult> SetCustomer(Guid saleId, SetSaleCustomerDto dto)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.SetCustomer(saleId, dto, pharmacyId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
 
     }
 }
