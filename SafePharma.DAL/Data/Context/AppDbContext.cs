@@ -561,6 +561,11 @@ namespace SafePharma.DAL
         public DbSet<CustomerAllergy> CustomerAllergies => Set<CustomerAllergy>();
 
         public DbSet<CustomerChronicCondition> CustomerChronicConditions => Set<CustomerChronicCondition>();
+        public DbSet<Organ> Organs => Set<Organ>();
+
+        public DbSet<OrganImpairmentLevel> OrganImpairmentLevels => Set<OrganImpairmentLevel>();
+
+        public DbSet<CustomerOrganFunction> CustomerOrganFunctions => Set<CustomerOrganFunction>();
 
     }
 }

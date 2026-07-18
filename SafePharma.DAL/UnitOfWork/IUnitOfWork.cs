@@ -34,6 +34,9 @@
         IPharmacyBarcodeRepository PharmacyBarcodeRepository { get; }
         public IGenircRepository<Allergy> AllergyRepository { get; }
         public IGenircRepository<ChronicCondition> ChronicConditionRepository { get; }
+        public IGenircRepository<Organ> OrganRepository { get; }
+
+        public IGenircRepository<OrganImpairmentLevel> OrganImpairmentLevelRepository { get; }
 
         Task SaveAsync();
     }

@@ -40,6 +40,9 @@ namespace SafePharma.DAL
 
         public IGenircRepository<Allergy> AllergyRepository { get; }
         public IGenircRepository<ChronicCondition> ChronicConditionRepository { get; }
+        public IGenircRepository<Organ> OrganRepository { get; }
+
+        public IGenircRepository<OrganImpairmentLevel> OrganImpairmentLevelRepository { get; }
 
 
 
@@ -73,7 +76,9 @@ namespace SafePharma.DAL
             IPharmacyBarcodeRepository pharmacyBarcodeRepository,
             IGenircRepository<Allergy> allergyRepository,
             IGenircRepository<ChronicCondition> chronicConditionRepository,
-            ISaleRepository saleRepository
+            ISaleRepository saleRepository,
+            IGenircRepository<Organ> organRepository,
+            IGenircRepository<OrganImpairmentLevel> organImpairmentLevelRepository
 
 
             )
@@ -111,6 +116,8 @@ namespace SafePharma.DAL
             AllergyRepository = allergyRepository;
             ChronicConditionRepository = chronicConditionRepository;
             SaleRepository = saleRepository;
+            OrganRepository = organRepository;
+            OrganImpairmentLevelRepository = organImpairmentLevelRepository;
         }
 
         public async Task SaveAsync()
