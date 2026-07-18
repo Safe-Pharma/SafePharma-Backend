@@ -81,6 +81,13 @@ namespace SafePharma.BLL
             if (dto.Quantity <= 0)
                 return GeneralResult<ReadSaleDto>.FailResult("Quantity must be greater than zero");
 
+            // Ownership check — without this, a caller could pass a PharmacyMedicineId
+            // belonging to another pharmacy and sell its stock through this sale.
+            var pharmacyMedicine = await _unitOfWork.PharmacyMedicineRepository
+                .GetByIdAndPharmacy(dto.PharmacyMedicineId, pharmacyId);
+            if (pharmacyMedicine == null)
+                return GeneralResult<ReadSaleDto>.FailResult("Medicine not found in this pharmacy");
+
             var batch = await _unitOfWork._batchRepository.GetNearestExpiryBatchAsync(dto.PharmacyMedicineId);
 
             if (batch == null)
@@ -126,7 +133,7 @@ namespace SafePharma.BLL
                 });
             }
 
-            
+
             sale.SubTotal = sale.SaleItems.Sum(i => i.LineTotal);
             sale.GrandTotal = sale.SubTotal - sale.Discount + sale.Tax;
 
@@ -168,7 +175,7 @@ namespace SafePharma.BLL
             item.TaxAmount = dto.TaxAmount;
             item.LineTotal = (item.UnitPrice * dto.Quantity) - dto.Discount + dto.TaxAmount;
 
-           
+
             sale.SubTotal = sale.SaleItems.Sum(i => i.LineTotal);
             sale.GrandTotal = sale.SubTotal - sale.Discount + sale.Tax;
 
@@ -199,7 +206,7 @@ namespace SafePharma.BLL
 
             sale.SaleItems.Remove(item);
 
-           
+
             sale.SubTotal = sale.SaleItems.Sum(i => i.LineTotal);
             sale.GrandTotal = sale.SubTotal - sale.Discount + sale.Tax;
 
@@ -227,7 +234,7 @@ namespace SafePharma.BLL
                 AmountPaidByCard = sale.AmountPaidByCard,
                 AmountPaidByCash = sale.AmountPaidByCash,
                 AmountPaid = sale.AmountPaid,
-                Change = sale.GrandTotal - sale.AmountPaid,
+                Change = sale.AmountPaid - sale.GrandTotal,
                 Status = sale.Status,
                 CreatedAt = sale.CreatedAt,
                 Items = sale.SaleItems.Select(item => new ReadSaleItemsDto
@@ -246,7 +253,7 @@ namespace SafePharma.BLL
                     LineTotal = item.LineTotal
                 }).ToList()
             };
-       }
+        }
 
 
 
@@ -265,7 +272,6 @@ namespace SafePharma.BLL
             if (tax == null || tax.PharmacyId != pharmacyId)
                 return GeneralResult<ReadSaleDto>.FailResult("Tax not found");
 
-           // var subTotal = sale.SaleItems.Sum(i => i.UnitPrice * i.Quantity);
             var taxAmount = Math.Round(sale.SubTotal * (tax.Rate / 100m), 2);
 
             sale.Tax = taxAmount;
@@ -289,8 +295,6 @@ namespace SafePharma.BLL
 
             if (dto.DiscountAmount < 0)
                 return GeneralResult<ReadSaleDto>.FailResult("Discount cannot be negative");
-
-           // var subTotal = sale.SaleItems.Sum(i => i.UnitPrice * i.Quantity);
 
             if (dto.DiscountAmount > sale.SubTotal)
                 return GeneralResult<ReadSaleDto>.FailResult("Discount cannot exceed the sale subtotal");
@@ -347,6 +351,7 @@ namespace SafePharma.BLL
             sale.AmountPaidByCash = dto.AmountPaidByCash;
             sale.AmountPaidByCard = dto.AmountPaidByCard;
             sale.AmountPaid = totalPaid;
+            sale.Change = totalPaid - sale.GrandTotal;
             sale.PaymentMethod = dto.AmountPaidByCash > 0 && dto.AmountPaidByCard > 0
                 ? SalePaymentMethod.Mixed
                 : dto.AmountPaidByCard > 0
@@ -368,8 +373,11 @@ namespace SafePharma.BLL
             if (sale == null || sale.PharmacyId != pharmacyId)
                 return GeneralResult<ReadSaleDto>.FailResult("Sale not found");
 
-            if (sale.Status == SaleStatus.Cancelled)
-                return GeneralResult<ReadSaleDto>.FailResult("Sale is already cancelled");
+            if (sale.Status != SaleStatus.Open)
+                return GeneralResult<ReadSaleDto>.FailResult(
+                    sale.Status == SaleStatus.Completed
+                        ? "Cannot cancel a completed sale."
+                        : "Sale is already cancelled");
 
             sale.Status = SaleStatus.Cancelled;
             sale.UpdatedAt = DateTime.UtcNow;
@@ -398,6 +406,23 @@ namespace SafePharma.BLL
             return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(updatedSale!));
         }
 
+
+        public async Task<GeneralResult<ReadSaleDto>> GetSaleById(Guid saleId, Guid pharmacyId)
+        {
+            var sale = await _unitOfWork.SaleRepository.GetByIdWithItemsAsync(saleId);
+
+            if (sale == null || sale.PharmacyId != pharmacyId)
+                return GeneralResult<ReadSaleDto>.NotFound("Sale not found");
+
+            return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
+        }
+
+        public async Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetAllSales(Guid pharmacyId, SaleStatus? status = null)
+        {
+            var sales = await _unitOfWork.SaleRepository.GetAllForPharmacy(pharmacyId, status);
+            var result = sales.Select(MapSaleToDto);
+            return GeneralResult<IEnumerable<ReadSaleDto>>.SuccessResult(result);
+        }
 
     }
 }
