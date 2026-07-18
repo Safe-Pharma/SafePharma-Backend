@@ -566,6 +566,7 @@ namespace SafePharma.DAL
         public DbSet<OrganImpairmentLevel> OrganImpairmentLevels => Set<OrganImpairmentLevel>();
 
         public DbSet<CustomerOrganFunction> CustomerOrganFunctions => Set<CustomerOrganFunction>();
+        public DbSet<Notification> Notifications  => Set<Notification>();
 
     }
 }

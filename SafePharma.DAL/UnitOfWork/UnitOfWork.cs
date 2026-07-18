@@ -43,6 +43,7 @@ namespace SafePharma.DAL
         public IGenircRepository<Organ> OrganRepository { get; }
 
         public IGenircRepository<OrganImpairmentLevel> OrganImpairmentLevelRepository { get; }
+        public INotificationRepository Notifications { get; }
 
 
 
@@ -78,7 +79,8 @@ namespace SafePharma.DAL
             IGenircRepository<ChronicCondition> chronicConditionRepository,
             ISaleRepository saleRepository,
             IGenircRepository<Organ> organRepository,
-            IGenircRepository<OrganImpairmentLevel> organImpairmentLevelRepository
+            IGenircRepository<OrganImpairmentLevel> organImpairmentLevelRepository,
+            INotificationRepository notificationRepository
 
 
             )
@@ -118,6 +120,7 @@ namespace SafePharma.DAL
             SaleRepository = saleRepository;
             OrganRepository = organRepository;
             OrganImpairmentLevelRepository = organImpairmentLevelRepository;
+            Notifications = notificationRepository;
         }
 
         public async Task SaveAsync()
