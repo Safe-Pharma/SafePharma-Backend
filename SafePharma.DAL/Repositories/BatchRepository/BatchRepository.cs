@@ -50,6 +50,29 @@ namespace SafePharma.DAL
 
         }
 
+        //------------
+        public async Task<IEnumerable<Batch>> GetBatchesForExpiryNotifications()
+        {
+            return await _db.Set<Batch>()
+                .AsNoTracking()
+                .Include(b => b.Medicine)
+                .Where(b => b.QuantityRemaining > 0)
+                .ToListAsync();
+        }
+
+
+        public async Task<int> GetAvailableQuantity(Guid pharmacyMedicineId)
+        {
+            var today = DateTime.UtcNow.Date;
+
+            return await _db.Set<Batch>()
+                .Where(b =>
+                    b.MedicineId == pharmacyMedicineId &&
+                    b.QuantityRemaining > 0 &&
+                    b.ExpiryDate > today)
+                .SumAsync(b => b.QuantityRemaining);
+        }
+
     }
 
 
