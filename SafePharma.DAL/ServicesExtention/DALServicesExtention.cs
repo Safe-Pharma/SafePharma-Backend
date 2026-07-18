@@ -45,7 +45,8 @@ namespace SafePharma.DAL
             services.AddScoped<ISaleRepository, SaleRepository>();
             services.AddScoped<IGenircRepository<Allergy>, GenircRepository<Allergy>>();
             services.AddScoped<IGenircRepository<ChronicCondition>, GenircRepository<ChronicCondition>>();
-
+            services.AddScoped<IGenircRepository<Organ>, GenircRepository<Organ>>();
+            services.AddScoped<IGenircRepository<OrganImpairmentLevel>, GenircRepository<OrganImpairmentLevel>>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -196,6 +197,23 @@ namespace SafePharma.DAL
                 {
                     await context.AddRangeAsync(ChronicConditionSeeding.GetConditions());
                     await context.SaveChangesAsync();
+                }
+                // Organs
+                if (!await context.Set<Organ>().AnyAsync())
+                {
+                    await context.Set<Organ>()
+                                 .AddRangeAsync(OrganSeeding.GetOrgans());
+                    await context.SaveChangesAsync();
+                }
+
+                // Organ Impairment Levels
+                if (!await context.Set<OrganImpairmentLevel>().AnyAsync())
+                {
+                    await context.Set<OrganImpairmentLevel>()
+                                 .AddRangeAsync(
+                                     OrganImpairmentLevelSeeding.GetLevels());
+                    await context.SaveChangesAsync();
+
                 }
             }
             catch (Exception ex)
@@ -351,6 +369,22 @@ namespace SafePharma.DAL
                 {
                     context.AddRange(ChronicConditionSeeding.GetConditions());
                     context.SaveChanges();
+                }
+                // Organs
+                if (!context.Set<Organ>().Any())
+                {
+                    context.Set<Organ>().AddRange(OrganSeeding.GetOrgans());
+                    context.SaveChanges();
+
+                }
+
+                // Organ Impairment Levels
+                if (!context.Set<OrganImpairmentLevel>().Any())
+                {
+                    context.Set<OrganImpairmentLevel>()
+                           .AddRange(OrganImpairmentLevelSeeding.GetLevels());
+                    context.SaveChanges();
+
                 }
             }
             catch (Exception ex)

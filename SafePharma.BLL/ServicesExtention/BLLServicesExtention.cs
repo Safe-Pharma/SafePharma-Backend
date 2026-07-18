@@ -77,6 +77,10 @@ namespace SafePharma.BLL
             services.AddScoped<IAllergyManager, AllergyManager>();
             services.AddScoped<IChronicConditionManager, ChronicConditionManager>();
 
+            services.AddScoped<IOrganManager, OrganManager>();
+
+            services.AddScoped<IOrganImpairmentLevelManager, OrganImpairmentLevelManager>();
+
 
 
 
