@@ -26,8 +26,6 @@ namespace SafePharma.DAL
 
         public IPurchaseOrderRepository PurchaseOrderRepository { get; }
         public IBatchRepository _batchRepository { get; }
-
-
         public ISupplierPaymentRepository SupplierPaymentRepository { get; }
         public IPharmacyMedicineRepository PharmacyMedicineRepository { get; }
         public IMedicineRepository MedicineRepository { get; }
@@ -45,9 +43,10 @@ namespace SafePharma.DAL
         public IGenircRepository<OrganImpairmentLevel> OrganImpairmentLevelRepository { get; }
         public INotificationRepository Notifications { get; }
 
+        public ICustomerAllergyRepository CustomerAllergyRepository { get; } 
 
-
-
+        public ICustomerChronicConditionRepository CustomerChronicConditionRepository { get; }
+        public ICustomerOrganFunctionRepository CustomerOrganFunctionRepository { get; }
 
         public UnitOfWork(
             AppDbContext db,
@@ -80,7 +79,11 @@ namespace SafePharma.DAL
             ISaleRepository saleRepository,
             IGenircRepository<Organ> organRepository,
             IGenircRepository<OrganImpairmentLevel> organImpairmentLevelRepository,
-            INotificationRepository notificationRepository
+            INotificationRepository notificationRepository,
+            ICustomerAllergyRepository customerAllergyRepository,
+            ICustomerChronicConditionRepository customerChronicConditionRepository,
+            ICustomerOrganFunctionRepository customerOrganFunctionRepository
+
 
 
             )
@@ -121,6 +124,9 @@ namespace SafePharma.DAL
             OrganRepository = organRepository;
             OrganImpairmentLevelRepository = organImpairmentLevelRepository;
             Notifications = notificationRepository;
+            CustomerAllergyRepository = customerAllergyRepository;
+            CustomerChronicConditionRepository = customerChronicConditionRepository;
+            CustomerOrganFunctionRepository = customerOrganFunctionRepository;
         }
 
         public async Task SaveAsync()

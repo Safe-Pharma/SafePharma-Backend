@@ -39,6 +39,10 @@
         public IGenircRepository<OrganImpairmentLevel> OrganImpairmentLevelRepository { get; }
         public INotificationRepository Notifications { get; }
 
+        public ICustomerAllergyRepository CustomerAllergyRepository { get; }
+        public ICustomerChronicConditionRepository CustomerChronicConditionRepository { get; }
+        public ICustomerOrganFunctionRepository CustomerOrganFunctionRepository { get; }
+
         Task SaveAsync();
 
         void ClearTracking();

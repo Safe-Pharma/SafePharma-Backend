@@ -21,6 +21,22 @@
         Task<AddCustomerMedicineHistoryResult> AddMedicineHistory(Guid customerId, CreateCustomerMedicineHistoryDto dto);
         Task<CustomerMedicineHistoryDto?> ToggleMedicineActive(Guid customerId, Guid historyId);
         Task<bool> DeleteMedicineHistory(Guid customerId, Guid historyId);
+
+
+        // --- Allergies ---
+        Task<IEnumerable<CustomerAllergyDto>?> GetAllergies(Guid customerId);
+        Task<AssignResult> AssignAllergy(Guid customerId, Guid allergyId);
+        Task<bool> RemoveAllergy(Guid customerId, Guid allergyId);
+
+        // --- Chronic conditions ---
+        Task<IEnumerable<CustomerChronicConditionDto>?> GetChronicConditions(Guid customerId);
+        Task<AssignResult> AssignChronicCondition(Guid customerId, Guid chronicConditionId);
+        Task<bool> RemoveChronicCondition(Guid customerId, Guid chronicConditionId);
+
+        // --- Organ functions (organ + impairment level, one record per organ per customer) ---
+        Task<IEnumerable<CustomerOrganFunctionDto>?> GetOrganFunctions(Guid customerId);
+        Task<AssignOrganFunctionResult> AssignOrganFunction(Guid customerId, AssignOrganFunctionDto dto);
+        Task<bool> RemoveOrganFunction(Guid customerId, Guid organFunctionId);
     }
 
     public class CustomerCreateResult
@@ -47,5 +63,21 @@
         public CustomerMedicineHistoryDto? History { get; set; }
         public bool CustomerNotFound { get; set; }
         public bool MedicineNotFound { get; set; }
+    }
+
+    // Shared by Allergy and ChronicCondition assignment — same three outcomes either way.
+    public class AssignResult
+    {
+        public bool CustomerNotFound { get; set; }
+        public bool ReferenceNotFound { get; set; } // the Allergy id doesn't exist
+        public bool AlreadyAssigned { get; set; }
+    }
+
+    public class AssignOrganFunctionResult
+    {
+        public CustomerOrganFunctionDto? OrganFunction { get; set; }
+        public bool CustomerNotFound { get; set; }
+        public bool OrganNotFound { get; set; }
+        public bool ImpairmentLevelNotFound { get; set; }
     }
 }

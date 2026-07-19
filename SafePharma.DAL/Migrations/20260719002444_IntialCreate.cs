@@ -88,6 +88,55 @@ namespace SafePharma.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PharmacyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    Priority = table.Column<int>(type: "int", nullable: false),
+                    ReferenceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ReferenceType = table.Column<int>(type: "int", nullable: true),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    ReadAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrganImpairmentLevels",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NameEn = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    NameAr = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrganImpairmentLevels", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Organs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NameEn = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    NameAr = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Organs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PaymentMethods",
                 columns: table => new
                 {
@@ -229,6 +278,39 @@ namespace SafePharma.DAL.Migrations
                         name: "FK_CustomerChronicConditions_Customers_CustomerId",
                         column: x => x.CustomerId,
                         principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CustomerOrganFunctions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrganId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrganImpairmentLevelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RecordedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomerOrganFunctions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CustomerOrganFunctions_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CustomerOrganFunctions_OrganImpairmentLevels_OrganImpairmentLevelId",
+                        column: x => x.OrganImpairmentLevelId,
+                        principalTable: "OrganImpairmentLevels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CustomerOrganFunctions_Organs_OrganId",
+                        column: x => x.OrganId,
+                        principalTable: "Organs",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -1133,6 +1215,22 @@ namespace SafePharma.DAL.Migrations
                 column: "MedicineId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CustomerOrganFunctions_CustomerId_OrganId",
+                table: "CustomerOrganFunctions",
+                columns: new[] { "CustomerId", "OrganId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerOrganFunctions_OrganId",
+                table: "CustomerOrganFunctions",
+                column: "OrganId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerOrganFunctions_OrganImpairmentLevelId",
+                table: "CustomerOrganFunctions",
+                column: "OrganImpairmentLevelId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CustomerPharmacyBalances_CustomerId_PharmacyId",
                 table: "CustomerPharmacyBalances",
                 columns: new[] { "CustomerId", "PharmacyId" },
@@ -1178,6 +1276,13 @@ namespace SafePharma.DAL.Migrations
                 name: "IX_Medicines_ScientificName",
                 table: "Medicines",
                 column: "ScientificName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_PharmacyId_Type_ReferenceId",
+                table: "Notifications",
+                columns: new[] { "PharmacyId", "Type", "ReferenceId" },
+                unique: true,
+                filter: "[ReferenceId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PaymentVerifications_SubscriptionId",
@@ -1395,10 +1500,16 @@ namespace SafePharma.DAL.Migrations
                 name: "CustomerMedicineHistories");
 
             migrationBuilder.DropTable(
+                name: "CustomerOrganFunctions");
+
+            migrationBuilder.DropTable(
                 name: "CustomerPharmacyBalances");
 
             migrationBuilder.DropTable(
                 name: "ManufacturerBarcodes");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "PaymentMethods");
@@ -1435,6 +1546,12 @@ namespace SafePharma.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "ChronicConditions");
+
+            migrationBuilder.DropTable(
+                name: "OrganImpairmentLevels");
+
+            migrationBuilder.DropTable(
+                name: "Organs");
 
             migrationBuilder.DropTable(
                 name: "Taxes");

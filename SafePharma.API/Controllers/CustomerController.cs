@@ -210,5 +210,86 @@ namespace SafePharma.API.Controllers
             }
             return NoContent();
         }
+
+        [HttpGet("{customerId:guid}/allergies")]
+        public async Task<IActionResult> GetAllergies(Guid customerId)
+        {
+            var result = await _manager.GetAllergies(customerId);
+            if (result is null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpPost("{customerId:guid}/allergies")]
+        public async Task<IActionResult> AssignAllergy(Guid customerId, [FromBody] AssignAllergyDto dto)
+        {
+            var result = await _manager.AssignAllergy(customerId, dto.AllergyId);
+            if (result.CustomerNotFound) return NotFound(new { message = "Customer not found." });
+            if (result.ReferenceNotFound) return NotFound(new { message = "Allergy not found." });
+            if (result.AlreadyAssigned) return Conflict(new { message = "This allergy is already assigned to the customer." });
+            return NoContent();
+        }
+
+        [HttpDelete("{customerId:guid}/allergies/{allergyId:guid}")]
+        public async Task<IActionResult> RemoveAllergy(Guid customerId, Guid allergyId)
+        {
+            var deleted = await _manager.RemoveAllergy(customerId, allergyId);
+            if (!deleted) return NotFound();
+            return NoContent();
+        }
+
+        [HttpGet("{customerId:guid}/chronic-conditions")]
+        public async Task<IActionResult> GetChronicConditions(Guid customerId)
+        {
+            var result = await _manager.GetChronicConditions(customerId);
+            if (result is null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpPost("{customerId:guid}/chronic-conditions")]
+        public async Task<IActionResult> AssignChronicCondition(Guid customerId, [FromBody] AssignChronicConditionDto dto)
+        {
+            var result = await _manager.AssignChronicCondition(customerId, dto.ChronicConditionId);
+            if (result.CustomerNotFound) return NotFound(new { message = "Customer not found." });
+            if (result.ReferenceNotFound) return NotFound(new { message = "Chronic condition not found." });
+            if (result.AlreadyAssigned) return Conflict(new { message = "This condition is already assigned to the customer." });
+            return NoContent();
+        }
+
+        [HttpDelete("{customerId:guid}/chronic-conditions/{chronicConditionId:guid}")]
+        public async Task<IActionResult> RemoveChronicCondition(Guid customerId, Guid chronicConditionId)
+        {
+            var deleted = await _manager.RemoveChronicCondition(customerId, chronicConditionId);
+            if (!deleted) return NotFound();
+            return NoContent();
+        }
+
+        // ---- Organ functions ----
+
+        [HttpGet("{customerId:guid}/organ-functions")]
+        public async Task<IActionResult> GetOrganFunctions(Guid customerId)
+        {
+            var result = await _manager.GetOrganFunctions(customerId);
+            if (result is null) return NotFound();
+            return Ok(result);
+        }
+
+        // Also used to UPDATE an existing organ's impairment level — see AssignOrganFunction in the manager.
+        [HttpPost("{customerId:guid}/organ-functions")]
+        public async Task<IActionResult> AssignOrganFunction(Guid customerId, [FromBody] AssignOrganFunctionDto dto)
+        {
+            var result = await _manager.AssignOrganFunction(customerId, dto);
+            if (result.CustomerNotFound) return NotFound(new { message = "Customer not found." });
+            if (result.OrganNotFound) return NotFound(new { message = "Organ not found." });
+            if (result.ImpairmentLevelNotFound) return NotFound(new { message = "Impairment level not found." });
+            return Ok(result.OrganFunction);
+        }
+
+        [HttpDelete("{customerId:guid}/organ-functions/{organFunctionId:guid}")]
+        public async Task<IActionResult> RemoveOrganFunction(Guid customerId, Guid organFunctionId)
+        {
+            var deleted = await _manager.RemoveOrganFunction(customerId, organFunctionId);
+            if (!deleted) return NotFound();
+            return NoContent();
+        }
     }
 }
