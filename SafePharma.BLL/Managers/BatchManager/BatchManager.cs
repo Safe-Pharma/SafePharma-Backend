@@ -1,37 +1,59 @@
 ﻿using SafePharma.Common;
 using SafePharma.DAL;
-using System.Text.Json;
 
 namespace SafePharma.BLL
 {
     public class BatchManager : IBatchManager
     {
         public IUnitOfWork _unitOfWork;
+        public IAuditManager _auditManager;
 
-        public BatchManager(IUnitOfWork unitOfWork)
+        public BatchManager(IUnitOfWork unitOfWork, IAuditManager auditManager = null)
         {
             _unitOfWork = unitOfWork;
+            _auditManager = auditManager;
         }
 
-        public async Task<GeneralResult<IEnumerable<AuditReadDto>>> GetAllBatches()
+        public async Task<GeneralResult<IEnumerable<BatchReadDto>>> GetAllBatches()
         {
 
-            var auditList = await _unitOfWork._auditRepository.GetAuditsWithUsers();
-            IEnumerable<AuditReadDto> auditReadList = auditList.Select(a => new AuditReadDto
+            var batchList = await _unitOfWork._batchRepository.GetBatchesGroupByhMedicine();
+
+
+            IEnumerable<BatchReadDto> batchReadList = batchList.Select(group =>
             {
-                Entity = a.Entity,
-                Action = a.Action,
-                Date = a.Date,
-                Device = a.Device,
-                UserFullName = a.User.UserName!,
-                oldValues = string.IsNullOrWhiteSpace(a.oldValues)
-                            ? null
-                            : JsonSerializer.Deserialize<JsonElement>(a.oldValues),
-                newValues = string.IsNullOrWhiteSpace(a.newValues)
-                            ? null
-                            : JsonSerializer.Deserialize<JsonElement>(a.newValues)
+                var Med = group.First();
+
+                int minStock = Med.Medicine.MinStockLevel;
+                int stock = group.Sum(b => b.QuantityRemaining);
+
+                return new BatchReadDto
+                {
+                    BatchesCount = group.Count(),
+                    MedeicineCategory = Med.Medicine.Medicine.Category,
+                    MedeicineName = Med.Medicine.Medicine.TradeNameEn,
+                    SKU = Med.Medicine.SKU,
+                    MinStockLevel = minStock,
+                    OnHand = stock,
+                    Batches = group.Select(b => new BatchItemDto
+
+                    {
+                        Id = b.Id,
+                        BatchNumber = b.BatchNumber,
+                        ExpiryDate = b.ExpiryDate,
+                        QuantityRemaining = b.QuantityRemaining,
+                        DaysLeft = (b.ExpiryDate - DateTime.Now).Days >= 0 ? (b.ExpiryDate - DateTime.Now).Days : 0,
+                    }).ToList(),
+                    StockLevel = (
+                                    stock == 0
+                                        ? StockLevelEnum.Out
+                                        : stock <= minStock
+                                            ? StockLevelEnum.Low
+                                            : StockLevelEnum.InStock
+                                ).ToString()
+                };
             }).ToList();
-            return GeneralResult<IEnumerable<AuditReadDto>>.SuccessResult(auditReadList);
+            return GeneralResult<IEnumerable<BatchReadDto>>.SuccessResult(batchReadList);
         }
 
         public async Task<GeneralResult<Batch>> CreateBatch(BatchCreateDto batchDto)
@@ -67,6 +89,53 @@ namespace SafePharma.BLL
 
             return GeneralResult<Batch>.SuccessResult(batch);
         }
+
+        public async Task<GeneralResult> DeleteBatch(Guid id)
+        {
+
+            var batch = await _unitOfWork._batchRepository.GetById(id);
+            if (batch is null)
+            {
+                return GeneralResult.NotFound("Batch not found");
+            }
+            _unitOfWork._batchRepository.Delete(batch);
+            await _unitOfWork.SaveAsync();
+
+
+            return GeneralResult.SuccessResult();
+        }
+        public async Task<GeneralResult> UpdateBatchQuantitiy(Guid id, int newStock)
+        {
+
+            var batch = await _unitOfWork._batchRepository.GetById(id);
+            if (batch is null)
+            {
+                return GeneralResult.NotFound("Batch not found");
+            }
+
+            var tempObj = new Batch
+            {
+                Id = batch.Id,
+                MedicineId = batch.MedicineId,
+                PurchaseReceiptItemId = batch.PurchaseReceiptItemId,
+                BatchNumber = batch.BatchNumber,
+                ExpiryDate = batch.ExpiryDate,
+                QuantityReceived = batch.QuantityReceived,
+                QuantityRemaining = batch.QuantityRemaining,
+                SellingPrice = batch.SellingPrice,
+                PurchasePrice = batch.PurchasePrice,
+                CreatedAt = batch.CreatedAt,
+                UpdatedAt = batch.UpdatedAt
+            };
+
+            batch.QuantityRemaining = newStock;
+            await _unitOfWork.SaveAsync();
+            await _auditManager.CreateAudit(batch, tempObj, ActionsEnum.Update);
+
+
+            return GeneralResult.SuccessResult();
+        }
+
 
     }
 }

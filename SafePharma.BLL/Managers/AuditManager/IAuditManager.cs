@@ -1,6 +1,6 @@
 ﻿using SafePharma.BLL.DTOs.Audit;
 using SafePharma.Common;
-using SafePharma.Common.Enums;
+using SafePharma.Common;
 
 namespace SafePharma.BLL
 {

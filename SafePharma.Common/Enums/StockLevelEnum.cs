@@ -4,12 +4,10 @@ using System.Text;
 
 namespace SafePharma.Common
 {
-    public enum ActionsEnum
+    public enum StockLevelEnum
     {
-        Create,
-        Update,
-        Delete,
-        Login
+        InStock,
+        Low,
+        Out
     }
-
 }

@@ -1,4 +1,6 @@
-﻿namespace SafePharma.DAL
+﻿using SafePharma.DAL.Data.Models;
+
+namespace SafePharma.DAL
 {
     public enum CustomerStatus
     {
@@ -25,5 +27,10 @@
         public virtual ICollection<CustomerMedicineHistory> MedicineHistory { get; set; } = new HashSet<CustomerMedicineHistory>();
         public virtual ICollection<CustomerPharmacyBalance> PharmacyBalances { get; set; } = new HashSet<CustomerPharmacyBalance>();
         public ICollection<CustomerOrganFunction> CustomerOrganFunctions { get; set; } = new HashSet<CustomerOrganFunction>();
+        public ICollection<CustomerRelative> Relatives { get; set; }
+             = new HashSet<CustomerRelative>();
+
+        public ICollection<CustomerRelative> RelatedTo { get; set; }
+            = new HashSet<CustomerRelative>();
     }
 }

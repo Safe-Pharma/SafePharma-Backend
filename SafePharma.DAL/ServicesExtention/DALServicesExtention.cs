@@ -188,6 +188,7 @@ namespace SafePharma.DAL
 
                     await context.AddRangeAsync(purchaseOrderItems);
 
+
                     await context.SaveChangesAsync();
                 }
 
@@ -219,7 +220,11 @@ namespace SafePharma.DAL
                                      OrganImpairmentLevelSeeding.GetLevels());
                     await context.SaveChangesAsync();
 
+
+
+                    await context.SaveChangesAsync();
                 }
+               
             }
             catch (Exception ex)
             {
@@ -360,10 +365,6 @@ namespace SafePharma.DAL
 
                     context.SaveChanges();
                 }
-
-
-
-
                 // ------------
                 if (!context.Set<Allergy>().Any())
                 {
@@ -390,8 +391,9 @@ namespace SafePharma.DAL
                     context.Set<OrganImpairmentLevel>()
                            .AddRange(OrganImpairmentLevelSeeding.GetLevels());
                     context.SaveChanges();
-
                 }
+
+              
             }
             catch (Exception ex)
             {

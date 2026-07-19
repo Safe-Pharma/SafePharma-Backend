@@ -1,4 +1,4 @@
-﻿using SafePharma.Common.Enums;
+﻿using SafePharma.Common;
 
 namespace SafePharma.BLL.DTOs.Audit
 {
