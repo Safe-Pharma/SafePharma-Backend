@@ -231,5 +231,161 @@ namespace SafePharma.BLL
             await _unitOfWork.SaveAsync();
             return true;
         }
+
+        // ---------------- Allergies ----------------
+
+        public async Task<IEnumerable<CustomerAllergyDto>?> GetAllergies(Guid customerId)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
+            if (customer is null) return null;
+
+            var links = await _unitOfWork.CustomerAllergyRepository.GetForCustomer(customerId);
+            return links.Select(l => new CustomerAllergyDto
+            {
+                AllergyId = l.AllergyId,
+                NameEn = l.Allergy.NameEn,
+                NameAr = l.Allergy.NameAr,
+            });
+        }
+
+        public async Task<AssignResult> AssignAllergy(Guid customerId, Guid allergyId)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
+            if (customer is null) return new AssignResult { CustomerNotFound = true };
+
+            var allergy = await _unitOfWork.AllergyRepository.GetById(allergyId);
+            if (allergy is null) return new AssignResult { ReferenceNotFound = true };
+
+            if (await _unitOfWork.CustomerAllergyRepository.Find(customerId, allergyId) is not null)
+            {
+                return new AssignResult { AlreadyAssigned = true };
+            }
+
+            _unitOfWork.CustomerAllergyRepository.Add(new CustomerAllergy { CustomerId = customerId, AllergyId = allergyId });
+            await _unitOfWork.SaveAsync();
+
+            return new AssignResult();
+        }
+
+        public async Task<bool> RemoveAllergy(Guid customerId, Guid allergyId)
+        {
+            var link = await _unitOfWork.CustomerAllergyRepository.Find(customerId, allergyId);
+            if (link is null) return false;
+
+            _unitOfWork.CustomerAllergyRepository.Remove(link);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
+
+        // ---------------- Chronic conditions ----------------
+
+        public async Task<IEnumerable<CustomerChronicConditionDto>?> GetChronicConditions(Guid customerId)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
+            if (customer is null) return null;
+
+            var links = await _unitOfWork.CustomerChronicConditionRepository.GetForCustomer(customerId);
+            return links.Select(l => new CustomerChronicConditionDto
+            {
+                ChronicConditionId = l.ChronicConditionId,
+                NameEn = l.ChronicCondition.NameEn,
+                NameAr = l.ChronicCondition.NameAr,
+            });
+        }
+
+        public async Task<AssignResult> AssignChronicCondition(Guid customerId, Guid chronicConditionId)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
+            if (customer is null) return new AssignResult { CustomerNotFound = true };
+
+            var condition = await _unitOfWork.ChronicConditionRepository.GetById(chronicConditionId);
+            if (condition is null) return new AssignResult { ReferenceNotFound = true };
+
+            if (await _unitOfWork.CustomerChronicConditionRepository.Find(customerId, chronicConditionId) is not null)
+            {
+                return new AssignResult { AlreadyAssigned = true };
+            }
+
+            _unitOfWork.CustomerChronicConditionRepository.Add(new CustomerChronicCondition
+            {
+                CustomerId = customerId,
+                ChronicConditionId = chronicConditionId,
+            });
+            await _unitOfWork.SaveAsync();
+
+            return new AssignResult();
+        }
+
+        public async Task<bool> RemoveChronicCondition(Guid customerId, Guid chronicConditionId)
+        {
+            var link = await _unitOfWork.CustomerChronicConditionRepository.Find(customerId, chronicConditionId);
+            if (link is null) return false;
+
+            _unitOfWork.CustomerChronicConditionRepository.Remove(link);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
+
+        // ---------------- Organ functions ----------------
+
+
+        public async Task<IEnumerable<CustomerOrganFunctionDto>?> GetOrganFunctions(Guid customerId)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
+            if (customer is null) return null;
+
+            var entries = await _unitOfWork.CustomerOrganFunctionRepository.GetForCustomer(customerId);
+            return entries.Select(e => e.ToDto());
+        }
+
+        // One record per organ per customer — recording a new impairment level for an
+        // organ that already has one UPDATES it (this reflects current function, not history).
+        public async Task<AssignOrganFunctionResult> AssignOrganFunction(Guid customerId, AssignOrganFunctionDto dto)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
+            if (customer is null) return new AssignOrganFunctionResult { CustomerNotFound = true };
+
+            var organ = await _unitOfWork.OrganRepository.GetById(dto.OrganId);
+            if (organ is null) return new AssignOrganFunctionResult { OrganNotFound = true };
+
+            var level = await _unitOfWork.OrganImpairmentLevelRepository.GetById(dto.OrganImpairmentLevelId);
+            if (level is null) return new AssignOrganFunctionResult { ImpairmentLevelNotFound = true };
+
+            var existing = await _unitOfWork.CustomerOrganFunctionRepository.FindByOrgan(customerId, dto.OrganId);
+            CustomerOrganFunction entity;
+            if (existing is not null)
+            {
+                existing.OrganImpairmentLevelId = dto.OrganImpairmentLevelId;
+                existing.RecordedAt = DateTime.UtcNow;
+                entity = existing;
+            }
+            else
+            {
+                entity = new CustomerOrganFunction
+                {
+                    Id = Guid.NewGuid(),
+                    CustomerId = customerId,
+                    OrganId = dto.OrganId,
+                    OrganImpairmentLevelId = dto.OrganImpairmentLevelId,
+                    RecordedAt = DateTime.UtcNow,
+                };
+                _unitOfWork.CustomerOrganFunctionRepository.Add(entity);
+            }
+
+            await _unitOfWork.SaveAsync();
+
+            var saved = await _unitOfWork.CustomerOrganFunctionRepository.GetById(entity.Id);
+            return new AssignOrganFunctionResult { OrganFunction = saved!.ToDto() };
+        }
+
+        public async Task<bool> RemoveOrganFunction(Guid customerId, Guid organFunctionId)
+        {
+            var entity = await _unitOfWork.CustomerOrganFunctionRepository.GetById(organFunctionId);
+            if (entity is null || entity.CustomerId != customerId) return false;
+
+            _unitOfWork.CustomerOrganFunctionRepository.Remove(entity);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
     }
 }

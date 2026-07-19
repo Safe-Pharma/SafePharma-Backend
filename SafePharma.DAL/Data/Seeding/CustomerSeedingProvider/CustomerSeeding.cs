@@ -2,13 +2,6 @@
 {
     public static class CustomerSeeding
     {
-        // Fixed IDs so other seed files (e.g. CustomerMedicineHistory seeding) can
-        // reference a specific customer reliably across runs.
-        public static readonly Guid AhmedHassanId = Guid.Parse("65000000-0000-0000-0000-000000000001");
-        public static readonly Guid SaraMohamedId = Guid.Parse("65000000-0000-0000-0000-000000000002");
-        public static readonly Guid OmarKhaledId = Guid.Parse("65000000-0000-0000-0000-000000000003");
-        public static readonly Guid ManalIbrahimId = Guid.Parse("65000000-0000-0000-0000-000000000004");
-
         public static List<Customer> GetCustomers()
         {
             var seededAt = DateTime.UtcNow;
@@ -17,7 +10,7 @@
             {
                 new Customer
                 {
-                    Id = AhmedHassanId,
+                    Id = Guid.NewGuid(),
                     Name = "Ahmed Hassan",
                     Phone = "+201001234567",
                     Email = "ahmed.hassan@example.com",
@@ -28,7 +21,7 @@
                 },
                 new Customer
                 {
-                    Id = SaraMohamedId,
+                    Id = Guid.NewGuid(),
                     Name = "Sara Mohamed",
                     Phone = "+201009876543",
                     Email = "sara.mohamed@example.com",
@@ -40,7 +33,7 @@
                 },
                 new Customer
                 {
-                    Id = OmarKhaledId,
+                    Id = Guid.NewGuid(),
                     Name = "Omar Khaled",
                     Phone = "+201112223344",
                     Email = null,
@@ -53,7 +46,7 @@
                 },
                 new Customer
                 {
-                    Id = ManalIbrahimId,
+                    Id = Guid.NewGuid(),
                     Name = "Manal Ibrahim",
                     Phone = "+201223334455",
                     Email = "manal.ibrahim@example.com",
