@@ -18,9 +18,11 @@ namespace SafePharma.API.Controllers
             _manager = manager;
         }
 
-        // GET api/Sale?status=Open
+        // GET /api/Sale?status=Completed&search=Ahmed
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] SaleStatus? status)
+        public async Task<IActionResult> GetAll(
+           [FromQuery] SaleStatus? status,
+           [FromQuery] string? search)
         {
             var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
             if (string.IsNullOrEmpty(pharmacyIdClaim) ||
@@ -29,7 +31,7 @@ namespace SafePharma.API.Controllers
                 return Unauthorized();
             }
 
-            var result = await _manager.GetAllSales(pharmacyId, status);
+            var result = await _manager.GetAllSales(pharmacyId, status, search);
             return Ok(result);
         }
 
@@ -207,6 +209,21 @@ namespace SafePharma.API.Controllers
 
             var result = await _manager.SetCustomer(saleId, dto, pharmacyId);
             return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        //GET /api/Sale/stats
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStats()
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.GetStats(pharmacyId);
+            return Ok(result);
         }
 
     }

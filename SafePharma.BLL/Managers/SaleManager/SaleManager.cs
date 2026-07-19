@@ -417,11 +417,24 @@ namespace SafePharma.BLL
             return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
         }
 
-        public async Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetAllSales(Guid pharmacyId, SaleStatus? status = null)
+        public async Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetAllSales(Guid pharmacyId, SaleStatus? status = null, string? search = null)
         {
-            var sales = await _unitOfWork.SaleRepository.GetAllForPharmacy(pharmacyId, status);
+            var sales = await _unitOfWork.SaleRepository.GetAllForPharmacy(pharmacyId, status, search);
             var result = sales.Select(MapSaleToDto);
             return GeneralResult<IEnumerable<ReadSaleDto>>.SuccessResult(result);
+        }
+
+        public async Task<GeneralResult<SaleStatsDto>> GetStats(Guid pharmacyId)
+        {
+            var stats = new SaleStatsDto
+            {
+                TodayTotal = await _unitOfWork.SaleRepository.GetTodayTotal(pharmacyId),
+                CompletedCount = await _unitOfWork.SaleRepository.GetCompletedCount(pharmacyId),
+                AverageBasket = await _unitOfWork.SaleRepository.GetAverageBasket(pharmacyId),
+                CancelledCount = await _unitOfWork.SaleRepository.GetCancelledCount(pharmacyId)
+            };
+
+            return GeneralResult<SaleStatsDto>.SuccessResult(stats);
         }
 
     }

@@ -18,6 +18,7 @@ namespace SafePharma.BLL
         Task<GeneralResult<ReadSaleDto>> SetCustomer(Guid saleId, SetSaleCustomerDto dto, Guid pharmacyId);
 
         Task<GeneralResult<ReadSaleDto>> GetSaleById(Guid saleId, Guid pharmacyId);
-        Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetAllSales(Guid pharmacyId, SaleStatus? status = null);
+        Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetAllSales(Guid pharmacyId, SaleStatus? status = null, string? search = null);
+        Task<GeneralResult<SaleStatsDto>> GetStats(Guid pharmacyId);
     }
 }
