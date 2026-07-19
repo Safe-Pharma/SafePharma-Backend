@@ -119,6 +119,8 @@ namespace SafePharma.BLL
                 unitOfWork._batchRepository.Add(new Batch
                 {
                     Id = Guid.NewGuid(),
+                    PharmacyId=item.PharmacyMedicine.PharmacyId,
+                    Pharmacy= item.PharmacyMedicine.Pharmacy,
                     MedicineId = item.PharmacyMedicineId,
                     PurchaseReceiptItemId = item.Id,
                     BatchNumber = item.BatchNumber,
