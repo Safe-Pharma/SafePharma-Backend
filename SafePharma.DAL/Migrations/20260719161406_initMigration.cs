@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SafePharma.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class IntialCreate : Migration
+    public partial class initMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -280,6 +280,34 @@ namespace SafePharma.DAL.Migrations
                         principalTable: "Customers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CustomerRelative",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RelativeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RelationType = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomerRelative", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CustomerRelative_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CustomerRelative_Customers_RelativeId",
+                        column: x => x.RelativeId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1047,6 +1075,7 @@ namespace SafePharma.DAL.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MedicineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PurchaseReceiptItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PharmacyId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     BatchNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     QuantityReceived = table.Column<int>(type: "int", nullable: false),
@@ -1059,6 +1088,11 @@ namespace SafePharma.DAL.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Batches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Batches_Pharmacies_PharmacyId",
+                        column: x => x.PharmacyId,
+                        principalTable: "Pharmacies",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Batches_PharmacyMedicines_MedicineId",
                         column: x => x.MedicineId,
@@ -1172,6 +1206,11 @@ namespace SafePharma.DAL.Migrations
                 column: "MedicineId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Batches_PharmacyId",
+                table: "Batches",
+                column: "PharmacyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Batches_PurchaseReceiptItemId",
                 table: "Batches",
                 column: "PurchaseReceiptItemId");
@@ -1240,6 +1279,17 @@ namespace SafePharma.DAL.Migrations
                 name: "IX_CustomerPharmacyBalances_PharmacyId",
                 table: "CustomerPharmacyBalances",
                 column: "PharmacyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerRelative_CustomerId_RelativeId",
+                table: "CustomerRelative",
+                columns: new[] { "CustomerId", "RelativeId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerRelative_RelativeId",
+                table: "CustomerRelative",
+                column: "RelativeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_Phone",
@@ -1504,6 +1554,9 @@ namespace SafePharma.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "CustomerPharmacyBalances");
+
+            migrationBuilder.DropTable(
+                name: "CustomerRelative");
 
             migrationBuilder.DropTable(
                 name: "ManufacturerBarcodes");

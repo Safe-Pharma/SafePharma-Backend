@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SafePharma.DAL.Data.Models;
 
 
 namespace SafePharma.DAL
@@ -415,7 +416,26 @@ namespace SafePharma.DAL
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            modelBuilder.Entity<CustomerRelative>(entity =>
+            {
+                entity.HasKey(cr => cr.Id);
 
+                entity.HasOne(cr => cr.Customer)
+                    .WithMany(c => c.Relatives)
+                    .HasForeignKey(cr => cr.CustomerId)
+                    .OnDelete(DeleteBehavior.Restrict);  
+
+       
+                entity.HasOne(cr => cr.Relative)
+                    .WithMany(c => c.RelatedTo)
+                    .HasForeignKey(cr => cr.RelativeId)
+                    .OnDelete(DeleteBehavior.Restrict);  
+
+                entity.HasIndex(cr => new { cr.CustomerId, cr.RelativeId })
+                    .IsUnique();
+
+
+            });
             // alreafy in configuration class, so commented out here
 
             //modelBuilder.Entity<ManufacturerBarcode>(entity =>
@@ -566,7 +586,7 @@ namespace SafePharma.DAL
         public DbSet<OrganImpairmentLevel> OrganImpairmentLevels => Set<OrganImpairmentLevel>();
 
         public DbSet<CustomerOrganFunction> CustomerOrganFunctions => Set<CustomerOrganFunction>();
-        public DbSet<Notification> Notifications  => Set<Notification>();
+        public DbSet<Notification> Notifications => Set<Notification>();
 
     }
 }
