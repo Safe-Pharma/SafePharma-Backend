@@ -5,8 +5,9 @@
         // Provide MedicineId when the medicine exists in the global catalog.
         public Guid? MedicineId { get; set; }
 
-        // Required when MedicineId is null — the pharmacist's free-text entry
+        // Both required when MedicineId is null — the pharmacist's free-text entry
         // for a medicine that isn't in the global catalog.
+        public string? TradeName { get; set; }
         public string? ScientificName { get; set; }
 
         public DateTime? PurchaseDate { get; set; }

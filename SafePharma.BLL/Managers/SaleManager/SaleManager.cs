@@ -400,6 +400,31 @@ namespace SafePharma.BLL
             sale.Status = SaleStatus.Completed;
             sale.UpdatedAt = DateTime.UtcNow;
             sale.UpdatedBy = userId.ToString();
+            if (sale.CustomerId.HasValue)
+            {
+                var balance = await _unitOfWork.CustomerPharmacyBalanceRepository
+                    .GetByCustomerAndPharmacy(sale.CustomerId.Value, pharmacyId);
+
+                if (balance is not null)
+                {
+                    balance.TotalPaid += sale.AmountPaid;
+                    balance.LastPaymentAt = DateTime.UtcNow;
+                    balance.UpdatedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    _unitOfWork.CustomerPharmacyBalanceRepository.Add(new CustomerPharmacyBalance
+                    {
+                        Id = Guid.NewGuid(),
+                        CustomerId = sale.CustomerId.Value,
+                        PharmacyId = pharmacyId,
+                        TotalPaid = sale.AmountPaid,
+                        LastPaymentAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                    });
+                }
+            }
 
             await _unitOfWork.SaveAsync();
 

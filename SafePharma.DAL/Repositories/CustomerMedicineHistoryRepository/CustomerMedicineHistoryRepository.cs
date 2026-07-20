@@ -34,5 +34,22 @@ namespace SafePharma.DAL
             return await _db.Set<CustomerMedicineHistory>()
                 .FirstOrDefaultAsync(h => h.CustomerId == customerId && h.MedicineId == medicineId);
         }
+        public async Task<CustomerMedicineHistory?> FindDuplicate(Guid customerId, Guid? medicineId, string? scientificName)
+        {
+            if (medicineId.HasValue)
+            {
+                return await _db.Set<CustomerMedicineHistory>()
+                    .FirstOrDefaultAsync(h => h.CustomerId == customerId && h.MedicineId == medicineId.Value);
+            }
+
+            if (string.IsNullOrWhiteSpace(scientificName)) return null;
+
+            var normalized = scientificName.Trim().ToLower();
+            var manualEntries = await _db.Set<CustomerMedicineHistory>()
+                .Where(h => h.CustomerId == customerId && h.MedicineId == null && h.ScientificName != null)
+                .ToListAsync();
+
+            return manualEntries.FirstOrDefault(h => h.ScientificName!.Trim().ToLower() == normalized);
+        }
     }
 }

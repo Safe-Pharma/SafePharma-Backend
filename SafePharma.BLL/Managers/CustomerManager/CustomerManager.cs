@@ -189,18 +189,40 @@ namespace SafePharma.BLL
                 }
             }
 
-            var entity = dto.ToEntity();
-            entity.Id = Guid.NewGuid();
-            entity.CustomerId = customerId;
-            entity.CreatedAt = DateTime.UtcNow;
-            entity.UpdatedAt = DateTime.UtcNow;
+            // One record per medicine per customer (matched by MedicineId, or by
+            // ScientificName for manual entries) — adding the same medicine again
+            // UPDATES the existing record (e.g. re-activates it) instead of creating
+            // a duplicate row.
+            var existing = await _unitOfWork.CustomerMedicineHistoryRepository
+                .FindDuplicate(customerId, dto.MedicineId, dto.ScientificName);
 
-            _unitOfWork.CustomerMedicineHistoryRepository.Add(entity);
+            CustomerMedicineHistory entity;
+            var wasUpdated = existing is not null;
+            if (existing is not null)
+            {
+                existing.TradeName = dto.TradeName;
+                existing.PurchaseDate = dto.PurchaseDate ?? DateTime.UtcNow;
+                existing.Quantity = dto.Quantity;
+                existing.IsActive = dto.IsActive;
+                existing.Notes = dto.Notes;
+                existing.UpdatedAt = DateTime.UtcNow;
+                entity = existing;
+            }
+            else
+            {
+                entity = dto.ToEntity();
+                entity.Id = Guid.NewGuid();
+                entity.CustomerId = customerId;
+                entity.CreatedAt = DateTime.UtcNow;
+                entity.UpdatedAt = DateTime.UtcNow;
+                _unitOfWork.CustomerMedicineHistoryRepository.Add(entity);
+            }
+
             await _unitOfWork.SaveAsync();
 
             var saved = await _unitOfWork.CustomerMedicineHistoryRepository.GetByIdForCustomer(entity.Id, customerId);
 
-            return new AddCustomerMedicineHistoryResult { History = saved!.ToDto() };
+            return new AddCustomerMedicineHistoryResult { History = saved!.ToDto(), WasUpdated = wasUpdated };
         }
 
         public async Task<CustomerMedicineHistoryDto?> ToggleMedicineActive(Guid customerId, Guid historyId)

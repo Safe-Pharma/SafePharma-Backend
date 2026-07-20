@@ -6,6 +6,14 @@ namespace SafePharma.BLL
     {
         public CreateCustomerMedicineHistoryDtoValidator()
         {
+            RuleFor(x => x.TradeName)
+                .NotEmpty()
+                .WithMessage("Medicine name is required when the medicine isn't in the global catalog.")
+                .When(x => x.MedicineId is null);
+
+            RuleFor(x => x.TradeName)
+                .MaximumLength(255);
+
             RuleFor(x => x.ScientificName)
                 .NotEmpty()
                 .WithMessage("Scientific name is required when the medicine isn't in the global catalog.")
