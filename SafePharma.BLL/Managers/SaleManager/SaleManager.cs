@@ -348,6 +348,46 @@ namespace SafePharma.BLL
                 batch!.QuantityRemaining -= item.Quantity;
             }
 
+            // ============================================================
+            // ---- new: upsert CustomerMedicineHistory per item ----
+            // Only when the sale actually has a customer attached (walk-in
+            // sales have CustomerId == null, so nothing to attach history to).
+            // ============================================================
+            if (sale.CustomerId.HasValue)
+            {
+                foreach (var item in sale.SaleItems)
+                {
+                    var medicineId = item.PharmacyMedicine.MedicineId;
+                    var  customerId = item.CustomerId.HasValue ? item.CustomerId.Value : sale.CustomerId.Value;
+                    var history = await _unitOfWork.CustomerMedicineHistoryRepository
+                        .GetByCustomerAndMedicine(customerId, medicineId);
+
+                    if (history != null)
+                    {
+                        // already taking/bought this medicine before — bump the quantity
+                        // and refresh the purchase date instead of creating a duplicate row
+                        history.Quantity += item.Quantity;
+                        history.PurchaseDate = DateTime.UtcNow;
+                        history.IsActive = true;
+                        history.UpdatedAt = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        _unitOfWork.CustomerMedicineHistoryRepository.Add(new CustomerMedicineHistory
+                        {
+                            Id = Guid.NewGuid(),
+                            CustomerId = customerId,
+                            MedicineId = medicineId,
+                            ScientificName = item.PharmacyMedicine.Medicine.ScientificName, 
+                            PurchaseDate = DateTime.UtcNow,
+                            Quantity = item.Quantity,
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow,
+                        });
+                    }
+                }
+            }
+
             sale.AmountPaidByCash = dto.AmountPaidByCash;
             sale.AmountPaidByCard = dto.AmountPaidByCard;
             sale.AmountPaid = totalPaid;
@@ -365,6 +405,7 @@ namespace SafePharma.BLL
 
             return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
         }
+
 
         public async Task<GeneralResult<ReadSaleDto>> CancelSale(Guid saleId, Guid pharmacyId)
         {
