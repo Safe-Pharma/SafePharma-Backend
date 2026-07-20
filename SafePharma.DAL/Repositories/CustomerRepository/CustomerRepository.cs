@@ -43,5 +43,12 @@ namespace SafePharma.DAL
                     .ThenInclude(h => h.Medicine)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
+
+        public async Task<Customer?> GetByPhone(string phone)
+        {
+            return await _db.Set<Customer>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Phone == phone);
+        }
     }
 }

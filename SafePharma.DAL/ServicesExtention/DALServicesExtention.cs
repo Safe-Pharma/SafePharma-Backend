@@ -51,6 +51,8 @@ namespace SafePharma.DAL
             services.AddScoped<ICustomerAllergyRepository, CustomerAllergyRepository>();
             services.AddScoped<ICustomerOrganFunctionRepository, CustomerOrganFunctionRepository>();
             services.AddScoped<ICustomerChronicConditionRepository, CustomerChronicConditionRepository>();
+            services.AddScoped<IOtpRepository ,OtpRepository> ();
+
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -138,6 +140,15 @@ namespace SafePharma.DAL
                     var customers = await context.Set<Customer>().ToListAsync();
                     var balances = CustomerPharmacyBalanceSeeding.GetBalances(customers);
                     await context.AddRangeAsync(balances);
+                    await context.SaveChangesAsync();
+                }
+
+                // 6c-1. Otp test data (needs Customers already seeded — test-only, for verify-otp testing)
+                if (!await context.Set<Otp>().AnyAsync())
+                {
+                    var testCustomer = await context.Set<Customer>().FirstAsync();
+                    var otps = OtpSeeding.GetOtps(testCustomer.Id);
+                    await context.AddRangeAsync(otps);
                     await context.SaveChangesAsync();
                 }
 
@@ -291,6 +302,7 @@ namespace SafePharma.DAL
                     context.SaveChanges();
                 }
 
+               
                 // 6b. Medicine Prices (needs Medicines and Taxes to already be seeded, per pharmacy)
                 if (!context.Set<PharmacyMedicine>().Any())
                 {
@@ -305,6 +317,14 @@ namespace SafePharma.DAL
                 {
                     var newCustomers = CustomerSeeding.GetCustomers();
                     context.AddRange(newCustomers);
+                    context.SaveChanges();
+                }
+                // 6c-1. Otp test data (needs Customers already seeded — test-only, for verify-otp testing)
+                if (!context.Set<Otp>().Any())
+                {
+                    var testCustomer = context.Set<Customer>().First();
+                    var otps = OtpSeeding.GetOtps(testCustomer.Id);
+                    context.AddRange(otps);
                     context.SaveChanges();
                 }
 

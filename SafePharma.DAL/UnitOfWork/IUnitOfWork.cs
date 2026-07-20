@@ -43,6 +43,8 @@
         public ICustomerChronicConditionRepository CustomerChronicConditionRepository { get; }
         public ICustomerOrganFunctionRepository CustomerOrganFunctionRepository { get; }
 
+        public IOtpRepository OtpRepository { get; }
+
         Task SaveAsync();
 
         void ClearTracking();
