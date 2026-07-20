@@ -63,8 +63,6 @@
         public CustomerMedicineHistoryDto? History { get; set; }
         public bool CustomerNotFound { get; set; }
         public bool MedicineNotFound { get; set; }
-        // True when this medicine already existed for the customer and the existing
-        // record was updated (e.g. reactivated) instead of a new one being created.
         public bool WasUpdated { get; set; }
     }
 
