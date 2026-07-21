@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260721022834_addingOTP")]
-    partial class addingOTP
+    [Migration("20260721224205_InitMigration")]
+    partial class InitMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -649,9 +649,6 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("RelationType")
-                        .HasColumnType("int");
 
                     b.Property<Guid>("RelativeId")
                         .HasColumnType("uniqueidentifier");

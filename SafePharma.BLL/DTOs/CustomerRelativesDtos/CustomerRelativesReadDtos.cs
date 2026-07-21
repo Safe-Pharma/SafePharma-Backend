@@ -9,7 +9,6 @@ namespace SafePharma.BLL
         public Guid RelativeId { get; init; }
         public string RelativeName { get; init; }
         public string RelativePhone { get; init; }
-        //public string RelationType { get; init; }
- 
+  
     }
 }
