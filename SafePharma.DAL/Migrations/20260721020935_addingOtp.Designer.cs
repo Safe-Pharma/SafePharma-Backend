@@ -12,7 +12,7 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260720020447_addingOtp")]
+    [Migration("20260721020935_addingOtp")]
     partial class addingOtp
     {
         /// <inheritdoc />

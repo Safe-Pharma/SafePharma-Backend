@@ -15,17 +15,21 @@ namespace SafePharma.BLL
 
         public async Task<GeneralResult> SendAsync(string phoneNumber, string otpCode, CancellationToken ct = default)
         {
+            Console.WriteLine($"[WhatsAppBaileysChannel] Calling {_http.BaseAddress}send-otp for phone {phoneNumber}");
+
             try
             {
                 var payload = new { phone = phoneNumber, otp = otpCode };
                 var response = await _http.PostAsJsonAsync("/send-otp", payload, ct);
-
+                    
                 return response.IsSuccessStatusCode
                     ? GeneralResult.SuccessResult("Sent via WhatsApp")
                     : GeneralResult.FailResult("WhatsApp send failed");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[WhatsAppBaileysChannel ERROR]: {ex.GetType().Name} - {ex.Message}");
+
                 return GeneralResult.FailResult($"WhatsApp error: {ex.Message}");
             }
         }

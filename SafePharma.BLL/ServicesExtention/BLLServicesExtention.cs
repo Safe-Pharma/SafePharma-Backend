@@ -86,10 +86,8 @@ namespace SafePharma.BLL
 
             services.AddScoped<IOrganImpairmentLevelManager, OrganImpairmentLevelManager>();
 
-            services.AddScoped<IOtpDeliveryChannel, WhatsAppBaileysChannel>();
-
             // Otp
-            services.AddHttpClient<WhatsAppBaileysChannel>(client =>
+            services.AddHttpClient<IOtpDeliveryChannel, WhatsAppBaileysChannel>(client =>
             {
                 client.BaseAddress = new Uri(configuration["Baileys:BaseUrl"] ?? "http://localhost:3001");
             });
