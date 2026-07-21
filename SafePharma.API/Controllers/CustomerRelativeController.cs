@@ -29,5 +29,12 @@ namespace SafePharma.API.Controllers
             var res = await _customerRelativesManager.GetRelations(id);
             return Ok(res);
         }
+
+        [HttpDelete("{id:Guid}")]
+        public async Task<ActionResult> RemoveRelation([FromRoute] Guid id)
+        {
+            var res = await _customerRelativesManager.RemoveRelation(id);
+            return Ok(res);
+        }
     }
 }

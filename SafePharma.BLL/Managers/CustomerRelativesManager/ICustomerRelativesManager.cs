@@ -7,6 +7,7 @@ namespace SafePharma.BLL
     {
         Task<GeneralResult> CreateRelation(CustomerRelativeCreateDto dto);
         Task<GeneralResult<IEnumerable<CustomerRelativeReadDto>>> GetRelations(Guid id);
+        Task<GeneralResult> RemoveRelation(Guid id);
 
     }
 }
