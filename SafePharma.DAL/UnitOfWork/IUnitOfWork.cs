@@ -45,6 +45,8 @@
         public ICustomerRelativesRepository _customerRelativesRepository { get; }
 
 
+        public IOtpRepository OtpRepository { get; }
+
         Task SaveAsync();
 
         void ClearTracking();

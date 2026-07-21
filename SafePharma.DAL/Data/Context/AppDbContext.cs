@@ -439,6 +439,13 @@ namespace SafePharma.DAL
 
 
             });
+
+            modelBuilder.Entity<Otp>()
+            .HasOne<Customer>()
+            .WithMany()
+            .HasForeignKey(o => o.CustomerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
             // alreafy in configuration class, so commented out here
 
             //modelBuilder.Entity<ManufacturerBarcode>(entity =>
@@ -590,6 +597,9 @@ namespace SafePharma.DAL
 
         public DbSet<CustomerOrganFunction> CustomerOrganFunctions => Set<CustomerOrganFunction>();
         public DbSet<Notification> Notifications => Set<Notification>();
+
+        public DbSet<Otp> Otps => Set<Otp>();
+
 
     }
 }
