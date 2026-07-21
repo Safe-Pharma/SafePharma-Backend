@@ -53,9 +53,11 @@ namespace SafePharma.DAL
         public async Task<Customer?> GetByIdWithRealtives(Guid id)
         {
             return await _db.Set<Customer>()
-                .Include(c => c.Relatives)
-                        .ThenInclude(r => r.Relative)
-                        .FirstOrDefaultAsync(c => c.Id == id);
+                         .Include(c => c.Relatives)
+                             .ThenInclude(cr => cr.Relative)
+                         .Include(c => c.RelatedTo)
+                             .ThenInclude(cr => cr.Customer)
+                         .FirstOrDefaultAsync(c => c.Id == id);
         }
     }
 }

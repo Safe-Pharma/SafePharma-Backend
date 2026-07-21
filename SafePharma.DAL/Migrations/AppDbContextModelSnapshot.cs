@@ -647,9 +647,6 @@ namespace SafePharma.DAL.Migrations
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("RelationType")
-                        .HasColumnType("int");
-
                     b.Property<Guid>("RelativeId")
                         .HasColumnType("uniqueidentifier");
 

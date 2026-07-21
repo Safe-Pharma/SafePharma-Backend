@@ -18,7 +18,6 @@ namespace SafePharma.DAL
         [ForeignKey("Relative")]
         public Guid RelativeId { get; set; }
         public Customer Relative { get; set; }
-        public RelationType RelationType { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 

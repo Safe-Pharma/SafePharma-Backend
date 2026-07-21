@@ -21,16 +21,25 @@ namespace SafePharma.BLL
             }
 
             var CustomerRels = customer!.Relatives;
+            var CustomerRelsTo = customer!.RelatedTo;
 
-            var custRels = CustomerRels.Select(
-                a =>
-                new CustomerRelativeReadDto
-                {
-                    RelativeId = a.RelativeId,
-                    RelativeName = a.Relative.Name,
-                    RelativePhone = a.Relative.Phone,
-                }
-                );
+
+            var custRels = CustomerRels
+                        .Select(a => new CustomerRelativeReadDto
+                        {
+                            RelativeId = a.RelativeId,
+                            RelativeName = a.Relative.Name,
+                            RelativePhone = a.Relative.Phone,
+                        })
+                        .Concat(
+                            CustomerRelsTo.Select(a => new CustomerRelativeReadDto
+                            {
+                                RelativeId = a.CustomerId,     
+                                RelativeName = a.Customer.Name,
+                                RelativePhone = a.Customer.Phone,
+                            })
+                        );
+
 
             return GeneralResult<IEnumerable<CustomerRelativeReadDto>>.SuccessResult(custRels);
         }
@@ -57,6 +66,7 @@ namespace SafePharma.BLL
                 Relative = relative!
 
             };
+
             _unitOfWork._customerRelativesRepository.Add(custRel);
             await _unitOfWork.SaveAsync();
 

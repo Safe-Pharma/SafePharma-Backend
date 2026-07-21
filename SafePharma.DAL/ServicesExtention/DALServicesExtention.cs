@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using SafePharma.DAL.Data.Seeding.PaymentMethodSeedingProvider;
 using SafePharma.DAL.Data.Seeding.SubscriptionPlanSeedingProvider;
 using SafePharma.DAL.Data.Seeding.UserSeedingProvider;
-using SafePharma.DAL;
 namespace SafePharma.DAL
 {
     public static class DALServicesExtention
@@ -52,9 +51,9 @@ namespace SafePharma.DAL
             services.AddScoped<ICustomerAllergyRepository, CustomerAllergyRepository>();
             services.AddScoped<ICustomerOrganFunctionRepository, CustomerOrganFunctionRepository>();
             services.AddScoped<ICustomerChronicConditionRepository, CustomerChronicConditionRepository>();
-            services.AddScoped<IOtpRepository ,OtpRepository> ();
+            services.AddScoped<IOtpRepository, OtpRepository>();
 
-            services.AddScoped<ICustomerRelativesRepository , CustomerRelativesRepository>();
+            services.AddScoped<ICustomerRelativesRepository, CustomerRelativesRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -237,7 +236,16 @@ namespace SafePharma.DAL
 
                     await context.SaveChangesAsync();
                 }
-               
+
+                // Customer Relatives
+                if (!await context.Set<CustomerRelative>().AnyAsync())
+                {
+                    var customers = await context.Set<Customer>().ToListAsync();
+                    var relatives = CustomerRelativesSeedingProvider.GetCustomerRelatives(customers);
+                    await context.AddRangeAsync(relatives);
+                    await context.SaveChangesAsync();
+                }
+
             }
             catch (Exception ex)
             {
@@ -304,7 +312,7 @@ namespace SafePharma.DAL
                     context.SaveChanges();
                 }
 
-               
+
                 // 6b. Medicine Prices (needs Medicines and Taxes to already be seeded, per pharmacy)
                 if (!context.Set<PharmacyMedicine>().Any())
                 {
@@ -415,7 +423,15 @@ namespace SafePharma.DAL
                     context.SaveChanges();
                 }
 
-              
+                // Customer Relatives
+                if (!context.Set<CustomerRelative>().Any())
+                {
+                    var customers = context.Set<Customer>().ToList();
+                    var relatives = CustomerRelativesSeedingProvider.GetCustomerRelatives(customers);
+                    context.AddRange(relatives);
+                    context.SaveChanges();
+                }
+
             }
             catch (Exception ex)
             {
