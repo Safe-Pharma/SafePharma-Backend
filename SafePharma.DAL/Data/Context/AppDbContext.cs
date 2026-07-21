@@ -200,6 +200,9 @@ namespace SafePharma.DAL
                 entity.Property(h => h.ScientificName)
                     .HasMaxLength(255);
 
+                entity.Property(h => h.TradeName)
+                    .HasMaxLength(255);
+
                 entity.HasIndex(h => new { h.CustomerId, h.IsActive });
             });
 

@@ -16,7 +16,7 @@ namespace SafePharma.BLL
                 IsGlobalMatch = isGlobalMatch,
                 MedicineName = isGlobalMatch
                     ? entity.Medicine?.TradeNameEn ?? string.Empty
-                    : entity.ScientificName ?? string.Empty,
+                    : entity.TradeName ?? string.Empty,
                 ScientificName = isGlobalMatch
                     ? entity.Medicine?.ScientificName ?? string.Empty
                     : entity.ScientificName ?? string.Empty,
@@ -32,6 +32,7 @@ namespace SafePharma.BLL
             return new CustomerMedicineHistory
             {
                 MedicineId = dto.MedicineId,
+                TradeName = dto.TradeName,
                 ScientificName = dto.ScientificName,
                 PurchaseDate = dto.PurchaseDate ?? DateTime.UtcNow,
                 Quantity = dto.Quantity,

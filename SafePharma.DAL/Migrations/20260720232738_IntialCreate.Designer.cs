@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260719161406_initMigration")]
-    partial class initMigration
+    [Migration("20260720232738_IntialCreate")]
+    partial class IntialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -553,6 +553,10 @@ namespace SafePharma.DAL.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ScientificName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("TradeName")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
