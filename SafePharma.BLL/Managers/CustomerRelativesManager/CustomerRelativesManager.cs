@@ -39,13 +39,13 @@ namespace SafePharma.BLL
         {
             if (dto is null)
             {
-                GeneralResult<CustomerRelative>.NotFound();
+                return GeneralResult<CustomerRelative>.NotFound();
             }
             Customer customer = await _unitOfWork.CustomerRepository.GetById(dto!.CustomerId);
             Customer relative = await _unitOfWork.CustomerRepository.GetById(dto.RelativeId);
             if (customer is null || relative is null)
             {
-                GeneralResult<CustomerRelative>.NotFound();
+                return GeneralResult<CustomerRelative>.NotFound();
 
             }
 
@@ -58,6 +58,20 @@ namespace SafePharma.BLL
 
             };
             _unitOfWork._customerRelativesRepository.Add(custRel);
+            await _unitOfWork.SaveAsync();
+
+            return GeneralResult.SuccessResult();
+        }
+
+        public async Task<GeneralResult> RemoveRelation(Guid id)
+        {
+            var link = await _unitOfWork._customerRelativesRepository.GetById(id);
+            if (link is null)
+            {
+                return GeneralResult.FailResult("Relative link not found.");
+            }
+
+            _unitOfWork._customerRelativesRepository.Delete(link);
             await _unitOfWork.SaveAsync();
 
             return GeneralResult.SuccessResult();
