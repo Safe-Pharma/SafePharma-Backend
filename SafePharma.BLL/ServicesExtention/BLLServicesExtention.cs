@@ -80,6 +80,7 @@ namespace SafePharma.BLL
             services.AddScoped<IOrganManager, OrganManager>();
 
             services.AddScoped<IOrganImpairmentLevelManager, OrganImpairmentLevelManager>();
+            services.AddScoped<ICustomerRelativesManager, CustomerRelativesManager>();
 
 
 

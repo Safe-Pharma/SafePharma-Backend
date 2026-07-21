@@ -13,7 +13,7 @@ namespace SafePharma.DAL
         }
         public async Task<IEnumerable<IGrouping<Guid, Batch>>> GetBatchesGroupByhMedicine()
         {
-            return await _db.Set<Batch>().GroupBy(b => b.MedicineId).ToListAsync();           return await _db.Set<Batch>().Include(b=>b.Medicine).ThenInclude(b=>b.Medicine).GroupBy(b => b.MedicineId).ToListAsync();
+            return await _db.Set<Batch>().Include(b=>b.Medicine).ThenInclude(b=>b.Medicine).GroupBy(b => b.MedicineId).ToListAsync();
         }
         public async Task<IEnumerable<Batch>> GetBatchesByhMedicineId(Guid MId)
         {
