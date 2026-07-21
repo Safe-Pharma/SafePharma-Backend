@@ -56,6 +56,19 @@
                     CreatedAt = seededAt,
                     UpdatedAt = seededAt,
                 },
+
+                   new Customer
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "test ",
+                    Phone = "+201222406627",
+                    Email = "test@example.com",
+                    Address = "8 Gomhoria St, Zagazig",
+                    DateOfBirth = new DateTime(2003, 1, 19),
+                    Status = CustomerStatus.Inactive,
+                    CreatedAt = seededAt,
+                    UpdatedAt = seededAt,
+                },
             };
         }
     }

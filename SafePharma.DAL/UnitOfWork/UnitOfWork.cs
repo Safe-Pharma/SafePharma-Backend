@@ -47,6 +47,7 @@ namespace SafePharma.DAL
 
         public ICustomerChronicConditionRepository CustomerChronicConditionRepository { get; }
         public ICustomerOrganFunctionRepository CustomerOrganFunctionRepository { get; }
+        public IOtpRepository OtpRepository { get; }
         public ICustomerRelativesRepository _customerRelativesRepository { get; }
 
 
@@ -84,8 +85,10 @@ namespace SafePharma.DAL
             INotificationRepository notificationRepository,
             ICustomerAllergyRepository customerAllergyRepository,
             ICustomerChronicConditionRepository customerChronicConditionRepository,
-            ICustomerOrganFunctionRepository customerOrganFunctionRepository
-,
+            ICustomerOrganFunctionRepository customerOrganFunctionRepository,
+            IOtpRepository otpRepository,
+
+
             ICustomerRelativesRepository customerRelativesRepository
 
 
@@ -130,6 +133,7 @@ namespace SafePharma.DAL
             CustomerAllergyRepository = customerAllergyRepository;
             CustomerChronicConditionRepository = customerChronicConditionRepository;
             CustomerOrganFunctionRepository = customerOrganFunctionRepository;
+            OtpRepository = otpRepository;
             _customerRelativesRepository = customerRelativesRepository;
         }
 

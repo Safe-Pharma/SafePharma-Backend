@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SafePharma.BLL.Managers;
 using SafePharma.BLL.Managers.AuthenticationManager;
@@ -12,8 +13,11 @@ namespace SafePharma.BLL
 {
     public static class BLLServicesExtention
     {
-        public static void AddBLLServices(this IServiceCollection services)
+        public static void AddBLLServices(this IServiceCollection services, IConfiguration configuration)
         {
+
+
+            services.AddScoped<ITokenGenerator, TokenGenerator>();
             services.AddScoped<IPharmacySettingManager, PharmacySettingManager>();
             services.AddValidatorsFromAssemblyContaining<PharmacySettingsUpdateDtoValidator>();
             services.AddScoped<IAuditManager, AuditManager>();
@@ -74,6 +78,7 @@ namespace SafePharma.BLL
             services.AddScoped<ISaleManager, SaleManager>();
 
 
+
             services.AddScoped<IAllergyManager, AllergyManager>();
             services.AddScoped<IChronicConditionManager, ChronicConditionManager>();
 
@@ -82,7 +87,13 @@ namespace SafePharma.BLL
             services.AddScoped<IOrganImpairmentLevelManager, OrganImpairmentLevelManager>();
             services.AddScoped<ICustomerRelativesManager, CustomerRelativesManager>();
 
+            // Otp
+            services.AddHttpClient<IOtpDeliveryChannel, WhatsAppBaileysChannel>(client =>
+            {
+                client.BaseAddress = new Uri(configuration["Baileys:BaseUrl"] ?? "http://localhost:3001");
+            });
 
+            services.AddScoped<IOtpManager, OtpManager>();
 
 
             services.AddHttpClient<IEmailService, EmailService>();

@@ -3,11 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using SafePharma.BLL.DTOs;
 using SafePharma.Common;
 using SafePharma.DAL;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
@@ -16,29 +14,24 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
     public class AuthManager : IAuthManager
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly JwtSettings _jwtSettings;
         private readonly IValidator<LoginDTO> _loginValidator;
         private readonly IValidator<ChangePasswordDTO> _changePasswordValidator;
+        private readonly ITokenGenerator _tokenGenerator;
 
         public AuthManager(
-        UserManager<ApplicationUser> userManager,
-            IOptions<JwtSettings> jwtSettings,
+            UserManager<ApplicationUser> userManager,
             IValidator<LoginDTO> loginValidator,
-            IValidator<ChangePasswordDTO> changePasswordValidator
-
-            )
+            IValidator<ChangePasswordDTO> changePasswordValidator,
+            ITokenGenerator tokenGenerator
+        )
         {
             _userManager = userManager;
-            if (jwtSettings == null || jwtSettings.Value == null)
-                throw new InvalidOperationException("JWT settings are not configured. Ensure JwtSettings are bound from configuration.");
-
-            _jwtSettings = jwtSettings.Value;
             _loginValidator = loginValidator;
             _changePasswordValidator = changePasswordValidator;
+            _tokenGenerator = tokenGenerator;
         }
 
         public async Task<GeneralResult<TokenDto>> LoginAsync(LoginDTO dto)
-
         {
             var validationResult = await _loginValidator.ValidateAsync(dto);
 
@@ -58,7 +51,6 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
                 return GeneralResult<TokenDto>.FailResult(errors, "Validation failed");
             }
 
-            
             var user = await _userManager.Users
                      .Include(u => u.Pharmacy)
                     .FirstOrDefaultAsync(u => u.Email == dto.Email);
@@ -76,17 +68,16 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
 
             var claims = await GenerateClaims(user);
 
-            var token = GenerateJwtToken(claims);
+            var token = _tokenGenerator.GenerateToken(claims);
 
             user.LastLoginAt = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
             return GeneralResult<TokenDto>.SuccessResult(token, "Login successful");
         }
+
         public async Task<GeneralResult> ChangePasswordAsync(string userId, ChangePasswordDTO dto)
         {
-
-
             var validationResult = await _changePasswordValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
             {
@@ -102,11 +93,9 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
                    );
 
                 return GeneralResult<TokenDto>.FailResult(errors, "Validation failed");
-
             }
 
-
-                var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
                 return GeneralResult.FailResult("User not found");
@@ -126,20 +115,18 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
             }
 
             return GeneralResult.SuccessResult("Password changed successfully");
-
-}
-
+        }
 
         private async Task<List<Claim>> GenerateClaims(ApplicationUser user)
         {
             var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email!),
-            new Claim("FullName", user.FullName),
-            new Claim("PharmacyId", user.PharmacyId.ToString()),
-            new Claim("PharmacyName", user.Pharmacy?.Name ?? string.Empty)
-        };
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email!),
+                new Claim("FullName", user.FullName),
+                new Claim("PharmacyId", user.PharmacyId.ToString()),
+                new Claim("PharmacyName", user.Pharmacy?.Name ?? string.Empty)
+            };
 
             var roles = await _userManager.GetRolesAsync(user);
 
@@ -151,37 +138,6 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
             return claims;
         }
 
-        private TokenDto GenerateJwtToken(List<Claim> claims)
-        {
-            if (string.IsNullOrWhiteSpace(_jwtSettings.Key))
-                throw new InvalidOperationException("JWT signing key is missing. Set 'JWT:Key' in configuration.");
-
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_jwtSettings.Key)
-            );
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var duration = _jwtSettings.DurationInMinutes > 0 ? _jwtSettings.DurationInMinutes : 60;
-            var expires = DateTime.UtcNow.AddMinutes(duration);
-
-            var token = new JwtSecurityToken(
-                issuer: _jwtSettings.Issuer,
-                audience: _jwtSettings.Audience,
-                claims: claims,
-                expires: expires,
-                signingCredentials: creds
-            );
-
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return new TokenDto(
-                tokenString,
-                duration
-            );
-        }
-
-
         public async Task<GeneralResult> SetPasswordAsync(SetPasswordDTO dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -191,10 +147,7 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
 
             var decodedToken = Encoding.UTF8.GetString(
                 WebEncoders.Base64UrlDecode(dto.Token));
-            Console.WriteLine("token coming from frontend:");
-            Console.WriteLine(dto.Token);
-            Console.WriteLine("token after decoding:");
-            Console.WriteLine(decodedToken);
+
             var result = await _userManager.ResetPasswordAsync(
                 user,
                 decodedToken,
@@ -221,5 +174,4 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
                 "Password created successfully");
         }
     }
-
 }

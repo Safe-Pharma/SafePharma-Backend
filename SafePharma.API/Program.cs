@@ -27,9 +27,9 @@ namespace SafePharma.API
             // Bind JwtSettings from configuration
             builder.Services.Configure<SafePharma.Common.JwtSettings>(builder.Configuration.GetSection("JWT"));
             builder.Services.AddDALServices(builder.Configuration);
-            builder.Services.AddBLLServices();
-     
-                builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+            builder.Services.AddBLLServices(builder.Configuration);
+
+            builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
                      .AddEntityFrameworkStores<AppDbContext>()
                      .AddDefaultTokenProviders();
             // Authentication configuration - use JWT Bearer

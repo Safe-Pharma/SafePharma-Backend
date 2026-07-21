@@ -635,7 +635,7 @@ namespace SafePharma.DAL.Migrations
                     b.ToTable("CustomerPharmacyBalances");
                 });
 
-            modelBuilder.Entity("SafePharma.DAL.Data.Models.CustomerRelative", b =>
+            modelBuilder.Entity("SafePharma.DAL.CustomerRelative", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -893,6 +893,35 @@ namespace SafePharma.DAL.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("OrganImpairmentLevels", (string)null);
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.Otp", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ExpireDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Otps");
                 });
 
             modelBuilder.Entity("SafePharma.DAL.PaymentMethod", b =>
@@ -1999,7 +2028,7 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Pharmacy");
                 });
 
-            modelBuilder.Entity("SafePharma.DAL.Data.Models.CustomerRelative", b =>
+            modelBuilder.Entity("SafePharma.DAL.CustomerRelative", b =>
                 {
                     b.HasOne("SafePharma.DAL.Customer", "Customer")
                         .WithMany("Relatives")
@@ -2037,6 +2066,15 @@ namespace SafePharma.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("OwnerPharmacy");
+                });
+
+            modelBuilder.Entity("SafePharma.DAL.Otp", b =>
+                {
+                    b.HasOne("SafePharma.DAL.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SafePharma.DAL.PaymentVerification", b =>
