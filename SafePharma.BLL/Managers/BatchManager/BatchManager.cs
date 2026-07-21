@@ -18,7 +18,10 @@ namespace SafePharma.BLL
         {
 
             var batchList = await _unitOfWork._batchRepository.GetBatchesGroupByhMedicine();
-
+            if(batchList is null)
+            {
+                return GeneralResult<IEnumerable<BatchReadDto>>.NotFound("No Batches Founded");
+            }
 
             IEnumerable<BatchReadDto> batchReadList = batchList.Select(group =>
             {
