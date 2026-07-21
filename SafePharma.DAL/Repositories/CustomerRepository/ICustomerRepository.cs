@@ -6,6 +6,7 @@
         Task<IEnumerable<Customer>> Search(string? query);
         Task<Customer?> GetByIdWithHistory(Guid id);
         Task<Customer?> GetByPhone(string phone);
+        Task<Customer?> GetByIdWithRealtives(Guid id);
 
     }
 }

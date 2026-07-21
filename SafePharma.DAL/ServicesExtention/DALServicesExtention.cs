@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SafePharma.DAL.Data.Seeding.PaymentMethodSeedingProvider;
 using SafePharma.DAL.Data.Seeding.SubscriptionPlanSeedingProvider;
 using SafePharma.DAL.Data.Seeding.UserSeedingProvider;
+using SafePharma.DAL;
 namespace SafePharma.DAL
 {
     public static class DALServicesExtention
@@ -53,6 +54,7 @@ namespace SafePharma.DAL
             services.AddScoped<ICustomerChronicConditionRepository, CustomerChronicConditionRepository>();
             services.AddScoped<IOtpRepository ,OtpRepository> ();
 
+            services.AddScoped<ICustomerRelativesRepository , CustomerRelativesRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 

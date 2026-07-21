@@ -48,6 +48,8 @@ namespace SafePharma.DAL
         public ICustomerChronicConditionRepository CustomerChronicConditionRepository { get; }
         public ICustomerOrganFunctionRepository CustomerOrganFunctionRepository { get; }
         public IOtpRepository OtpRepository { get; }
+        public ICustomerRelativesRepository _customerRelativesRepository { get; }
+
 
         public UnitOfWork(
             AppDbContext db,
@@ -84,8 +86,10 @@ namespace SafePharma.DAL
             ICustomerAllergyRepository customerAllergyRepository,
             ICustomerChronicConditionRepository customerChronicConditionRepository,
             ICustomerOrganFunctionRepository customerOrganFunctionRepository,
-            IOtpRepository otpRepository
+            IOtpRepository otpRepository,
 
+
+            ICustomerRelativesRepository customerRelativesRepository
 
 
             )
@@ -130,6 +134,7 @@ namespace SafePharma.DAL
             CustomerChronicConditionRepository = customerChronicConditionRepository;
             CustomerOrganFunctionRepository = customerOrganFunctionRepository;
             OtpRepository = otpRepository;
+            _customerRelativesRepository = customerRelativesRepository;
         }
 
         public async Task SaveAsync()

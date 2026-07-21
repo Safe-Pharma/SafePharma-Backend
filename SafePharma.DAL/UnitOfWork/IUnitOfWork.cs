@@ -42,6 +42,8 @@
         public ICustomerAllergyRepository CustomerAllergyRepository { get; }
         public ICustomerChronicConditionRepository CustomerChronicConditionRepository { get; }
         public ICustomerOrganFunctionRepository CustomerOrganFunctionRepository { get; }
+        public ICustomerRelativesRepository _customerRelativesRepository { get; }
+
 
         public IOtpRepository OtpRepository { get; }
 

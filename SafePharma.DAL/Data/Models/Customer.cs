@@ -1,4 +1,4 @@
-﻿using SafePharma.DAL.Data.Models;
+﻿using SafePharma.DAL.Data;
 
 namespace SafePharma.DAL
 {
