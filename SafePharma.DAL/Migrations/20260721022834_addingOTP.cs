@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SafePharma.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class addingOtp : Migration
+    public partial class addingOTP : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -800,6 +800,7 @@ namespace SafePharma.DAL.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MedicineId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    TradeName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     ScientificName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     PurchaseDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),

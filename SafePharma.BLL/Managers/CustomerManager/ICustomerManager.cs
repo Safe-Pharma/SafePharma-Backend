@@ -63,6 +63,7 @@
         public CustomerMedicineHistoryDto? History { get; set; }
         public bool CustomerNotFound { get; set; }
         public bool MedicineNotFound { get; set; }
+        public bool WasUpdated { get; set; }
     }
 
     // Shared by Allergy and ChronicCondition assignment — same three outcomes either way.

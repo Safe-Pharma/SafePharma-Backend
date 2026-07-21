@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260721020935_addingOtp")]
-    partial class addingOtp
+    [Migration("20260721022834_addingOTP")]
+    partial class addingOTP
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -556,6 +556,10 @@ namespace SafePharma.DAL.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<string>("TradeName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -634,7 +638,7 @@ namespace SafePharma.DAL.Migrations
                     b.ToTable("CustomerPharmacyBalances");
                 });
 
-            modelBuilder.Entity("SafePharma.DAL.Data.Models.CustomerRelative", b =>
+            modelBuilder.Entity("SafePharma.DAL.CustomerRelative", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2027,7 +2031,7 @@ namespace SafePharma.DAL.Migrations
                     b.Navigation("Pharmacy");
                 });
 
-            modelBuilder.Entity("SafePharma.DAL.Data.Models.CustomerRelative", b =>
+            modelBuilder.Entity("SafePharma.DAL.CustomerRelative", b =>
                 {
                     b.HasOne("SafePharma.DAL.Customer", "Customer")
                         .WithMany("Relatives")

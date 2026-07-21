@@ -378,7 +378,8 @@ namespace SafePharma.BLL
                             Id = Guid.NewGuid(),
                             CustomerId = customerId,
                             MedicineId = medicineId,
-                            ScientificName = item.PharmacyMedicine.Medicine.ScientificName, 
+                            TradeName = medicineId is null ? item.PharmacyMedicine.TradeNameEn : null,
+                            ScientificName = item.PharmacyMedicine.ScientificName, 
                             PurchaseDate = DateTime.UtcNow,
                             Quantity = item.Quantity,
                             IsActive = true,
@@ -400,6 +401,31 @@ namespace SafePharma.BLL
             sale.Status = SaleStatus.Completed;
             sale.UpdatedAt = DateTime.UtcNow;
             sale.UpdatedBy = userId.ToString();
+            if (sale.CustomerId.HasValue)
+            {
+                var balance = await _unitOfWork.CustomerPharmacyBalanceRepository
+                    .GetByCustomerAndPharmacy(sale.CustomerId.Value, pharmacyId);
+
+                if (balance is not null)
+                {
+                    balance.TotalPaid += sale.AmountPaid;
+                    balance.LastPaymentAt = DateTime.UtcNow;
+                    balance.UpdatedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    _unitOfWork.CustomerPharmacyBalanceRepository.Add(new CustomerPharmacyBalance
+                    {
+                        Id = Guid.NewGuid(),
+                        CustomerId = sale.CustomerId.Value,
+                        PharmacyId = pharmacyId,
+                        TotalPaid = sale.AmountPaid,
+                        LastPaymentAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                    });
+                }
+            }
 
             await _unitOfWork.SaveAsync();
 

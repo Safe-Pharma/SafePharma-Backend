@@ -185,7 +185,11 @@ namespace SafePharma.API.Controllers
                 return NotFound(new { message = "Medicine not found in the global catalog." });
             }
 
-            return CreatedAtAction(nameof(GetMedicineHistory), new { customerId }, result.History);
+            var response = new { history = result.History, wasUpdated = result.WasUpdated };
+
+            return result.WasUpdated
+                ? Ok(response)
+                : CreatedAtAction(nameof(GetMedicineHistory), new { customerId }, response);
         }
 
         [HttpPatch("{customerId:guid}/medicine-history/{historyId:guid}/toggle-active")]
