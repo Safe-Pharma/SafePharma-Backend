@@ -54,3 +54,5 @@ app.post('/send-otp', async (req, res) => {
 });
 
 app.listen(3001, () => console.log('Baileys OTP service running on http://localhost:3001'));
+
+//node index.js
