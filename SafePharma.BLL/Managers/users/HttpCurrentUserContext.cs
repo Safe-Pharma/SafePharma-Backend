@@ -1,46 +1,61 @@
 ﻿using Microsoft.AspNetCore.Http;
 using SafePharma.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
 
-namespace SafePharma.BLL.Managers.users
+namespace SafePharma.BLL.Authentication;
+
+public class HttpCurrentUserContext : ICurrentUserContext
 {
-    public class HttpCurrentUserContext : ICurrentUserContext
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public HttpCurrentUserContext(IHttpContextAccessor httpContextAccessor)
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public HttpCurrentUserContext(IHttpContextAccessor httpContextAccessor)
-        {
-            _httpContextAccessor = httpContextAccessor;
-        }
-
-        private ClaimsPrincipal User =>
-            _httpContextAccessor.HttpContext?.User
-            ?? throw new InvalidOperationException("No active HTTP context.");
-
-        public Guid UserId =>
-            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
-        /// <summary>
-        /// This is the pharmacyId claim you put in the JWT at login
-        /// </summary>
-        public Guid PharmacyId
-        {
-            get
-            {
-                var claim = User.FindFirstValue("PharmacyId");
-
-                if (!Guid.TryParse(claim, out var pharmacyId))
-                    return Guid.Empty;
-
-                return pharmacyId;
-            }
-        }
-
-        public IReadOnlyList<string> Roles =>
-            User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+        _httpContextAccessor = httpContextAccessor;
     }
+
+    private ClaimsPrincipal User =>
+        _httpContextAccessor.HttpContext?.User
+        ?? throw new InvalidOperationException("No active HTTP context.");
+
+    public Guid Id
+    {
+        get
+        {
+            var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            return Guid.TryParse(claim, out var id)
+                ? id
+                : Guid.Empty;
+        }
+    }
+
+    public string Name =>
+        User.FindFirstValue("Name") ?? string.Empty;
+
+    public string Phone =>
+        User.FindFirstValue("Phone") ?? string.Empty;
+
+    public Guid PharmacyId
+    {
+        get
+        {
+            var claim = User.FindFirstValue("PharmacyId");
+
+            if (Guid.TryParse(claim, out var pharmacyId))
+                return pharmacyId;
+
+            return Guid.Empty;
+        }
+    }
+
+    public bool IsCustomer =>
+        User.FindFirstValue("EntityType") == "Customer";
+
+    public bool IsStaff =>
+        User.FindFirstValue("EntityType") == "Staff";
+
+    public IReadOnlyList<string> Roles =>
+        User.FindAll(ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToList();
 }

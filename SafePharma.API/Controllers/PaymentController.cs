@@ -85,7 +85,7 @@ namespace SafePharma.API.Controllers
         [HttpPost("{id:guid}/approve")]
         public async Task<IActionResult> Approve(Guid id)
         {
-            var result = await _manager.ApprovePayment(id, _currentUser.UserId);
+            var result = await _manager.ApprovePayment(id, _currentUser.Id);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
@@ -96,7 +96,7 @@ namespace SafePharma.API.Controllers
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Errors);
 
-            var result = await _manager.RejectPayment(id, _currentUser.UserId, dto.RejectionReason);
+            var result = await _manager.RejectPayment(id, _currentUser.Id, dto.RejectionReason);
             return result.Success ? Ok(result) : BadRequest(result);
         }
     }

@@ -438,7 +438,7 @@ public class UserService : IUserService
         user.IsActive = false;
         user.IsDeleted = true;
         user.DeletedAt = DateTime.UtcNow;
-        user.DeletedBy = _currentUser.UserId.ToString();
+        user.DeletedBy = _currentUser.Id.ToString();
         user.UpdatedAt = DateTime.UtcNow;
 
         var res = await _userManager.UpdateAsync(user);
