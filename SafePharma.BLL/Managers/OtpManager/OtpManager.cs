@@ -111,7 +111,10 @@ namespace SafePharma.BLL
             {
                 new Claim(ClaimTypes.NameIdentifier, customer.Id.ToString()),
                 new Claim("Phone", customer.Phone),
-                new Claim(ClaimTypes.Role, "Customer")
+                new Claim(ClaimTypes.Role, "Customer"),
+                new Claim("Name", customer.Name),
+
+
             };
 
             var token = _tokenGenerator.GenerateToken(claims);

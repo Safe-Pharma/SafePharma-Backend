@@ -62,6 +62,17 @@ namespace SafePharma.API.Controllers
             return Ok(result);
         }
 
+        //[HttpGet("getMe")]
+        //public async Task<IActionResult> CustomerGetMe()
+        //{
+        //    var result = await _manager.GetMe();
+        //    if (result is null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return Ok(result);
+        //}
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CustomerCreateDto dto)
         {

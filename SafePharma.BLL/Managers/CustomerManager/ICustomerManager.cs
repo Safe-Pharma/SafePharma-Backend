@@ -9,6 +9,8 @@
         Task<CustomerStatsDto> GetStats(Guid pharmacyId);
         Task<CustomerCreateResult> CreateCustomer(CustomerCreateDto dto);
         Task<CustomerUpdateResult> UpdateCustomer(Guid id, CustomerUpdateDto dto);
+        //Task<CustomerDto?> GetMe(Guid id);
+
         Task<bool> DeleteCustomer(Guid id);
         Task<CustomerDto?> ToggleStatus(Guid pharmacyId, Guid id);
 
