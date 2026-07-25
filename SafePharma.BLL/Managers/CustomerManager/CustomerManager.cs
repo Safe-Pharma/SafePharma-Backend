@@ -34,6 +34,26 @@ namespace SafePharma.BLL
             var balance = await _unitOfWork.CustomerPharmacyBalanceRepository.GetByCustomerAndPharmacy(id, pharmacyId);
             return customer.ToDto(balance?.TotalPaid ?? 0m);
         }
+        //public async Task<CustomerDto?> GetMe()
+        //{
+        //    var id=
+        //    var customer = await _unitOfWork.CustomerRepository.GetById(id);
+        //    if (customer is null)
+        //    {
+        //        return null;
+        //    }
+
+            
+        //    return new CustomerDto
+        //    {
+        //        Name= customer.Name,
+        //        Address=customer.Address,
+        //        DateOfBirth=customer.DateOfBirth,
+        //        Phone=customer.Phone,
+        //        Email=customer.Email,
+        //        Notes=customer.Notes
+        //    };
+        //}
 
         public async Task<CustomerStatsDto> GetStats(Guid pharmacyId)
         {
