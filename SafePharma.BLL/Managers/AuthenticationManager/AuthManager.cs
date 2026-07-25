@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using SafePharma.BLL.DTOs;
 using SafePharma.Common;
 using SafePharma.DAL;
@@ -123,6 +122,7 @@ namespace SafePharma.BLL.Managers.AuthenticationManager
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email!),
+                new Claim("EntityType", "Staff"),
                 new Claim("FullName", user.FullName),
                 new Claim("PharmacyId", user.PharmacyId.ToString()),
                 new Claim("PharmacyName", user.Pharmacy?.Name ?? string.Empty)

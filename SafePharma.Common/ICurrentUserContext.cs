@@ -2,8 +2,18 @@
 {
     public interface ICurrentUserContext
     {
-        Guid UserId { get; }
+        Guid Id { get; }
+
+        string Name { get; }
+
+        string Phone { get; }
+
         Guid PharmacyId { get; }
+
+        bool IsCustomer { get; }
+
+        bool IsStaff { get; }
+
         IReadOnlyList<string> Roles { get; }
     }
 }

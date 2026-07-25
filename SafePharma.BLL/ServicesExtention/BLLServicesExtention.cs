@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SafePharma.BLL.Authentication;
 using SafePharma.BLL.Managers;
 using SafePharma.BLL.Managers.AuthenticationManager;
-using SafePharma.BLL.Managers.users;
-using SafePharma.BLL.Validators.PaymentValidator;
+ using SafePharma.BLL.Validators.PaymentValidator;
 using SafePharma.Common;
 using SafePharma.DAL;
 
@@ -47,7 +47,6 @@ namespace SafePharma.BLL
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
             services.AddScoped<IRoleService, RoleService>();
-
             services.AddScoped<IUserLanguageManager, UserLanguageManager>();
             services.AddScoped<ILocationManager, LocationManager>();
             services.AddScoped<IPaymentManager, PaymentManager>();
@@ -73,7 +72,7 @@ namespace SafePharma.BLL
             services.AddValidatorsFromAssemblyContaining<CreatePurchaseReceiptDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<CreatePurchaseReceiptItemDtoValidator>();
 
-            //services.AddHttpContextAccessor();
+            services.AddHttpContextAccessor();
             services.AddScoped<IBarcodeManager, BarcodeManager>();
             services.AddScoped<ISaleManager, SaleManager>();
 

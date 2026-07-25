@@ -113,7 +113,7 @@ namespace SafePharma.BLL
                 new Claim("Phone", customer.Phone),
                 new Claim(ClaimTypes.Role, "Customer"),
                 new Claim("Name", customer.Name),
-
+                new Claim("EntityType", "Customer"),
 
             };
 

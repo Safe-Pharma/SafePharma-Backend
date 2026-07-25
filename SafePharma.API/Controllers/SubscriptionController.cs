@@ -72,7 +72,7 @@ namespace SafePharma.API.Controllers
         [HttpPost("{id:guid}/cancel")]
         public async Task<IActionResult> Cancel(Guid id, [FromServices] ICurrentUserContext currentUser)
         {
-            var result = await _manager.CancelSubscription(id, currentUser.UserId);
+            var result = await _manager.CancelSubscription(id, currentUser.Id);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
