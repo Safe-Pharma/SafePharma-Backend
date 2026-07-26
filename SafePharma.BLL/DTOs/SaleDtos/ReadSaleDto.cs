@@ -12,7 +12,7 @@ namespace SafePharma.BLL
         public Guid ApplicationUserId { get; set; }
         public Guid? CustomerId { get; set; }
         public string CustomerName { get; set; } = string.Empty;
-        public SalePaymentMethod PaymentMethod { get; set; } 
+        public SalePaymentMethod PaymentMethod { get; set; }
         public decimal Tax { get; set; }
         public decimal Discount { get; set; }
         public decimal SubTotal { get; set; }
@@ -21,7 +21,7 @@ namespace SafePharma.BLL
         public decimal AmountPaidByCard { get; set; }
         public decimal AmountPaid { get; set; }
         public decimal Change { get; set; }
-        public SaleStatus Status { get; set; } 
+        public string Status { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; }
         public List<ReadSaleItemsDto> Items { get; set; } = new();
