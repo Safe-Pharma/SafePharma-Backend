@@ -59,5 +59,7 @@ namespace SafePharma.DAL
                              .ThenInclude(cr => cr.Customer)
                          .FirstOrDefaultAsync(c => c.Id == id);
         }
+
+       
     }
 }

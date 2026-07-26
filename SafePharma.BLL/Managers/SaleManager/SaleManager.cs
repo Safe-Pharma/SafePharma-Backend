@@ -223,6 +223,7 @@ namespace SafePharma.BLL
                 Id = sale.Id,
                 InvoiceNumber = sale.InvoiceNumber,
                 PharmacyId = sale.PharmacyId,
+                PharmacyName = sale.Pharmacy?.Name ?? string.Empty,
                 ApplicationUserId = sale.ApplicationUserId,
                 CustomerId = sale.CustomerId,
                 CustomerName = sale.Customer != null ? sale.Customer.Name : string.Empty,
@@ -502,6 +503,42 @@ namespace SafePharma.BLL
             };
 
             return GeneralResult<SaleStatsDto>.SuccessResult(stats);
+        }
+
+        public async Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetCustomerSales(
+      Guid customerId,
+      string? search = null,
+      Guid? pharmacyId = null,
+      SaleStatus? status = null,
+      DateTime? from = null,
+      DateTime? to = null,
+      int page = 1,
+      int pageSize = 10)
+        {
+            var sales = await _unitOfWork.SaleRepository.GetByCustomerIdAsync(
+                customerId,
+                search,
+                pharmacyId,
+                status,
+                from,
+                to,
+                page,
+                pageSize);
+
+            var result = sales.Select(MapSaleToDto);
+
+            return GeneralResult<IEnumerable<ReadSaleDto>>.SuccessResult(result);
+        }
+
+        public async Task<GeneralResult<ReadSaleDto>> GetCustomerSaleById(Guid saleId, Guid customerId)
+        {
+            var sale = await _unitOfWork.SaleRepository
+                .GetByIdWithItemsAndCustomerIdAsync(saleId, customerId);
+
+            if (sale == null)
+                return GeneralResult<ReadSaleDto>.NotFound("Sale not found.");
+
+            return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
         }
 
     }

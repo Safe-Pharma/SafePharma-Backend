@@ -7,6 +7,8 @@ namespace SafePharma.BLL
         public Guid Id { get; set; }
         public string InvoiceNumber { get; set; } = string.Empty;
         public Guid PharmacyId { get; set; }
+        public string PharmacyName { get; set; } = string.Empty;
+
         public Guid ApplicationUserId { get; set; }
         public Guid? CustomerId { get; set; }
         public string CustomerName { get; set; } = string.Empty;

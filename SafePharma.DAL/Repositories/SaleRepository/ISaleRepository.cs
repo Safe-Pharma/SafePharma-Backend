@@ -10,5 +10,19 @@
         Task<int> GetCompletedCount(Guid pharmacyId);
         Task<int> GetCancelledCount(Guid pharmacyId);
         Task<decimal> GetAverageBasket(Guid pharmacyId);
+
+        Task<IEnumerable<Sale>> GetByCustomerIdAsync(
+           Guid customerId,
+           string? search = null,
+           Guid? pharmacyId = null,
+           SaleStatus? status = null,
+           DateTime? from = null,
+           DateTime? to = null,
+           int page = 1,
+           int pageSize = 10);
+        Task<Sale?> GetByIdWithItemsAndCustomerIdAsync(Guid saleId,Guid customerId);
+
+
+
     }
 }
