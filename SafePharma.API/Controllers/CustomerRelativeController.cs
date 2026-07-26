@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
 
 namespace SafePharma.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class CustomerRelativeController : ControllerBase
     {
         private ICustomerRelativesManager _customerRelativesManager;
