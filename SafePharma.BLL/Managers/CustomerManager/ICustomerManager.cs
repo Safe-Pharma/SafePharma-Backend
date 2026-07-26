@@ -1,4 +1,6 @@
-﻿namespace SafePharma.BLL
+﻿using SafePharma.Common;
+
+namespace SafePharma.BLL
 {
     public interface ICustomerManager
     {
@@ -9,7 +11,20 @@
         Task<CustomerStatsDto> GetStats(Guid pharmacyId);
         Task<CustomerCreateResult> CreateCustomer(CustomerCreateDto dto);
         Task<CustomerUpdateResult> UpdateCustomer(Guid id, CustomerUpdateDto dto);
-        //Task<CustomerDto?> GetMe(Guid id);
+
+
+
+        //portal
+        Task<GeneralResult<CustomerDto?>> GetMe(Guid id);
+        Task<GeneralResult<CustomerUpdateResult>> UpdateCustomerPortal(
+               Guid id,
+               CustomerUpdatePortalDto dto);
+
+
+
+
+
+
 
         Task<bool> DeleteCustomer(Guid id);
         Task<CustomerDto?> ToggleStatus(Guid pharmacyId, Guid id);

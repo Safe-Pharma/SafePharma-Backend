@@ -1,14 +1,18 @@
-﻿using SafePharma.DAL;
+﻿using SafePharma.Common;
+using SafePharma.DAL;
 
 namespace SafePharma.BLL
 {
     public class CustomerManager : ICustomerManager
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserContext _currentUserContext;
 
-        public CustomerManager(IUnitOfWork unitOfWork)
+        public CustomerManager(IUnitOfWork unitOfWork , ICurrentUserContext currentUserContext)
+
         {
             _unitOfWork = unitOfWork;
+            _currentUserContext = currentUserContext;
         }
 
         public async Task<IEnumerable<CustomerDto>> GetAllCustomers(Guid pharmacyId, string? search = null)
@@ -34,26 +38,26 @@ namespace SafePharma.BLL
             var balance = await _unitOfWork.CustomerPharmacyBalanceRepository.GetByCustomerAndPharmacy(id, pharmacyId);
             return customer.ToDto(balance?.TotalPaid ?? 0m);
         }
-        //public async Task<CustomerDto?> GetMe()
-        //{
-        //    var id=
-        //    var customer = await _unitOfWork.CustomerRepository.GetById(id);
-        //    if (customer is null)
-        //    {
-        //        return null;
-        //    }
+        public async Task<GeneralResult<CustomerDto?>> GetMe(Guid id)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(id);
 
-            
-        //    return new CustomerDto
-        //    {
-        //        Name= customer.Name,
-        //        Address=customer.Address,
-        //        DateOfBirth=customer.DateOfBirth,
-        //        Phone=customer.Phone,
-        //        Email=customer.Email,
-        //        Notes=customer.Notes
-        //    };
-        //}
+            if (customer is null)
+                return GeneralResult<CustomerDto>.NotFound("Customer Not Found");
+
+            var dto = new CustomerDto
+            {
+                Id = customer.Id,
+                Name = customer.Name,
+                Address = customer.Address,
+                DateOfBirth = customer.DateOfBirth,
+                Phone = customer.Phone,
+                Email = customer.Email,
+                Notes = customer.Notes
+            };
+
+            return GeneralResult<CustomerDto?>.SuccessResult(dto);
+        }
 
         public async Task<CustomerStatsDto> GetStats(Guid pharmacyId)
         {
@@ -111,6 +115,26 @@ namespace SafePharma.BLL
 
             return new CustomerUpdateResult { Customer = entity.ToDto() };
         }
+
+        public async Task<GeneralResult<CustomerUpdateResult>> UpdateCustomerPortal(
+       Guid id,
+       CustomerUpdatePortalDto dto)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(id);
+
+            if (customer is null)
+            {
+                return GeneralResult<CustomerUpdateResult>.NotFound("This Customer Not Found");
+            }
+
+            dto.ApplyToFromPortal(customer);
+            customer.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.SaveAsync();
+
+            return GeneralResult<CustomerUpdateResult>.SuccessResult();
+        }
+
 
         public async Task<bool> DeleteCustomer(Guid id)
         {

@@ -8,5 +8,7 @@
         Task<Customer?> GetByPhone(string phone);
         Task<Customer?> GetByIdWithRealtives(Guid id);
 
+
+
     }
 }

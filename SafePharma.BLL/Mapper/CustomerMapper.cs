@@ -44,7 +44,14 @@ namespace SafePharma.BLL
             entity.Notes = dto.Notes;
             entity.Status = ParseStatus(dto.Status);
         }
-
+        public static void ApplyToFromPortal(this CustomerUpdatePortalDto dto, Customer entity)
+        {
+            entity.Name = dto.Name;
+            entity.Email = dto.Email;
+            entity.Address = dto.Address;
+            entity.DateOfBirth = dto.DateOfBirth;
+            entity.Notes = dto.Notes;
+        }
         private static CustomerStatus ParseStatus(string status)
         {
             return Enum.Parse<CustomerStatus>(status, ignoreCase: true);
