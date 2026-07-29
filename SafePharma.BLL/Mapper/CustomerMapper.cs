@@ -25,7 +25,9 @@ namespace SafePharma.BLL
             return new Customer
             {
                 Name = dto.Name,
-                Phone = dto.Phone,
+                Phone = string.IsNullOrWhiteSpace(dto.Phone)
+                                                            ? null
+                                                            : dto.Phone,
                 Email = dto.Email,
                 Address = dto.Address,
                 DateOfBirth = dto.DateOfBirth,

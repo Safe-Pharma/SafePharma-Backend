@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
 
@@ -6,6 +7,8 @@ namespace SafePharma.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class BatchController : ControllerBase
     {
         private  IBatchManager _batchManager;

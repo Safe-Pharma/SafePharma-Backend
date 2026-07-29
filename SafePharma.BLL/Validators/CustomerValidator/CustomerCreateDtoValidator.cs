@@ -10,9 +10,13 @@ namespace SafePharma.BLL
                 .NotEmpty().WithMessage("Customer name is required.")
                 .MaximumLength(255);
 
-            RuleFor(x => x.Phone)
-                .NotEmpty().WithMessage("Phone is required.")
-                .MaximumLength(50);
+            When(x => !x.HasParent, () =>
+            {
+                RuleFor(x => x.Phone)
+                    .NotEmpty().WithMessage("Phone is required.")
+                    .MaximumLength(50);
+            });
+
 
             RuleFor(x => x.Email)
                 .EmailAddress().WithMessage("Enter a valid email address.")

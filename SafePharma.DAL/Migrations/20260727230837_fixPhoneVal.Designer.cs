@@ -12,8 +12,8 @@ using SafePharma.DAL;
 namespace SafePharma.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260724201216_initialMigration")]
-    partial class initialMigration
+    [Migration("20260727230837_fixPhoneVal")]
+    partial class fixPhoneVal
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -476,7 +476,6 @@ namespace SafePharma.DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Status")
@@ -490,7 +489,8 @@ namespace SafePharma.DAL.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Phone")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Phone] IS NOT NULL");
 
                     b.ToTable("Customers");
                 });
@@ -649,6 +649,9 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("HasAccessToRelative")
+                        .HasColumnType("bit");
 
                     b.Property<Guid>("RelativeId")
                         .HasColumnType("uniqueidentifier");
