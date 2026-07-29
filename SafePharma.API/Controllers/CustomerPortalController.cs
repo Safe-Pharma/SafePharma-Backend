@@ -88,7 +88,7 @@ public class CustomerPortalController : ControllerBase
 
         return Ok(result);
     }
-    [HttpGet("eiteDependents/{childId:guid}")]
+    [HttpPut("eiteDependents/{childId:guid}")]
     public async Task<IActionResult> EditChildInfo(CustomerUpdatePortalDto dto, Guid childId)
     {
         if (!await _customerRelativesManager.CanAccessAsync(_currentUser.Id, childId))

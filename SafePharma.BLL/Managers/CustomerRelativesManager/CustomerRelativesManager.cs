@@ -27,16 +27,18 @@ namespace SafePharma.BLL
             var custRels = CustomerRels
                         .Select(a => new CustomerRelativeReadDto
                         {
+                            Id=a.Id,
                             RelativeId = a.RelativeId,
                             RelativeName = a.Relative.Name,
-                            RelativePhone = a.Relative.Phone,
+                            RelativePhone = a.Relative.Phone??"",
                         })
                         .Concat(
                             CustomerRelsTo.Select(a => new CustomerRelativeReadDto
                             {
+                                Id = a.Id,
                                 RelativeId = a.CustomerId,
                                 RelativeName = a.Customer.Name,
-                                RelativePhone = a.Customer.Phone,
+                                RelativePhone = a.Customer.Phone??"",
                             })
                         );
 
