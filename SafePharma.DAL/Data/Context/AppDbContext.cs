@@ -160,7 +160,9 @@ namespace SafePharma.DAL
                     .HasMaxLength(20);
 
                 // Global entity: phone is unique across the whole platform, not per pharmacy.
-                entity.HasIndex(c => c.Phone).IsUnique();
+                entity.HasIndex(c => c.Phone)
+                      .IsUnique()
+                      .HasFilter("[Phone] IS NOT NULL");
             });
 
             modelBuilder.Entity<CustomerPharmacyBalance>(entity =>

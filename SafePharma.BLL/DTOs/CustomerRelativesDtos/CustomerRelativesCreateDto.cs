@@ -13,5 +13,7 @@ namespace SafePharma.BLL
 
         [ForeignKey("Relative")]
         public Guid RelativeId { get; set; }
-     }
+        public bool HasAccessToRelative { get; set; } = false;
+
+    }
 }

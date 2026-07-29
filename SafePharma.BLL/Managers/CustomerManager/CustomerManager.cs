@@ -79,10 +79,13 @@ namespace SafePharma.BLL
 
         public async Task<CustomerCreateResult> CreateCustomer(CustomerCreateDto dto)
         {
-            if (await _unitOfWork.CustomerRepository.PhoneExists(dto.Phone))
+            if (await _unitOfWork.CustomerRepository.PhoneExists(dto.Phone!))
             {
-                return new CustomerCreateResult { DuplicatePhone = true };
+                if(dto.HasParent == false){
+                    return new CustomerCreateResult { DuplicatePhone = true };
+                }
             }
+
 
             var entity = dto.ToEntity();
             entity.Id = Guid.NewGuid();

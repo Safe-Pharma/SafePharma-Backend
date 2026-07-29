@@ -34,11 +34,36 @@ namespace SafePharma.BLL
                         .Concat(
                             CustomerRelsTo.Select(a => new CustomerRelativeReadDto
                             {
-                                RelativeId = a.CustomerId,     
+                                RelativeId = a.CustomerId,
                                 RelativeName = a.Customer.Name,
                                 RelativePhone = a.Customer.Phone,
                             })
                         );
+
+
+            return GeneralResult<IEnumerable<CustomerRelativeReadDto>>.SuccessResult(custRels);
+        }
+
+        public async Task<GeneralResult<IEnumerable<CustomerRelativeReadDto>>> GetChilds(Guid id)
+        {
+
+            var customer = await _unitOfWork.CustomerRepository.GetByIdWithChilds(id);
+            if (customer is null)
+            {
+                return GeneralResult<IEnumerable<CustomerRelativeReadDto>>.NotFound();
+            }
+
+            var CustomerRels = customer!.Relatives;
+
+
+            var custRels = CustomerRels
+                        .Select(a => new CustomerRelativeReadDto
+                        {
+                            RelativeId = a.RelativeId,
+                            RelativeName = a.Relative.Name,
+                            RelativePhone = a.Relative.Phone,
+                        })
+                       ;
 
 
             return GeneralResult<IEnumerable<CustomerRelativeReadDto>>.SuccessResult(custRels);
@@ -63,8 +88,8 @@ namespace SafePharma.BLL
                 CustomerId = dto.CustomerId,
                 RelativeId = dto.RelativeId,
                 Customer = customer!,
-                Relative = relative!
-
+                Relative = relative!,
+                HasAccessToRelative = dto.HasAccessToRelative
             };
 
             _unitOfWork._customerRelativesRepository.Add(custRel);
@@ -85,6 +110,27 @@ namespace SafePharma.BLL
             await _unitOfWork.SaveAsync();
 
             return GeneralResult.SuccessResult();
+        }
+
+        public async Task<bool> CanAccessAsync(Guid requesterId, Guid targetCustomerId)
+        {
+             if (requesterId == targetCustomerId)
+            {
+                return true;
+            }
+
+             if (requesterId == Guid.Empty || targetCustomerId == Guid.Empty)
+            {
+                
+                return false;
+            }
+
+             var hasAccess = await _unitOfWork._customerRelativesRepository
+                .HasPortalAccessAsync(requesterId, targetCustomerId);
+
+            
+
+            return hasAccess;
         }
 
     }

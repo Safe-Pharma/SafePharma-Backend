@@ -59,7 +59,15 @@ namespace SafePharma.DAL
                              .ThenInclude(cr => cr.Customer)
                          .FirstOrDefaultAsync(c => c.Id == id);
         }
+        public async Task<Customer?> GetByIdWithChilds(Guid id)
+        {
+            return await _db.Set<Customer>()
+                         .Include(c => c.Relatives
+                        .Where(r => r.HasAccessToRelative==true))
+                        .ThenInclude(r => r.Relative)
 
-       
+                         .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
     }
 }

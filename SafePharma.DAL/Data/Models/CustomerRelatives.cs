@@ -1,12 +1,8 @@
-﻿using SafePharma.Common.Enums;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SafePharma.DAL
 {
-    public class CustomerRelative:IAuditableEntity
+    public class CustomerRelative : IAuditableEntity
     {
         [key]
         public Guid Id { get; set; }
@@ -18,6 +14,7 @@ namespace SafePharma.DAL
         [ForeignKey("Relative")]
         public Guid RelativeId { get; set; }
         public Customer Relative { get; set; }
+        public bool HasAccessToRelative { get; set; } = false;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 

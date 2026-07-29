@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
 using SafePharma.BLL.DTOs.Audit;
@@ -7,6 +8,8 @@ namespace SafePharma.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class AuditController : ControllerBase
     {
         private IAuditManager _auditManager;

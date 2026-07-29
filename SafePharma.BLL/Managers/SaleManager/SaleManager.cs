@@ -44,7 +44,7 @@ namespace SafePharma.BLL
                 PharmacyId = sale.PharmacyId,
                 InvoiceNumber = sale.InvoiceNumber,
                 ApplicationUserId = sale.ApplicationUserId,
-                Status = sale.Status,
+                Status = sale.Status.ToString(),
                 PaymentMethod = sale.PaymentMethod,
                 Tax = sale.Tax,
                 Discount = sale.Discount,
@@ -236,7 +236,7 @@ namespace SafePharma.BLL
                 AmountPaidByCash = sale.AmountPaidByCash,
                 AmountPaid = sale.AmountPaid,
                 Change = sale.AmountPaid - sale.GrandTotal,
-                Status = sale.Status,
+                Status = sale.Status.ToString(),
                 CreatedAt = sale.CreatedAt,
                 Items = sale.SaleItems.Select(item => new ReadSaleItemsDto
                 {
@@ -505,7 +505,7 @@ namespace SafePharma.BLL
             return GeneralResult<SaleStatsDto>.SuccessResult(stats);
         }
 
-        public async Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetCustomerSales(
+      public async Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetCustomerSales(
       Guid customerId,
       string? search = null,
       Guid? pharmacyId = null,
