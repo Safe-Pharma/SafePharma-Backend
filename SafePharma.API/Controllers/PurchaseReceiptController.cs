@@ -27,7 +27,14 @@ namespace SafePharma.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _purchaseReceiptManager.GetAllPurchaseReceipts();
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _purchaseReceiptManager.GetAllPurchaseReceipts(pharmacyId);
 
             return Ok(result);
         }
@@ -53,6 +60,13 @@ namespace SafePharma.API.Controllers
                 return BadRequest(GeneralResult.FailResult(errors));
             }
 
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
             if (userIdClaim == null)
@@ -62,7 +76,7 @@ namespace SafePharma.API.Controllers
 
             var userId = Guid.Parse(userIdClaim.Value);
 
-            var result = await _purchaseReceiptManager.CreatePurchaseReceipt(dto,userId,purchaseOrderId);
+            var result = await _purchaseReceiptManager.CreatePurchaseReceipt(dto, userId, purchaseOrderId, pharmacyId);
 
             if (!result.Success)
             {
@@ -73,9 +87,16 @@ namespace SafePharma.API.Controllers
         }
 
         [HttpPut("item/{id:guid}")]
-        public async Task<IActionResult> UpdateReceiptItem(Guid id,[FromBody] UpdatePurchaseReceiptItemDto dto)
+        public async Task<IActionResult> UpdateReceiptItem(Guid id, [FromBody] UpdatePurchaseReceiptItemDto dto)
         {
-            var result = await _purchaseReceiptManager.UpdateReceiptItem(id, dto);
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _purchaseReceiptManager.UpdateReceiptItem(id, dto, pharmacyId);
 
             if (!result.Success)
                 return NotFound(result);

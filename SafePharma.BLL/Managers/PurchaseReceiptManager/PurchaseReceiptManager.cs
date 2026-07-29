@@ -18,13 +18,12 @@ namespace SafePharma.BLL
             _purchaseReceiptItemRepository = purchaseReceiptItemRepository;
         }
 
-        public async Task<GeneralResult<IEnumerable<ReadPurchaseReceiptDto>>> GetAllPurchaseReceipts()
+        public async Task<GeneralResult<IEnumerable<ReadPurchaseReceiptDto>>> GetAllPurchaseReceipts(Guid pharmacyId)
         {
-            var receipts = await _purchaseReceiptRepository.GetAllWithItems();
+            var receipts = await _purchaseReceiptRepository.GetAllForPharmacy(pharmacyId);
 
             var receiptDtos = receipts.Select(r => new ReadPurchaseReceiptDto
             {
-
                 PurchaseOrderId = r.PurchaseOrderId,
                 InvoiceNumber = r.InvoiceNumber,
                 InvoiceDate = r.InvoiceDate,
@@ -49,11 +48,17 @@ namespace SafePharma.BLL
             return GeneralResult<IEnumerable<ReadPurchaseReceiptDto>>
                 .SuccessResult(receiptDtos);
         }
-        public async Task<GeneralResult<ReadPurchaseReceiptDto?>> CreatePurchaseReceipt(CreatePurchaseReceiptDto createDto, Guid userId, Guid purchaseOrderId)
+
+        public async Task<GeneralResult<ReadPurchaseReceiptDto?>> CreatePurchaseReceipt(CreatePurchaseReceiptDto createDto, Guid userId, Guid purchaseOrderId, Guid pharmacyId)
         {
             var purchaseOrder = await _purchaseOrderRepository.GetByIdWithDetailsAsync(purchaseOrderId);
 
             if (purchaseOrder == null)
+            {
+                return GeneralResult<ReadPurchaseReceiptDto?>.NotFound("Purchase order not found.");
+            }
+
+            if (purchaseOrder.PharmacyId != pharmacyId)
             {
                 return GeneralResult<ReadPurchaseReceiptDto?>.NotFound("Purchase order not found.");
             }
@@ -119,8 +124,8 @@ namespace SafePharma.BLL
                 unitOfWork._batchRepository.Add(new Batch
                 {
                     Id = Guid.NewGuid(),
-                    PharmacyId=item.PharmacyMedicine.PharmacyId,
-                    Pharmacy= item.PharmacyMedicine.Pharmacy,
+                    PharmacyId = item.PharmacyMedicine.PharmacyId,
+                    Pharmacy = item.PharmacyMedicine.Pharmacy,
                     MedicineId = item.PharmacyMedicineId,
                     PurchaseReceiptItemId = item.Id,
                     BatchNumber = item.BatchNumber,
@@ -151,9 +156,9 @@ namespace SafePharma.BLL
             return GeneralResult<ReadPurchaseReceiptDto?>.SuccessResult(dtoResult);
         }
 
-        public async Task<GeneralResult> UpdateReceiptItem(Guid id, UpdatePurchaseReceiptItemDto dto)
+        public async Task<GeneralResult> UpdateReceiptItem(Guid id, UpdatePurchaseReceiptItemDto dto, Guid pharmacyId)
         {
-            var item = await _purchaseReceiptItemRepository.GetById(id);
+            var item = await _purchaseReceiptItemRepository.GetByIdForPharmacy(id, pharmacyId);
 
             if (item == null)
                 return GeneralResult.FailResult("Receipt Item not found.");

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
 using SafePharma.Common;
@@ -6,6 +7,7 @@ using System.Security.Claims;
 
 namespace SafePharma.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PharmacySettingsController : ControllerBase
