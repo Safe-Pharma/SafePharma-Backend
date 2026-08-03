@@ -25,6 +25,8 @@ namespace SafePharma.API.Controllers
 
         }
         [HttpDelete("{id:Guid}")]
+        [Authorize(Policy = AuthPolicies.AdminOrOwner)]
+
         public async Task<ActionResult> DeleteBatch([FromRoute]Guid id)
         {
             var result = await _batchManager.DeleteBatch(id);
@@ -35,10 +37,10 @@ namespace SafePharma.API.Controllers
             return Ok(result);
         }
 
-        [HttpPut("{id:Guid}")]
-        public async Task<ActionResult> UpdateBatchQuantity([FromRoute] Guid id, [FromQuery] int newStock)
+        [HttpPut]
+        public async Task<ActionResult> UpdateBatchQuantity([FromBody] BatchQtyDto newStock)
         {
-            var result = await _batchManager.UpdateBatchQuantitiy(id,newStock);
+            var result = await _batchManager.UpdateBatchQuantitiy(newStock);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -46,12 +48,12 @@ namespace SafePharma.API.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<ActionResult> CreateBatch([FromBody] BatchCreateDto createDto)
-        {
-            var res = await _batchManager.CreateBatch(createDto);
-            return Ok(res);
+        //[HttpPost]
+        //public async Task<ActionResult> CreateBatch([FromBody] BatchCreateDto createDto)
+        //{
+        //    var res = await _batchManager.CreateBatch(createDto);
+        //    return Ok(res);
 
-        }
+        //}
     }
 }

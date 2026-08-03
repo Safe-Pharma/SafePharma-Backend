@@ -6,6 +6,8 @@ namespace SafePharma.BLL
 {
      public record CustomerRelativeReadDto
     {
+        public Guid Id { get; init; }
+
         public Guid RelativeId { get; init; }
         public string RelativeName { get; init; }
         public string RelativePhone { get; init; }
