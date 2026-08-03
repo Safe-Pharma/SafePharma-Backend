@@ -1,4 +1,6 @@
-﻿using SafePharma.Common;
+﻿using FluentValidation;
+using SafePharma.BLL.DTOs;
+using SafePharma.Common;
 using SafePharma.DAL;
 
 namespace SafePharma.BLL
@@ -7,11 +9,13 @@ namespace SafePharma.BLL
     {
         public IUnitOfWork _unitOfWork;
         public IAuditManager _auditManager;
+        private readonly IValidator<BatchQtyDto> _updateBatchQtyValidator;
 
-        public BatchManager(IUnitOfWork unitOfWork, IAuditManager auditManager = null)
+        public BatchManager(IUnitOfWork unitOfWork, IAuditManager auditManager , IValidator<BatchQtyDto> updateBatchQtyValidator)
         {
             _unitOfWork = unitOfWork;
             _auditManager = auditManager;
+            _updateBatchQtyValidator = updateBatchQtyValidator;
         }
 
         public async Task<GeneralResult<IEnumerable<BatchReadDto>>> GetAllBatches()
@@ -107,13 +111,34 @@ namespace SafePharma.BLL
 
             return GeneralResult.SuccessResult();
         }
-        public async Task<GeneralResult> UpdateBatchQuantitiy(Guid id, int newStock)
+        public async Task<GeneralResult> UpdateBatchQuantitiy(BatchQtyDto dto)
         {
 
-            var batch = await _unitOfWork._batchRepository.GetById(id);
+            var batch = await _unitOfWork._batchRepository.GetById(dto.BatchId);
             if (batch is null)
             {
                 return GeneralResult.NotFound("Batch not found");
+            }
+            if (dto is null)
+            {
+                return GeneralResult.NotFound("Batch quantity is empty");
+            }
+
+            var validationResult = await _updateBatchQtyValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => new Error
+                        {
+                            ErrorCode = e.ErrorCode,
+                            ErrorMessage = e.ErrorMessage
+                        }).ToList()
+                    );
+
+                return GeneralResult<TokenDto>.FailResult(errors, "Validation failed");
             }
 
             var tempObj = new Batch
@@ -131,7 +156,7 @@ namespace SafePharma.BLL
                 UpdatedAt = batch.UpdatedAt
             };
 
-            batch.QuantityRemaining = newStock;
+            batch.QuantityRemaining = dto.NewStock;
             await _unitOfWork.SaveAsync();
             await _auditManager.CreateAudit(batch, tempObj, ActionsEnum.Update);
 
