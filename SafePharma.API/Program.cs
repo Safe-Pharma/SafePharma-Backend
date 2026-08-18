@@ -1,7 +1,9 @@
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using SafePharma.BLL;
+using SafePharma.BLL.BackgroundJobs;
 using SafePharma.Common;
 using SafePharma.DAL;
 using Scalar.AspNetCore;
@@ -97,6 +99,16 @@ namespace SafePharma.API
                     .AllowAnyHeader();
                 });
             });
+            //Hangfire configuration
+            builder.Services.AddHangfire(config =>
+            {
+                config.UseSqlServerStorage(
+                    builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
+
+            builder.Services.AddHangfireServer();
+
+
             builder.Services.AddHttpContextAccessor();
             var app = builder.Build();
 
@@ -122,7 +134,17 @@ namespace SafePharma.API
             app.UseCors("AllowAll");
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseHangfireDashboard("/hangfire");
+            RecurringJob.AddOrUpdate<IExpiryNotificationJob>(
+                "expiry-notification-job",
+                job => job.Execute(),
+                Cron.Daily,
+                TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time"));
 
+            //RecurringJob.AddOrUpdate<IExpiryNotificationJob>(
+            //    "expiry-notification-job",
+            //    job => job.Execute(),
+            //    Cron.Minutely);
 
             app.MapControllers();
             app.Run();
