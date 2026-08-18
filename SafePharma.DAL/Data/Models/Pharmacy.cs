@@ -16,6 +16,7 @@
         public string PreferredLanguage { get; set; }
         public string TimeZone { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool isActive { get; set; }
 
         public Guid SubscriptionId { get; set; }
         public Subscription Subscription { get; set; }
