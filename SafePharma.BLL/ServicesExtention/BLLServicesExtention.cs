@@ -6,7 +6,8 @@ using SafePharma.BLL.Authentication;
 using SafePharma.BLL.BackgroundJobs;
 using SafePharma.BLL.Managers;
 using SafePharma.BLL.Managers.AuthenticationManager;
- using SafePharma.BLL.Validators.PaymentValidator;
+using SafePharma.BLL.Managers.PharmacyManager;
+using SafePharma.BLL.Validators.PaymentValidator;
 using SafePharma.Common;
 using SafePharma.DAL;
 
@@ -55,6 +56,8 @@ namespace SafePharma.BLL
             services.AddScoped<IPaymentMethodManager, PaymentMethodManager>();
             services.AddScoped<IPurchaseReceiptManager, PurchaseReceiptManager>();
             services.AddScoped<IBatchManager, BatchManager>();
+            services.AddScoped<IPharmacyManager, PharmacyManager>();
+
 
             services.AddValidatorsFromAssemblyContaining<SubscriptionPlanUpsertDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<PaymentMethodUpsertDtoValidator>();
