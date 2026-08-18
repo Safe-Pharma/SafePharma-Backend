@@ -34,5 +34,17 @@ namespace SafePharma.BLL.Managers.PharmacyManager
             }).ToList();
             return GeneralResult<IEnumerable<PharmacyReadDto>>.SuccessResult(res!);
         }
+
+        public async Task<GeneralResult> UpdatePharmacyStatus(Guid id)
+        {
+            var pharmacy = await _unitOfWork.PharmacyRepository.GetById(id);
+            if (pharmacy == null)
+            {
+                return GeneralResult.NotFound("This pharmacy not foung");
+            }
+            pharmacy.isActive = !pharmacy.isActive;
+            _unitOfWork.SaveAsync();
+            return GeneralResult.SuccessResult();
+        }
     }
 }
