@@ -60,10 +60,13 @@ namespace SafePharma.DAL
         
         public async Task<IEnumerable<Batch>> GetBatchesForExpiryNotifications()
         {
+            var today = DateTime.UtcNow.Date;
             return await _db.Set<Batch>()
                 .AsNoTracking()
                 .Include(b => b.Medicine)
-                .Where(b => b.QuantityRemaining > 0)
+                .Where(b =>
+                    b.QuantityRemaining > 0 &&
+                    b.ExpiryDate <= today.AddDays(90))
                 .ToListAsync();
         }
 

@@ -3,7 +3,7 @@ using SafePharma.Common;
 
 namespace SafePharma.BLL
 {
-    internal interface INotificationManager
+    public interface INotificationManager
     {
         Task<GeneralResult<IEnumerable<NotificationListDto>>> GetAll();
         Task<GeneralResult<NotificationCountDto>> GetUnreadCount();
