@@ -359,7 +359,7 @@ namespace SafePharma.BLL
                 foreach (var item in sale.SaleItems)
                 {
                     var medicineId = item.PharmacyMedicine.MedicineId;
-                    var  customerId = item.CustomerId.HasValue ? item.CustomerId.Value : sale.CustomerId.Value;
+                    var customerId = item.CustomerId.HasValue ? item.CustomerId.Value : sale.CustomerId.Value;
                     var history = await _unitOfWork.CustomerMedicineHistoryRepository
                         .GetByCustomerAndMedicine(customerId, medicineId);
 
@@ -380,7 +380,7 @@ namespace SafePharma.BLL
                             CustomerId = customerId,
                             MedicineId = medicineId,
                             TradeName = medicineId is null ? item.PharmacyMedicine.TradeNameEn : null,
-                            ScientificName = item.PharmacyMedicine.ScientificName, 
+                            ScientificName = item.PharmacyMedicine.ScientificName,
                             PurchaseDate = DateTime.UtcNow,
                             Quantity = item.Quantity,
                             IsActive = true,
@@ -505,15 +505,52 @@ namespace SafePharma.BLL
             return GeneralResult<SaleStatsDto>.SuccessResult(stats);
         }
 
-      public async Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetCustomerSales(
-      Guid customerId,
-      string? search = null,
-      Guid? pharmacyId = null,
-      SaleStatus? status = null,
-      DateTime? from = null,
-      DateTime? to = null,
-      int page = 1,
-      int pageSize = 10)
+        public async Task<GeneralResult<IEnumerable<SalesTrendPointDto>>> GetTrend(Guid pharmacyId, int days = 7)
+        {
+            if (days < 1) days = 7;
+            if (days > 90) days = 90;
+
+            var rows = await _unitOfWork.SaleRepository.GetDailyTotals(pharmacyId, days);
+
+            var points = rows.Select(r => new SalesTrendPointDto
+            {
+                Date = r.Date,
+                DayLabel = r.Date.ToString("ddd"),
+                Total = r.Total,
+                OrderCount = r.OrderCount
+            });
+
+            return GeneralResult<IEnumerable<SalesTrendPointDto>>.SuccessResult(points);
+        }
+
+        public async Task<GeneralResult<IEnumerable<CategoryMixDto>>> GetCategoryMix(Guid pharmacyId)
+        {
+            var rows = (await _unitOfWork.SaleRepository.GetCategoryRevenue(pharmacyId)).ToList();
+            var totalRevenue = rows.Sum(r => r.Revenue);
+
+            var result = rows
+                .Select(r => new CategoryMixDto
+                {
+                    Category = r.Category,
+                    Revenue = r.Revenue,
+                    Percentage = totalRevenue > 0 ? Math.Round(r.Revenue / totalRevenue * 100, 1) : 0
+                })
+                .OrderByDescending(r => r.Revenue)
+                .ToList();
+
+            return GeneralResult<IEnumerable<CategoryMixDto>>.SuccessResult(result);
+        }
+
+
+        public async Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetCustomerSales(
+        Guid customerId,
+        string? search = null,
+        Guid? pharmacyId = null,
+        SaleStatus? status = null,
+        DateTime? from = null,
+        DateTime? to = null,
+        int page = 1,
+        int pageSize = 10)
         {
             var sales = await _unitOfWork.SaleRepository.GetByCustomerIdAsync(
                 customerId,

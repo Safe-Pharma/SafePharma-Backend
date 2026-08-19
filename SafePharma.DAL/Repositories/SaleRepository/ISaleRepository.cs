@@ -11,6 +11,11 @@
         Task<int> GetCancelledCount(Guid pharmacyId);
         Task<decimal> GetAverageBasket(Guid pharmacyId);
 
+        // dashboard
+        Task<IEnumerable<(DateTime Date, decimal Total, int OrderCount)>> GetDailyTotals(Guid pharmacyId, int days);
+        Task<IEnumerable<(string Category, decimal Revenue)>> GetCategoryRevenue(Guid pharmacyId);
+
+
         Task<IEnumerable<Sale>> GetByCustomerIdAsync(
            Guid customerId,
            string? search = null,

@@ -166,5 +166,49 @@ namespace SafePharma.DAL
                     s.Id == saleId &&
                     s.CustomerId == customerId);
         }
+
+        // ---- dashboard ----
+
+        public async Task<IEnumerable<(DateTime Date, decimal Total, int OrderCount)>> GetDailyTotals(Guid pharmacyId, int days)
+        {
+            var startDate = DateTime.UtcNow.Date.AddDays(-(days - 1));
+
+            var rows = await _db.Sales
+                .AsNoTracking()
+                .Where(s => s.PharmacyId == pharmacyId
+                    && s.Status == SaleStatus.Completed
+                    && s.CreatedAt.Date >= startDate)
+                .GroupBy(s => s.CreatedAt.Date)
+                .Select(g => new { Date = g.Key, Total = g.Sum(s => s.GrandTotal), OrderCount = g.Count() })
+                .ToListAsync();
+
+            var byDate = rows.ToDictionary(r => r.Date);
+
+            // fill in zero-value days so the trend line/chart doesn't have gaps
+            var result = new List<(DateTime Date, decimal Total, int OrderCount)>();
+            for (var d = startDate; d <= DateTime.UtcNow.Date; d = d.AddDays(1))
+            {
+                if (byDate.TryGetValue(d, out var row))
+                    result.Add((d, row.Total, row.OrderCount));
+                else
+                    result.Add((d, 0m, 0));
+            }
+
+            return result;
+        }
+
+        public async Task<IEnumerable<(string Category, decimal Revenue)>> GetCategoryRevenue(Guid pharmacyId)
+        {
+            var rows = await _db.SaleItems
+                .AsNoTracking()
+                .Where(si => si.Sale.PharmacyId == pharmacyId && si.Sale.Status == SaleStatus.Completed)
+                .GroupBy(si => si.PharmacyMedicine.Category)
+                .Select(g => new { Category = g.Key, Revenue = g.Sum(si => si.LineTotal) })
+                .ToListAsync();
+
+            return rows.Select(r => (
+                string.IsNullOrWhiteSpace(r.Category) ? "Uncategorized" : r.Category,
+                r.Revenue));
+        }
     }
-    }
+}
