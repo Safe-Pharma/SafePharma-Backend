@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SafePharma.BLL;
 using SafePharma.Common;
@@ -14,19 +15,22 @@ namespace SafePharma.BLL
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService _emailService;
         private readonly FrontendSettings _frontendSettings;
+        private readonly ILogger<PaymentManager> _logger;
 
         public PaymentManager(
             IUnitOfWork unitOfWork,
             ICloudinaryService cloudinaryService,
             UserManager<ApplicationUser> userManager,
             IEmailService emailService,
-            IOptions<FrontendSettings> frontendOptions)
+            IOptions<FrontendSettings> frontendOptions,
+            ILogger<PaymentManager> logger)
         {
             _unitOfWork = unitOfWork;
             _cloudinaryService = cloudinaryService;
             _userManager = userManager;
             _emailService = emailService;
             _frontendSettings = frontendOptions.Value;
+            _logger = logger;
         }
 
         public async Task<GeneralResult<PaymentInstructionsDto>> GetPaymentInstructions(Guid subscriptionId)
@@ -219,10 +223,24 @@ namespace SafePharma.BLL
                 <p><a href="{loginLink}">{loginLink}</a></p>
                 """;
 
-            await _emailService.SendEmailAsync(
-                primaryContact.Email,
-                "Your SafePharma account is active",
-                approvedBody);
+            try
+            {
+                await _emailService.SendEmailAsync(
+                    primaryContact.Email,
+                    "Your SafePharma account is active",
+                    approvedBody);
+            }
+            catch (Exception ex)
+            {
+                // The approval itself already succeeded and was saved — a failed
+                // notification email shouldn't roll that back or fail the request.
+                // The pharmacy is active either way; this just needs a resend later.
+                _logger.LogError(
+                    ex,
+                    "Failed to send approval email to {Email} for subscription {SubscriptionId}",
+                    primaryContact.Email,
+                    subscription.Id);
+            }
 
             return GeneralResult.SuccessResult("Payment approved. Subscription is now active.");
         }
@@ -258,10 +276,23 @@ namespace SafePharma.BLL
                     <p><a href="{resubmitLink}">{resubmitLink}</a></p>
                     """;
 
-                await _emailService.SendEmailAsync(
-                    primaryContact.Email,
-                    "Action needed: your SafePharma payment couldn't be verified",
-                    rejectedBody);
+                try
+                {
+                    await _emailService.SendEmailAsync(
+                        primaryContact.Email,
+                        "Action needed: your SafePharma payment couldn't be verified",
+                        rejectedBody);
+                }
+                catch (Exception ex)
+                {
+                    // Same reasoning as ApprovePayment — the rejection was already
+                    // saved, so a notification failure shouldn't fail the request.
+                    _logger.LogError(
+                        ex,
+                        "Failed to send rejection email to {Email} for subscription {SubscriptionId}",
+                        primaryContact.Email,
+                        subscription.Id);
+                }
             }
 
             return GeneralResult.SuccessResult("Payment rejected. The user can submit a new payment proof.");
