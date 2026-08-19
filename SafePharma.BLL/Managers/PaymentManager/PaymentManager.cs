@@ -169,6 +169,7 @@ namespace SafePharma.BLL
             subscription.Status = SubscriptionStatus.Active;
             subscription.ApprovedAt = DateTime.UtcNow;
             subscription.ApprovedBy = reviewedByUserId;
+            subscription.Pharmacy.IsActive = true;
 
             var existingUser = await _userManager.FindByEmailAsync(primaryContact.Email);
             if (existingUser == null)

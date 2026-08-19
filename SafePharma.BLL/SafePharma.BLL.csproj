@@ -16,7 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SafePharma.DAL\SafePharma.DAL.csproj" />
+	  <ProjectReference Include="..\SafePharma.DAL\SafePharma.DAL.csproj" />
+	    <ProjectReference Include="..\SafePharma.DAL\SafePharma.DAL.csproj" />
+  <ProjectReference Include="..\SafePharma.AI\SafePharma.AI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

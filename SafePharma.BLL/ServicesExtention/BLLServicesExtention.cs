@@ -85,6 +85,7 @@ namespace SafePharma.BLL
 
             services.AddScoped<IOrganImpairmentLevelManager, OrganImpairmentLevelManager>();
             services.AddScoped<ICustomerRelativesManager, CustomerRelativesManager>();
+            services.AddScoped<IPatientSafetyManager, PatientSafetyManager>();
 
             // Otp
             services.AddHttpClient<IOtpDeliveryChannel, WhatsAppBaileysChannel>(client =>

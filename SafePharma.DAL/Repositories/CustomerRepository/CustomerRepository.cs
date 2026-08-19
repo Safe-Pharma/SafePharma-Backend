@@ -68,6 +68,21 @@ namespace SafePharma.DAL
 
                          .FirstOrDefaultAsync(c => c.Id == id);
         }
+        public async Task<Customer?> GetByIdWithSafetyProfile(Guid id)
+        {
+            return await _db.Set<Customer>()
+                .Include(c => c.CustomerAllergies)
+                    .ThenInclude(ca => ca.Allergy)
+                .Include(c => c.CustomerChronicConditions)
+                    .ThenInclude(cc => cc.ChronicCondition)
+                .Include(c => c.CustomerOrganFunctions)
+                    .ThenInclude(cof => cof.Organ)
+                .Include(c => c.CustomerOrganFunctions)
+                    .ThenInclude(cof => cof.OrganImpairmentLevel)
+                .Include(c => c.MedicineHistory.Where(h => h.IsActive))
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
 
     }
 }

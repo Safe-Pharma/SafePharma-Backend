@@ -29,6 +29,13 @@ namespace SafePharma.API.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
+        [HttpPost("proof/receipt")]
+        public async Task<IActionResult> UploadReceipt(Guid subscriptionId, IFormFile receipt)
+        {
+            var result = await _manager.UploadReceipt(subscriptionId, receipt);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
         [HttpPost("proof")]
         public async Task<IActionResult> SubmitProof(Guid subscriptionId, [FromForm] SubmitPaymentProofDto dto)
         {
@@ -101,5 +108,3 @@ namespace SafePharma.API.Controllers
         }
     }
 }
-
-

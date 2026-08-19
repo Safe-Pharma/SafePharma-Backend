@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using SafePharma.AI;
+using SafePharma.AI.Rag;
 using SafePharma.BLL;
 using SafePharma.Common;
 using SafePharma.DAL;
@@ -28,6 +30,7 @@ namespace SafePharma.API
             builder.Services.Configure<SafePharma.Common.JwtSettings>(builder.Configuration.GetSection("JWT"));
             builder.Services.AddDALServices(builder.Configuration);
             builder.Services.AddBLLServices(builder.Configuration);
+            builder.Services.AddAIServices(builder.Configuration);
 
             builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
                      .AddEntityFrameworkStores<AppDbContext>()
