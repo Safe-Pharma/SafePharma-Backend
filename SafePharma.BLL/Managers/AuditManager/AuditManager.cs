@@ -68,6 +68,7 @@ namespace SafePharma.BLL
                 Date= DateTime.Now,
             };
 
+ 
             var user = await _unitOfWork._auditRepository.GetUserByIdAsync(auditDto.UserId);
             if (user == null)
             {
