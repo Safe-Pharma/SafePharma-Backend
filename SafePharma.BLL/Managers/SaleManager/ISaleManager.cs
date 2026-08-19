@@ -11,10 +11,25 @@ namespace SafePharma.BLL
         Task<GeneralResult<ReadSaleDto>> UpdateSaleItem(Guid saleId, Guid itemId, UpdateSaleItemDto dto, Guid pharmacyId, Guid userId);
         Task<GeneralResult<ReadSaleDto>> RemoveSaleItem(Guid saleId, Guid itemId, Guid pharmacyId);
 
+        /// <summary>
+        /// Read-only stock/price preview for a medicine — used by the POS while
+        /// the cart is still purely local (frontend/localStorage), so it never
+        /// touches Sales/SaleItems.
+        /// </summary>
+        Task<GeneralResult<StockAvailabilityDto>> GetAvailability(Guid pharmacyMedicineId, Guid pharmacyId);
+
+        /// <summary>
+        /// Creates the Sale, adds every item, applies the sale-level discount/tax,
+        /// and records payment — all in one atomic call. Used by the POS to submit
+        /// a cart that existed only in the browser up to this point.
+        /// </summary>
+        Task<GeneralResult<ReadSaleDto>> Checkout(CheckoutDto dto, Guid pharmacyId, Guid userId);
+
         Task<GeneralResult<ReadSaleDto>> ApplyTax(Guid saleId, ApplySaleTaxDto dto, Guid pharmacyId);
         Task<GeneralResult<ReadSaleDto>> ApplyDiscount(Guid saleId, ApplySaleDiscountDto dto, Guid pharmacyId);
         Task<GeneralResult<ReadSaleDto>> Pay(Guid saleId, PaySaleDto dto, Guid pharmacyId, Guid userId);
         Task<GeneralResult<ReadSaleDto>> CancelSale(Guid saleId, Guid pharmacyId);
+        Task<GeneralResult> DeleteDraftSale(Guid saleId, Guid pharmacyId);
         Task<GeneralResult<ReadSaleDto>> SetCustomer(Guid saleId, SetSaleCustomerDto dto, Guid pharmacyId);
 
         Task<GeneralResult<ReadSaleDto>> GetSaleById(Guid saleId, Guid pharmacyId);

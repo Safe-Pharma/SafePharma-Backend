@@ -11,15 +11,19 @@ namespace SafePharma.DAL
         public AuditRepository(AppDbContext db) : base(db)
         {
         }
-        public async Task <IEnumerable<Audit>>GetAuditsWithUsers()
+        public async Task<IEnumerable<Audit>> GetAuditsWithUsers(Guid pharmacyId)
         {
-            return _db.Set<Audit>().Include(a => a.User);
-        }
-        public async Task<Audit> GetAuditWithUserId(Guid id)
-        {
-            return _db.Set<Audit>().Include(a => a.User).FirstOrDefault(u => u.UserId == id)!;
+            return await _db.Set<Audit>().Where(a => a.PharmacyId == pharmacyId).Include(a => a.User).ToListAsync();
         }
 
+        public async Task<Audit?> GetAuditWithUserId(Guid id)
+        {
+            return await _db.Set<Audit>().Include(a => a.User).FirstOrDefaultAsync(u => u.UserId == id);
+        }
 
+        public async Task<ApplicationUser?> GetUserByIdAsync(Guid userId)
+        {
+            return await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        }
     }
 }

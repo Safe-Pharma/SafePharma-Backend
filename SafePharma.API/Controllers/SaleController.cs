@@ -134,6 +134,46 @@ namespace SafePharma.API.Controllers
             return Ok(result);
         }
 
+        // GET /api/Sale/availability/{pharmacyMedicineId} — read-only stock/price
+        // preview for a locally-held cart line. Never touches Sales/SaleItems.
+        [HttpGet("availability/{pharmacyMedicineId}")]
+        public async Task<IActionResult> GetAvailability(Guid pharmacyMedicineId)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.GetAvailability(pharmacyMedicineId, pharmacyId);
+            return result.Success ? Ok(result) : NotFound(result);
+        }
+
+        // POST /api/Sale/checkout — creates the Sale, adds every item, applies
+        // the sale-level discount/tax, and records payment, all in one atomic
+        // call. Nothing about the cart touches the database before this point.
+        [HttpPost("checkout")]
+        public async Task<IActionResult> Checkout(CheckoutDto dto)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim) ||
+                !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.Checkout(dto, pharmacyId, userId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
         [HttpPatch("{saleId}/tax")]
         public async Task<IActionResult> ApplyTax(Guid saleId, ApplySaleTaxDto dto)
         {
@@ -194,6 +234,23 @@ namespace SafePharma.API.Controllers
             }
 
             var result = await _manager.CancelSale(saleId, pharmacyId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        // Hard delete — only for an untouched Open draft (e.g. closing an empty
+        // POS tab with the X button). Use POST {saleId}/cancel instead for a
+        // sale you deliberately want to keep in the record as "Cancelled".
+        [HttpDelete("{saleId}")]
+        public async Task<IActionResult> DeleteDraft(Guid saleId)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.DeleteDraftSale(saleId, pharmacyId);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 

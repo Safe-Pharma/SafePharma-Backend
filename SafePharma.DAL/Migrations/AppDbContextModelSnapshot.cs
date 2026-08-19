@@ -308,7 +308,7 @@ namespace SafePharma.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("PharmacyId")
+                    b.Property<Guid>("PharmacyId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("UserId")
@@ -1892,7 +1892,8 @@ namespace SafePharma.DAL.Migrations
                     b.HasOne("SafePharma.DAL.Pharmacy", "Pharmacy")
                         .WithMany()
                         .HasForeignKey("PharmacyId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("SafePharma.DAL.ApplicationUser", "User")
                         .WithMany("AuditList")

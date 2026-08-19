@@ -22,7 +22,10 @@ namespace SafePharma.API.Controllers
         [HttpGet]
         public async Task<ActionResult> GetAudit()
         {
-            var res =await  _auditManager.GetAllAudit();
+
+            var pharmacyId = User.GetPharmacyId();
+
+            var res =await  _auditManager.GetAllAudit( );
             return Ok(res);
         }
         //[HttpPost]
