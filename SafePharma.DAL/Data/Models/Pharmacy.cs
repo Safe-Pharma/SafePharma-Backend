@@ -15,6 +15,7 @@
         public int NumberOfBranches { get; set; }
         public string PreferredLanguage { get; set; }
         public string TimeZone { get; set; }
+        public bool IsActive { get; set; } = false;
         public DateTime CreatedAt { get; set; }
         public bool isActive { get; set; }
 

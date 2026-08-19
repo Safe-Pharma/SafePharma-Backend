@@ -2,6 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
   </Folder>
+  <Project Path="SafePharma.AI/SafePharma.AI.csproj" />
   <Project Path="SafePharma.API/SafePharma.API.csproj" />
   <Project Path="SafePharma.BLL/SafePharma.BLL.csproj" />
   <Project Path="SafePharma.Common/SafePharma.Common.csproj" />

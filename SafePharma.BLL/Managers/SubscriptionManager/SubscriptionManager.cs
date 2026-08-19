@@ -90,6 +90,7 @@ namespace SafePharma.BLL
                 NumberOfBranches = dto.Pharmacy.NumberOfBranches,
                 PreferredLanguage = dto.Pharmacy.PreferredLanguage,
                 TimeZone = dto.Pharmacy.TimeZone,
+                IsActive = false,
                 CreatedAt = DateTime.UtcNow,
                 SubscriptionId = subscription.Id
             };

@@ -8,6 +8,7 @@
         Task<Customer?> GetByPhone(string phone);
         Task<Customer?> GetByIdWithRealtives(Guid id);
         Task<Customer?> GetByIdWithChilds(Guid id);
+        Task<Customer?> GetByIdWithSafetyProfile(Guid id);
 
 
     }

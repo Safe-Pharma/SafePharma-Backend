@@ -12,15 +12,21 @@ namespace SafePharma.BLL
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailService _emailService;
+        private readonly FrontendSettings _frontendSettings;
 
         public PaymentManager(
             IUnitOfWork unitOfWork,
             ICloudinaryService cloudinaryService,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IEmailService emailService,
+            IOptions<FrontendSettings> frontendOptions)
         {
             _unitOfWork = unitOfWork;
             _cloudinaryService = cloudinaryService;
             _userManager = userManager;
+            _emailService = emailService;
+            _frontendSettings = frontendOptions.Value;
         }
 
         public async Task<GeneralResult<PaymentInstructionsDto>> GetPaymentInstructions(Guid subscriptionId)
@@ -169,6 +175,7 @@ namespace SafePharma.BLL
             subscription.Status = SubscriptionStatus.Active;
             subscription.ApprovedAt = DateTime.UtcNow;
             subscription.ApprovedBy = reviewedByUserId;
+            subscription.Pharmacy.IsActive = true;
 
             var existingUser = await _userManager.FindByEmailAsync(primaryContact.Email);
             if (existingUser == null)
@@ -203,7 +210,19 @@ namespace SafePharma.BLL
 
             await _unitOfWork.SaveAsync();
 
-            // TODO: plug in a real email/notification service here to confirm activation.
+            var loginLink = $"{_frontendSettings.BaseUrl}/login";
+            var approvedBody = $"""
+                <h2>Your SafePharma subscription is now active 🎉</h2>
+                <p>Hi {primaryContact.FullName},</p>
+                <p>We've verified your payment for <strong>{subscription.Pharmacy.Name}</strong> and your account is now active.</p>
+                <p>You can log in now using the email and password you registered with:</p>
+                <p><a href="{loginLink}">{loginLink}</a></p>
+                """;
+
+            await _emailService.SendEmailAsync(
+                primaryContact.Email,
+                "Your SafePharma account is active",
+                approvedBody);
 
             return GeneralResult.SuccessResult("Payment approved. Subscription is now active.");
         }
@@ -224,6 +243,26 @@ namespace SafePharma.BLL
             // Subscription stays AwaitingPayment so the user can resubmit.
 
             await _unitOfWork.SaveAsync();
+
+            var subscription = verification.Subscription;
+            var primaryContact = await _unitOfWork.PrimaryContactRepository.GetByPharmacyId(subscription.Pharmacy.Id);
+            if (primaryContact != null)
+            {
+                var resubmitLink = $"{_frontendSettings.BaseUrl}/subscribe/{subscription.Id}/payment";
+                var rejectedBody = $"""
+                    <h2>We couldn't verify your payment</h2>
+                    <p>Hi {primaryContact.FullName},</p>
+                    <p>Your payment proof for <strong>{subscription.Pharmacy.Name}</strong> couldn't be verified for the following reason:</p>
+                    <p><em>{reason}</em></p>
+                    <p>Please submit a new payment proof so we can activate your account:</p>
+                    <p><a href="{resubmitLink}">{resubmitLink}</a></p>
+                    """;
+
+                await _emailService.SendEmailAsync(
+                    primaryContact.Email,
+                    "Action needed: your SafePharma payment couldn't be verified",
+                    rejectedBody);
+            }
 
             return GeneralResult.SuccessResult("Payment rejected. The user can submit a new payment proof.");
         }
