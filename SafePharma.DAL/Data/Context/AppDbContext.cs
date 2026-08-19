@@ -520,6 +520,16 @@ namespace SafePharma.DAL
                 .WithMany()
                 .HasForeignKey(si => si.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Batch>()
+                .HasOne(b => b.Pharmacy)
+                .WithMany()
+                .HasForeignKey(b => b.PharmacyId)
+                .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<Audit>()
+               .HasOne(b => b.Pharmacy)
+               .WithMany()
+               .HasForeignKey(b => b.PharmacyId)
+               .OnDelete(DeleteBehavior.NoAction);
         }
 
 

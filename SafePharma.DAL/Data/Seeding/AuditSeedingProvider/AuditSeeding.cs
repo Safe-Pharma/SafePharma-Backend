@@ -16,6 +16,7 @@
 
             var u1 = Guid.Parse("99999999-9999-9999-9999-999999999999");
             var u2 = Guid.Parse("88888888-8888-8888-8888-888888888888");
+            var pharmacy1 = Guid.Parse("30000000-0000-0000-0000-000000000001");
 
 
             return new List<Audit>
@@ -30,7 +31,8 @@
             UserId = u1
             ,
             newValues="",
-            oldValues=""
+            oldValues="",
+            PharmacyId=pharmacy1,
         },
         new Audit
         {
@@ -42,7 +44,9 @@
             UserId = u2
             ,
             newValues="",
-            oldValues=""
+            oldValues="",
+            PharmacyId=pharmacy1,
+
         },
         new Audit
         {
@@ -54,7 +58,9 @@
             UserId = u1
             ,
             newValues="",
-            oldValues=""
+            oldValues="",
+            PharmacyId=pharmacy1,
+
         },
         new Audit
         {
@@ -66,7 +72,9 @@
             UserId = u2
             ,
             newValues="",
-            oldValues=""
+            oldValues="",
+            PharmacyId=pharmacy1,
+
         },
         new Audit
         {
@@ -78,7 +86,9 @@
             UserId = u1
             ,
             newValues="",
-            oldValues=""
+            oldValues="",
+            PharmacyId=pharmacy1,
+
         },
         new Audit
         {
@@ -90,7 +100,9 @@
             UserId = u2
             ,
             newValues="",
-            oldValues=""
+            oldValues="",
+            PharmacyId=pharmacy1,
+
         },
         new Audit
         {
@@ -101,7 +113,9 @@
             Device = "Chrome - macOS",
             UserId = u1,
             newValues="",
-            oldValues=""
+            oldValues="",
+            PharmacyId=pharmacy1,
+
 
         }
     };

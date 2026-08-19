@@ -16,6 +16,10 @@ namespace SafePharma.DAL
         public Guid UserId { get; set; }
         public ApplicationUser User { get; set; } = null!;
 
+        [ForeignKey("Pharmacy")]
+        public Guid? PharmacyId { get; set; }
+        public Pharmacy? Pharmacy { get; set; } = null!;
+
         public string oldValues { get; set; } = string.Empty;
         public string newValues { get; set; } = string.Empty;
 

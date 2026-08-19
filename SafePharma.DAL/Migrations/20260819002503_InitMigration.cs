@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SafePharma.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -73,7 +73,7 @@ namespace SafePharma.DAL.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -412,6 +412,7 @@ namespace SafePharma.DAL.Migrations
                     PreferredLanguage = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TimeZone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    isActive = table.Column<bool>(type: "bit", nullable: false),
                     SubscriptionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -733,6 +734,7 @@ namespace SafePharma.DAL.Migrations
                     Entity = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Device = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PharmacyId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     oldValues = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     newValues = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
@@ -745,6 +747,11 @@ namespace SafePharma.DAL.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Audit_Pharmacies_PharmacyId",
+                        column: x => x.PharmacyId,
+                        principalTable: "Pharmacies",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -1098,7 +1105,7 @@ namespace SafePharma.DAL.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MedicineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PurchaseReceiptItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PharmacyId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    PharmacyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     BatchNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     QuantityReceived = table.Column<int>(type: "int", nullable: false),
@@ -1219,6 +1226,11 @@ namespace SafePharma.DAL.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Audit_PharmacyId",
+                table: "Audit",
+                column: "PharmacyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Audit_UserId",
                 table: "Audit",
                 column: "UserId");
@@ -1318,7 +1330,8 @@ namespace SafePharma.DAL.Migrations
                 name: "IX_Customers_Phone",
                 table: "Customers",
                 column: "Phone",
-                unique: true);
+                unique: true,
+                filter: "[Phone] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ManufacturerBarcodes_Barcode",
