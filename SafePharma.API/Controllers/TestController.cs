@@ -1,11 +1,6 @@
 ﻿using Azure;
-using Azure.AI.OpenAI;
-using Microsoft.Agents.AI;
-using Microsoft.Agents.AI.OpenAI;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OpenAI;
-using OpenAI.Chat;
 using SafePharma.AI.Agent;
 using SafePharma.AI.Contracts;
 using SafePharma.AI.Rag;
