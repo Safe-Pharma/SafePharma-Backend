@@ -6,7 +6,7 @@ namespace SafePharma.BLL
 {
     public interface IAuditManager
     {
-        Task<GeneralResult<IEnumerable<AuditReadDto>>> GetAllAudit();
+        Task<GeneralResult<IEnumerable<AuditReadDto>>> GetAllAudit(Guid pharmacyId);
         Task<GeneralResult<AuditCreateDto>> CreateAudit(object newValues,object oldValues, ActionsEnum actionsEnum);
 
     }

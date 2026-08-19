@@ -13,17 +13,19 @@ namespace SafePharma.BLL
     {
         public IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUserContext _currentUserContext;
 
 
-        public AuditManager(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        public AuditManager(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, ICurrentUserContext currentUserContext)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
+            _currentUserContext = currentUserContext;
         }
-        public async Task<GeneralResult<IEnumerable<AuditReadDto>>> GetAllAudit()
+        public async Task<GeneralResult<IEnumerable<AuditReadDto>>> GetAllAudit(Guid pharmacyId)
         {
 
-            var auditList = await _unitOfWork._auditRepository.GetAuditsWithUsers();
+            var auditList = await _unitOfWork._auditRepository.GetAuditsWithUsers(pharmacyId);
             IEnumerable<AuditReadDto> auditReadList = auditList.Select(a => new AuditReadDto
             {
                 Entity = a.Entity,
@@ -61,8 +63,9 @@ namespace SafePharma.BLL
                 Action = action,
                 Entity = newValues.GetType().Name.ToString() ?? string.Empty,
                 newValues = JsonSerializer.Serialize(newValues) ?? "",
-                UserId = Guid.Parse("99999999-9999-9999-9999-999999999999"),
-                oldValues = JsonSerializer.Serialize(oldValues) ?? ""
+                UserId = _currentUserContext.Id,
+                oldValues = JsonSerializer.Serialize(oldValues) ?? "",
+                Date= DateTime.Now,
             };
             var auditUser = await _unitOfWork._auditRepository.GetAuditWithUserId(auditDto.UserId);
             if (auditUser == null)
@@ -81,7 +84,7 @@ namespace SafePharma.BLL
                 oldValues = auditDto.oldValues,
                 newValues = auditDto.newValues,
             };
-
+           
             _unitOfWork._auditRepository.Add(newAudit);
             await _unitOfWork.SaveAsync();
 
