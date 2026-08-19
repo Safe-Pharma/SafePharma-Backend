@@ -138,16 +138,15 @@ namespace SafePharma.API
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseHangfireDashboard("/hangfire");
-            RecurringJob.AddOrUpdate<IExpiryNotificationJob>(
-                "expiry-notification-job",
-                job => job.Execute(),
-                Cron.Daily,
-                TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time"));
-
             //RecurringJob.AddOrUpdate<IExpiryNotificationJob>(
             //    "expiry-notification-job",
             //    job => job.Execute(),
-            //    Cron.Minutely);
+            //    Cron.Daily);
+
+            RecurringJob.AddOrUpdate<IExpiryNotificationJob>(
+                "expiry-notification-job",
+                job => job.Execute(),
+                Cron.Minutely);
 
             app.MapControllers();
             app.Run();
