@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SafePharma.BLL.Authentication;
+using SafePharma.BLL.BackgroundJobs;
 using SafePharma.BLL.Managers;
 using SafePharma.BLL.Managers.AuthenticationManager;
- using SafePharma.BLL.Validators.PaymentValidator;
+using SafePharma.BLL.Managers.PharmacyManager;
+using SafePharma.BLL.Validators.PaymentValidator;
 using SafePharma.Common;
 using SafePharma.DAL;
 
@@ -54,6 +56,8 @@ namespace SafePharma.BLL
             services.AddScoped<IPaymentMethodManager, PaymentMethodManager>();
             services.AddScoped<IPurchaseReceiptManager, PurchaseReceiptManager>();
             services.AddScoped<IBatchManager, BatchManager>();
+            services.AddScoped<IPharmacyManager, PharmacyManager>();
+
 
             services.AddValidatorsFromAssemblyContaining<SubscriptionPlanUpsertDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<PaymentMethodUpsertDtoValidator>();
@@ -85,7 +89,12 @@ namespace SafePharma.BLL
 
             services.AddScoped<IOrganImpairmentLevelManager, OrganImpairmentLevelManager>();
             services.AddScoped<ICustomerRelativesManager, CustomerRelativesManager>();
+
             services.AddScoped<IPatientSafetyManager, PatientSafetyManager>();
+
+            services.AddScoped<IExpiryNotificationJob, ExpiryNotificationJob>();
+            services.AddScoped<INotificationManager, NotificationManager>();
+
 
             // Otp
             services.AddHttpClient<IOtpDeliveryChannel, WhatsAppBaileysChannel>(client =>

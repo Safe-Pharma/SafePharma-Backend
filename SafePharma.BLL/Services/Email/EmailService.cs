@@ -58,6 +58,11 @@ namespace SafePharma.BLL
 
             var response = await _httpClient.SendAsync(message);
 
+            var body = await response.Content.ReadAsStringAsync();
+
+            Console.WriteLine($"Status: {response.StatusCode}");
+            Console.WriteLine(body);
+
             response.EnsureSuccessStatusCode();
         }
     }

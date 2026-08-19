@@ -308,6 +308,9 @@ namespace SafePharma.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("PharmacyId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -320,6 +323,8 @@ namespace SafePharma.DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PharmacyId");
 
                     b.HasIndex("UserId");
 
@@ -345,7 +350,7 @@ namespace SafePharma.DAL.Migrations
                     b.Property<Guid>("MedicineId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("PharmacyId")
+                    b.Property<Guid>("PharmacyId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("PurchasePrice")
@@ -1070,6 +1075,9 @@ namespace SafePharma.DAL.Migrations
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("isActive")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -1881,11 +1889,18 @@ namespace SafePharma.DAL.Migrations
 
             modelBuilder.Entity("SafePharma.DAL.Audit", b =>
                 {
+                    b.HasOne("SafePharma.DAL.Pharmacy", "Pharmacy")
+                        .WithMany()
+                        .HasForeignKey("PharmacyId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("SafePharma.DAL.ApplicationUser", "User")
                         .WithMany("AuditList")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Pharmacy");
 
                     b.Navigation("User");
                 });
@@ -1900,7 +1915,9 @@ namespace SafePharma.DAL.Migrations
 
                     b.HasOne("SafePharma.DAL.Pharmacy", "Pharmacy")
                         .WithMany()
-                        .HasForeignKey("PharmacyId");
+                        .HasForeignKey("PharmacyId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("SafePharma.DAL.PurchaseReceiptItem", "PurchaseReceiptItem")
                         .WithMany()

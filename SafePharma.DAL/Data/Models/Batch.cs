@@ -18,8 +18,8 @@ namespace SafePharma.DAL
         public PurchaseReceiptItem PurchaseReceiptItem { get; set; }
 
         [ForeignKey("Pharmacy")]
-        public Guid? PharmacyId { get; set; }
-        public Pharmacy? Pharmacy { get; set; } = null!;
+        public Guid PharmacyId { get; set; }
+        public Pharmacy Pharmacy { get; set; } = null!;
 
         public string BatchNumber { get; set; } = string.Empty;
 

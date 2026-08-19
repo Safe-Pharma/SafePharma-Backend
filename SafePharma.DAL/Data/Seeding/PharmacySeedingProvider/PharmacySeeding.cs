@@ -28,6 +28,7 @@
                         NumberOfBranches = 3,
                         PreferredLanguage = "English",
                         TimeZone = "(GMT+4) Gulf Standard Time",
+                        isActive=false,
                     }
                 },
                 new Subscription
@@ -52,6 +53,8 @@
                         NumberOfBranches = 1,
                         PreferredLanguage = "Arabic",
                         TimeZone = "(GMT+2) Eastern European Time",
+                        isActive=false,
+
                     }
                 },
                 new Subscription
@@ -76,6 +79,8 @@
                         NumberOfBranches = 12,
                         PreferredLanguage = "Arabic",
                         TimeZone = "(GMT+3) Arabia Standard Time",
+                        isActive=false,
+
                     }
                 },
             };
