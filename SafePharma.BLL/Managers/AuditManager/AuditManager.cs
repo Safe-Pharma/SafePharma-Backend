@@ -22,10 +22,10 @@ namespace SafePharma.BLL
             _httpContextAccessor = httpContextAccessor;
             _currentUserContext = currentUserContext;
         }
-        public async Task<GeneralResult<IEnumerable<AuditReadDto>>> GetAllAudit(Guid pharmacyId)
+        public async Task<GeneralResult<IEnumerable<AuditReadDto>>> GetAllAudit()
         {
 
-            var auditList = await _unitOfWork._auditRepository.GetAuditsWithUsers(pharmacyId);
+            var auditList = await _unitOfWork._auditRepository.GetAuditsWithUsers(_currentUserContext.PharmacyId);
             IEnumerable<AuditReadDto> auditReadList = auditList.Select(a => new AuditReadDto
             {
                 Entity = a.Entity,
@@ -67,8 +67,9 @@ namespace SafePharma.BLL
                 oldValues = JsonSerializer.Serialize(oldValues) ?? "",
                 Date= DateTime.Now,
             };
-            var auditUser = await _unitOfWork._auditRepository.GetAuditWithUserId(auditDto.UserId);
-            if (auditUser == null)
+
+            var user = await _unitOfWork._auditRepository.GetUserByIdAsync(auditDto.UserId);
+            if (user == null)
             {
                 return GeneralResult<AuditCreateDto>.NotFound();
             }
@@ -80,7 +81,8 @@ namespace SafePharma.BLL
                 Date = auditDto.Date,
                 Device = auditDto.Device,
                 UserId = auditDto.UserId,
-                User = auditUser.User,
+                PharmacyId = _currentUserContext.PharmacyId,
+                User = user,
                 oldValues = auditDto.oldValues,
                 newValues = auditDto.newValues,
             };
