@@ -29,7 +29,7 @@ namespace SafePharma.BLL.Managers.PharmacyManager
                 City = p.City,
                 Phone = p.Phone,
                 BusinessEmail = p.BusinessEmail,
-                IsActive = p.isActive,
+                IsActive = p.IsActive,
                 SubscriptionId = p.SubscriptionId,
             }).ToList();
             return GeneralResult<IEnumerable<PharmacyReadDto>>.SuccessResult(res!);
@@ -42,7 +42,7 @@ namespace SafePharma.BLL.Managers.PharmacyManager
             {
                 return GeneralResult.NotFound("This pharmacy not foung");
             }
-            pharmacy.isActive = !pharmacy.isActive;
+            pharmacy.IsActive = !pharmacy.IsActive;
             _unitOfWork.SaveAsync();
             return GeneralResult.SuccessResult();
         }

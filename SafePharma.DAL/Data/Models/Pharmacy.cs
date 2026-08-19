@@ -17,7 +17,6 @@
         public string TimeZone { get; set; }
         public bool IsActive { get; set; } = false;
         public DateTime CreatedAt { get; set; }
-        public bool isActive { get; set; }
 
         public Guid SubscriptionId { get; set; }
         public Subscription Subscription { get; set; }
