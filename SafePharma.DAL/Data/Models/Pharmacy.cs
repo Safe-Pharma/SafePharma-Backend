@@ -19,7 +19,7 @@
         public DateTime CreatedAt { get; set; }
 
         public Guid SubscriptionId { get; set; }
-        public Subscription Subscription { get; set; }
+        public Subscription Subscription { get; set; }gi
         public PharmacySettings? PharmacySettings { get; set; }
 
         public ICollection<PurchaseOrder> PurchaseOrders { get; set; }

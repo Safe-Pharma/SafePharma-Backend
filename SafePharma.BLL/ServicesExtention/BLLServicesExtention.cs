@@ -89,6 +89,7 @@ namespace SafePharma.BLL
 
             services.AddScoped<IOrganImpairmentLevelManager, OrganImpairmentLevelManager>();
             services.AddScoped<ICustomerRelativesManager, CustomerRelativesManager>();
+<<<<<<< HEAD
 
             services.AddScoped<IPatientSafetyManager, PatientSafetyManager>();
 
@@ -96,6 +97,13 @@ namespace SafePharma.BLL
             services.AddScoped<INotificationManager, NotificationManager>();
 
 
+=======
+ 
+            services.AddScoped<IExpiryNotificationJob, ExpiryNotificationJob>();
+            services.AddScoped<INotificationManager, NotificationManager>();
+             services.AddScoped<IPatientSafetyManager, PatientSafetyManager>();
+ 
+>>>>>>> f889e9f (fix auditing)
             // Otp
             services.AddHttpClient<IOtpDeliveryChannel, WhatsAppBaileysChannel>(client =>
             {
