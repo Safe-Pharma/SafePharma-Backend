@@ -283,5 +283,35 @@ namespace SafePharma.API.Controllers
             return Ok(result);
         }
 
+        // GET /api/Sale/trend?days=7
+        [HttpGet("trend")]
+        public async Task<IActionResult> GetTrend([FromQuery] int days = 7)
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.GetTrend(pharmacyId, days);
+            return Ok(result);
+        }
+
+        // GET /api/Sale/category-mix
+        [HttpGet("category-mix")]
+        public async Task<IActionResult> GetCategoryMix()
+        {
+            var pharmacyIdClaim = User.FindFirstValue("PharmacyId");
+            if (string.IsNullOrEmpty(pharmacyIdClaim) ||
+                !Guid.TryParse(pharmacyIdClaim, out var pharmacyId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _manager.GetCategoryMix(pharmacyId);
+            return Ok(result);
+        }
+
     }
 }
