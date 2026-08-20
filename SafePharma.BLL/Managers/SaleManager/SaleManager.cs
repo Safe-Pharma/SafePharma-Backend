@@ -226,7 +226,7 @@ namespace SafePharma.BLL
             if (pharmacyMedicine == null)
                 return GeneralResult<StockAvailabilityDto>.NotFound("Medicine not found in this pharmacy");
 
-            var availableQuantity = await _unitOfWork._batchRepository.GetAvailableQuantity(pharmacyMedicineId);
+            var availableQuantity = await _unitOfWork._batchRepository.GetAvailableQuantity(pharmacyMedicineId,pharmacyId);
             var batch = await _unitOfWork._batchRepository.GetNearestExpiryBatchAsync(pharmacyMedicineId);
 
             return GeneralResult<StockAvailabilityDto>.SuccessResult(new StockAvailabilityDto
@@ -842,7 +842,7 @@ namespace SafePharma.BLL
 
                 var availableQuantity = await _unitOfWork
                     ._batchRepository
-                    .GetAvailableQuantity(pharmacyMedicineId);
+                    .GetAvailableQuantity(pharmacyMedicineId, pharmacyId);
 
                 if (availableQuantity < pharmacyMedicine.MinStockLevel)
                 {
