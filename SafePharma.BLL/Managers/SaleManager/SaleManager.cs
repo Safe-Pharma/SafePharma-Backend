@@ -7,9 +7,11 @@ namespace SafePharma.BLL
     public class SaleManager : ISaleManager
     {
         private readonly IUnitOfWork _unitOfWork;
-        public SaleManager(IUnitOfWork unitOfWork)
+        private readonly INotificationManager _notificationManager;
+        public SaleManager(IUnitOfWork unitOfWork, INotificationManager notificationManager)
         {
             _unitOfWork = unitOfWork;
+            _notificationManager = notificationManager;
         }
 
         public async Task<GeneralResult<ReadSaleDto>> CreateDraftSale(CreateDraftSaleDto dto, Guid pharmacyId, Guid userId)
@@ -416,6 +418,12 @@ namespace SafePharma.BLL
             _unitOfWork.SaleRepository.Add(sale);
             await _unitOfWork.SaveAsync();
 
+            //low stock notifications for all items in the sale, after committing the sale and deducting stock
+            await CheckLowStockNotifications(
+            sale.SaleItems.Select(i => i.PharmacyMedicineId),
+            pharmacyId);
+            //-----------------------------------------------
+
             _unitOfWork.ClearTracking();
             var savedSale = await _unitOfWork.SaleRepository.GetByIdWithItemsAsync(sale.Id);
 
@@ -635,6 +643,12 @@ namespace SafePharma.BLL
 
             await _unitOfWork.SaveAsync();
 
+            //low stock notifications for all items in the sale, after committing the sale and deducting stock
+            await CheckLowStockNotifications(
+                sale.SaleItems.Select(i => i.PharmacyMedicineId),
+                pharmacyId);
+            //-----------------------------------------------
+
             return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
         }
 
@@ -805,6 +819,41 @@ namespace SafePharma.BLL
                 return GeneralResult<ReadSaleDto>.NotFound("Sale not found.");
 
             return GeneralResult<ReadSaleDto>.SuccessResult(MapSaleToDto(sale));
+        }
+
+
+
+
+        ////////////////////////////////
+        private async Task CheckLowStockNotifications(
+    IEnumerable<Guid> pharmacyMedicineIds,
+    Guid pharmacyId)
+        {
+            var medicineIds = pharmacyMedicineIds.Distinct();
+
+            foreach (var pharmacyMedicineId in medicineIds)
+            {
+                var pharmacyMedicine = await _unitOfWork
+                    .PharmacyMedicineRepository
+                    .GetByIdAndPharmacy(pharmacyMedicineId, pharmacyId);
+
+                if (pharmacyMedicine == null)
+                    continue;
+
+                var availableQuantity = await _unitOfWork
+                    ._batchRepository
+                    .GetAvailableQuantity(pharmacyMedicineId);
+
+                if (availableQuantity < pharmacyMedicine.MinStockLevel)
+                {
+                    await _notificationManager.CreateLowStockNotification(
+                        pharmacyId,
+                        pharmacyMedicineId,
+                        pharmacyMedicine.TradeNameEn,
+                        availableQuantity,
+                        pharmacyMedicine.MinStockLevel);
+                }
+            }
         }
 
     }
