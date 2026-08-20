@@ -7,6 +7,7 @@ namespace SafePharma.BLL
     {
         Task<GeneralResult<IEnumerable<AuditReadDto>>> GetAllAudit();
         Task<GeneralResult<bool>> CreateAudit(object newValues,object oldValues,string entity, ActionsEnum actionsEnum);
+        Task<GeneralResult<IEnumerable<AuditReadDto>>> GetRecentActivity(int take = 6);
 
     }
 }

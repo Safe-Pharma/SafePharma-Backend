@@ -102,5 +102,30 @@ namespace SafePharma.BLL
 
             return GeneralResult<bool>.SuccessResult(true);
         }
+
+        // Short, most-recent slice for the dashboard "Recent activity" widget.
+        public async Task<GeneralResult<IEnumerable<AuditReadDto>>> GetRecentActivity(int take = 6)
+        {
+            var auditList = await _unitOfWork._auditRepository.GetRecentForPharmacy(_currentUserContext.PharmacyId, take);
+            return GeneralResult<IEnumerable<AuditReadDto>>.SuccessResult(MapAudits(auditList));
+        }
+
+        private static IEnumerable<AuditReadDto> MapAudits(IEnumerable<Audit> auditList)
+        {
+            return auditList.Select(a => new AuditReadDto
+            {
+                Entity = a.Entity,
+                Action = a.Action,
+                Date = a.Date,
+                Device = a.Device,
+                UserFullName = a.User.UserName!,
+                oldValues = string.IsNullOrWhiteSpace(a.oldValues)
+                            ? null
+                            : JsonSerializer.Deserialize<JsonElement>(a.oldValues),
+                newValues = string.IsNullOrWhiteSpace(a.newValues)
+                            ? null
+                            : JsonSerializer.Deserialize<JsonElement>(a.newValues)
+            }).ToList();
+        }
     }
 }

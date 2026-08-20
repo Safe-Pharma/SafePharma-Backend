@@ -27,6 +27,13 @@ namespace SafePharma.API.Controllers
                 return BadRequest(res);
             return Ok(res);
         }
+        // GET api/Audit/recent?take=6 — short feed for the dashboard "Recent activity" widget.
+        [HttpGet("recent")]
+        public async Task<ActionResult> GetRecent([FromQuery] int take = 6)
+        {
+            var res = await _auditManager.GetRecentActivity(take);
+            return Ok(res);
+        }
         //[HttpPost]
         //public async Task<ActionResult> CreateAudit([FromBody] AuditCreateDto auditCreateDto)
         //{
