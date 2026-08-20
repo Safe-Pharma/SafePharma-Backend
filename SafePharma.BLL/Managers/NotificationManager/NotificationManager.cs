@@ -54,11 +54,13 @@ namespace SafePharma.BLL
 
         public async Task<GeneralResult<bool>> MarkAsRead(Guid notificationId)
         {
-            var notification = await _unitOfWork.Notifications
-                .GetById(notificationId);
+            var notification = await _unitOfWork.Notifications.GetById(notificationId);
 
-            if (notification is null)
+            if (notification is null ||
+                notification.PharmacyId != _currentUserContext.PharmacyId)
+            {
                 return GeneralResult<bool>.FailResult("Notification not found.");
+            }
 
             notification.IsRead = true;
             notification.ReadAt = DateTime.UtcNow;
@@ -99,12 +101,12 @@ namespace SafePharma.BLL
                 type = NotificationType.BatchExpired;
                 priority = NotificationPriority.Critical;
             }
-            else if (daysRemaining == 30)
+            else if (daysRemaining <= 30)
             {
                 type = NotificationType.BatchExpiry30;
                 priority = NotificationPriority.High;
             }
-            else if (daysRemaining == 60)
+            else if (daysRemaining <= 60)
             {
                 type = NotificationType.BatchExpiry60;
                 priority = NotificationPriority.Medium;
