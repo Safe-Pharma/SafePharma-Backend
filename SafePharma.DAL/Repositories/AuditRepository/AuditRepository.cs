@@ -25,5 +25,14 @@ namespace SafePharma.DAL
         {
             return await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
         }
+        public async Task<IEnumerable<Audit>> GetRecentForPharmacy(Guid pharmacyId, int take)
+        {
+            return await _db.Set<Audit>()
+                .Include(a => a.User)
+                .Where(a => a.PharmacyId == pharmacyId)
+                .OrderByDescending(a => a.Date)
+                .Take(take)
+                .ToListAsync();
+        }
     }
 }

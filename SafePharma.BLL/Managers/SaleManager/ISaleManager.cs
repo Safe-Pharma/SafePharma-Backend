@@ -35,6 +35,8 @@ namespace SafePharma.BLL
         Task<GeneralResult<ReadSaleDto>> GetSaleById(Guid saleId, Guid pharmacyId);
         Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetAllSales(Guid pharmacyId, SaleStatus? status = null, string? search = null);
         Task<GeneralResult<SaleStatsDto>> GetStats(Guid pharmacyId);
+        Task<GeneralResult<IEnumerable<SalesTrendPointDto>>> GetTrend(Guid pharmacyId, int days = 7);
+        Task<GeneralResult<IEnumerable<CategoryMixDto>>> GetCategoryMix(Guid pharmacyId);
 
         Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetCustomerSales(
     Guid customerId,

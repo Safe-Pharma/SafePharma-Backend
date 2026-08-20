@@ -735,7 +735,43 @@ namespace SafePharma.BLL
             return GeneralResult<SaleStatsDto>.SuccessResult(stats);
         }
 
-      public async Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetCustomerSales(
+        public async Task<GeneralResult<IEnumerable<SalesTrendPointDto>>> GetTrend(Guid pharmacyId, int days = 7)
+        {
+            if (days < 1) days = 7;
+            if (days > 90) days = 90;
+
+            var rows = await _unitOfWork.SaleRepository.GetDailyTotals(pharmacyId, days);
+
+            var points = rows.Select(r => new SalesTrendPointDto
+            {
+                Date = r.Date,
+                DayLabel = r.Date.ToString("ddd"),
+                Total = r.Total,
+                OrderCount = r.OrderCount
+            });
+
+            return GeneralResult<IEnumerable<SalesTrendPointDto>>.SuccessResult(points);
+        }
+
+        public async Task<GeneralResult<IEnumerable<CategoryMixDto>>> GetCategoryMix(Guid pharmacyId)
+        {
+            var rows = (await _unitOfWork.SaleRepository.GetCategoryRevenue(pharmacyId)).ToList();
+            var totalRevenue = rows.Sum(r => r.Revenue);
+
+            var result = rows
+                .Select(r => new CategoryMixDto
+                {
+                    Category = r.Category,
+                    Revenue = r.Revenue,
+                    Percentage = totalRevenue > 0 ? Math.Round(r.Revenue / totalRevenue * 100, 1) : 0
+                })
+                .OrderByDescending(r => r.Revenue)
+                .ToList();
+
+            return GeneralResult<IEnumerable<CategoryMixDto>>.SuccessResult(result);
+        }
+
+        public async Task<GeneralResult<IEnumerable<ReadSaleDto>>> GetCustomerSales(
       Guid customerId,
       string? search = null,
       Guid? pharmacyId = null,
