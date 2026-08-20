@@ -9,7 +9,7 @@ namespace SafePharma.DAL
         }
         public async Task<Sale?> GetByIdWithItemsAsync(Guid saleId)
         {
-            return await _db.Sales
+            return await _db.Sales.IgnoreQueryFilters()
                 .Include(s => s.Customer)
                 .Include(s => s.SaleItems)
                     .ThenInclude(si => si.Customer)
@@ -24,6 +24,7 @@ namespace SafePharma.DAL
         {
             var query = _db.Sales
                 .AsNoTracking()
+                .IgnoreQueryFilters()
                 .Include(s => s.Customer)
                 .Include(s => s.SaleItems)
                     .ThenInclude(si => si.Customer)

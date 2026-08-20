@@ -14,11 +14,11 @@ namespace SafePharma.BLL.Managers.PharmacyManager
         }
         public async Task<GeneralResult<IEnumerable<PharmacyReadDto>>> GetAllPharmacies()
         {
-            var pharmacies = await _unitOfWork.PharmacyRepository.GetAll();
-            if (pharmacies == null)
-            {
-                return GeneralResult<IEnumerable<PharmacyReadDto>>.NotFound();
-            }
+             var pharmacies = await _unitOfWork.PharmacyRepository.GetAll();
+
+            if (!pharmacies.Any())
+                return GeneralResult<IEnumerable<PharmacyReadDto>>.NotFound("No pharmacies found");
+
             IEnumerable<PharmacyReadDto> res = pharmacies.Select(p => new PharmacyReadDto
             {
                 Id = p.Id,
@@ -40,10 +40,12 @@ namespace SafePharma.BLL.Managers.PharmacyManager
             var pharmacy = await _unitOfWork.PharmacyRepository.GetById(id);
             if (pharmacy == null)
             {
-                return GeneralResult.NotFound("This pharmacy not foung");
+                return GeneralResult.NotFound("This pharmacy not found");
             }
             pharmacy.IsActive = !pharmacy.IsActive;
-            _unitOfWork.SaveAsync();
+            pharmacy.UpdatedAt = DateTime.UtcNow;  
+
+            await _unitOfWork.SaveAsync();
             return GeneralResult.SuccessResult();
         }
     }

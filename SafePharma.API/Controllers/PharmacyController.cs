@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SafePharma.BLL;
 using SafePharma.BLL.Managers.PharmacyManager;
 
 namespace SafePharma.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Policy = AuthPolicies.OwnerOnly)]
 
     public class PharmacyController : ControllerBase
     {
@@ -21,17 +23,21 @@ namespace SafePharma.API.Controllers
         public async Task<ActionResult> GetPharmacies()
         {
             var res = await _pharmacyManager.GetAllPharmacies();
+            if (!res.Success)
+                return NotFound(res);
+
             return Ok(res);
 
         }
 
-        [HttpPost("{id:Guid}")]
+        [HttpPatch("{id:Guid}/status")]
         public async Task<ActionResult> UpdatePharmacyStatus(Guid id)
         {
             var res = await _pharmacyManager.UpdatePharmacyStatus(id);
-            if (res is null)
+
+            if (!res.Success)
             {
-                return BadRequest();
+                return BadRequest(res);
             }
             return Ok(res);
 

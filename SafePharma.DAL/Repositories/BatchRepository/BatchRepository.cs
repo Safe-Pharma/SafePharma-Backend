@@ -11,13 +11,48 @@ namespace SafePharma.DAL
         {
 
         }
-        public async Task<IEnumerable<IGrouping<Guid, Batch>>> GetBatchesGroupByhMedicine()
+        public async Task<Batch?> GetByIdForPharmacyAsync(Guid batchId, Guid pharmacyId)
         {
-            return await _db.Set<Batch>().Include(b=>b.Medicine).ThenInclude(b=>b.Medicine).GroupBy(b => b.MedicineId).ToListAsync();
+            return await _db.Set<Batch>()
+                        .FirstOrDefaultAsync(b =>
+                            b.Id == batchId &&
+                            b.PharmacyId == pharmacyId);
         }
-        public async Task<IEnumerable<Batch>> GetBatchesByhMedicineId(Guid MId)
+        public async Task<PharmacyMedicine?> GetByIdForPharmacyMedecineAsync(
+                                                        Guid id,
+                                                        Guid pharmacyId)
+                                                            {
+                                                                return await _db.Set<PharmacyMedicine>()
+                                                                    .FirstOrDefaultAsync(pm =>
+                                                                        pm.Id == id &&
+                                                                        pm.PharmacyId == pharmacyId);
+                                                            }
+        public async Task<PurchaseReceiptItem?> GetByIdForRecieptAsync(
+    Guid id,
+    Guid pharmacyId)
         {
-            return await _db.Set<Batch>().Select(b => b).Where(m => m.Id == MId).ToListAsync();
+            return await _db.Set<PurchaseReceiptItem>()
+                .Include(x => x.PharmacyMedicine)
+                .FirstOrDefaultAsync(x =>
+                    x.Id == id &&
+                    x.PharmacyMedicine.PharmacyId == pharmacyId);
+        }
+
+        public async Task<IEnumerable<IGrouping<Guid, Batch>>> GetBatchesGroupByMedicineAsync(Guid pharmacyId)
+        {
+            return await _db.Set<Batch>()
+                .AsNoTracking()
+                .Where(b => b.PharmacyId == pharmacyId && !b.IsDeleted)  
+                .Include(b => b.Medicine)
+                .ThenInclude(b => b.Medicine)
+                .GroupBy(b => b.MedicineId)
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<Batch>> GetBatchesByMedicineId(Guid medicineId)
+        {
+            return await _db.Set<Batch>()
+                .Where(b => b.MedicineId == medicineId)
+                .ToListAsync();
         }
         public async Task<IEnumerable<StockAggregate>> GetStockAggregates(IEnumerable<Guid> pharmacyMedicineIds, int expiringSoonDays = 90)
         {
@@ -71,12 +106,15 @@ namespace SafePharma.DAL
         }
 
 
-        public async Task<int> GetAvailableQuantity(Guid pharmacyMedicineId)
+        public async Task<int> GetAvailableQuantity(
+    Guid pharmacyMedicineId,
+    Guid pharmacyId)
         {
             var today = DateTime.UtcNow.Date;
 
             return await _db.Set<Batch>()
                 .Where(b =>
+                    b.PharmacyId == pharmacyId &&
                     b.MedicineId == pharmacyMedicineId &&
                     b.QuantityRemaining > 0 &&
                     b.ExpiryDate > today)

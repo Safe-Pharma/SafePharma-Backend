@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using SafePharma.BLL.DTOs.Audit;
-using SafePharma.Common;
-using SafePharma.Common;
+ using SafePharma.Common;
 using SafePharma.DAL;
 using System.Text.Json;
 using UAParser;
@@ -11,7 +9,7 @@ namespace SafePharma.BLL
 {
     public class AuditManager : IAuditManager
     {
-        public IUnitOfWork _unitOfWork;
+        public readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICurrentUserContext _currentUserContext;
 
@@ -42,11 +40,37 @@ namespace SafePharma.BLL
             }).ToList();
             return GeneralResult<IEnumerable<AuditReadDto>>.SuccessResult(auditReadList);
         }
-        public async Task<GeneralResult<AuditCreateDto>> CreateAudit(object newValues, object? oldValues, ActionsEnum action)
+        public async Task<GeneralResult<bool>> CreateAudit(object newValues, object? oldValues,string entity, ActionsEnum action)
         {
-            if(newValues is null)
+         
+            if (newValues is null)
             {
-                GeneralResult<AuditCreateDto>.FailResult();
+                return GeneralResult<bool>.NotFound(
+                    "Cannot create audit without entity data");
+            }
+
+            // 2️⃣ Action Validation
+            if (!Enum.IsDefined(typeof(ActionsEnum), action))
+            {
+                return GeneralResult<bool>.NotFound(
+                    $"Invalid action type: {action}");
+            }
+
+             if (_currentUserContext.Id == Guid.Empty)
+            {
+                return GeneralResult<bool>.NotFound(
+                    "Cannot create audit: user context is missing");
+            }
+
+            if (_currentUserContext.PharmacyId == Guid.Empty)
+            {
+                return GeneralResult<bool>.NotFound(
+                    "Cannot create audit: pharmacy context is missing");
+            }
+            if (entity == string.Empty)
+            {
+                return GeneralResult<bool>.NotFound(
+                    "Cannot create audit: Entity context is missing");
             }
 
             var userAgent = _httpContextAccessor.HttpContext?
@@ -57,41 +81,26 @@ namespace SafePharma.BLL
             var client = ua.Parse(userAgent);
 
 
-            var auditDto = new AuditCreateDto
+            var audit = new Audit
             {
+                Entity = entity,
+                Action = action.ToString(),
+                Date = DateTime.UtcNow,
                 Device = $"{client.UA.Family} | {client.OS.Family}",
-                Action = action,
-                Entity = newValues.GetType().Name.ToString() ?? string.Empty,
-                newValues = JsonSerializer.Serialize(newValues) ?? "",
                 UserId = _currentUserContext.Id,
-                oldValues = JsonSerializer.Serialize(oldValues) ?? "",
-                Date= DateTime.Now,
-            };
-
- 
-            var user = await _unitOfWork._auditRepository.GetUserByIdAsync(auditDto.UserId);
-            if (user == null)
-            {
-                return GeneralResult<AuditCreateDto>.NotFound();
-            }
-
-            Audit newAudit = new Audit
-            {
-                Entity = auditDto.Entity,
-                Action = auditDto.Action.ToString(),
-                Date = auditDto.Date,
-                Device = auditDto.Device,
-                UserId = auditDto.UserId,
                 PharmacyId = _currentUserContext.PharmacyId,
-                User = user,
-                oldValues = auditDto.oldValues,
-                newValues = auditDto.newValues,
-            };
-           
-            _unitOfWork._auditRepository.Add(newAudit);
-            await _unitOfWork.SaveAsync();
 
-            return GeneralResult<AuditCreateDto>.SuccessResult(auditDto);
+                oldValues = oldValues is null
+             ? null
+             : JsonSerializer.Serialize(oldValues),
+
+                newValues = JsonSerializer.Serialize(newValues)
+            };
+
+            _unitOfWork._auditRepository.Add(audit);
+
+
+            return GeneralResult<bool>.SuccessResult(true);
         }
 
         // Short, most-recent slice for the dashboard "Recent activity" widget.

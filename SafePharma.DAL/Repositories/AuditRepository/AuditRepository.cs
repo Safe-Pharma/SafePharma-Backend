@@ -13,13 +13,13 @@ namespace SafePharma.DAL
         }
         public async Task<IEnumerable<Audit>> GetAuditsWithUsers(Guid pharmacyId)
         {
-            return await _db.Set<Audit>().Where(a => a.PharmacyId == pharmacyId).Include(a => a.User).ToListAsync();
+            return await _db.Set<Audit>().Where(a => a.PharmacyId == pharmacyId).Include(a => a.User).OrderByDescending(a => a.Date).ToListAsync();
         }
 
-        public async Task<Audit?> GetAuditWithUserId(Guid id)
-        {
-            return await _db.Set<Audit>().Include(a => a.User).FirstOrDefaultAsync(u => u.UserId == id);
-        }
+        //public async Task<Audit?> GetAuditWithUserId(Guid id)
+        //{
+        //    return await _db.Set<Audit>().Include(a => a.User).FirstOrDefaultAsync(u => u.UserId == id);
+        //}
 
         public async Task<ApplicationUser?> GetUserByIdAsync(Guid userId)
         {

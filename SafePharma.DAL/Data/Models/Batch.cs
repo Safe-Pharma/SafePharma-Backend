@@ -1,12 +1,13 @@
 ﻿
 
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SafePharma.DAL
 {
     public class Batch : IAuditableEntity
     {
-        [key]
+        [Key]
         public Guid Id { get; set; }
 
         [ForeignKey("Medicine")]
@@ -14,7 +15,7 @@ namespace SafePharma.DAL
         public  PharmacyMedicine Medicine { get; set; }
 
         [ForeignKey("PurchaseReceiptItem")]
-        public Guid PurchaseReceiptItemId;
+        public Guid PurchaseReceiptItemId { get; set; }
         public PurchaseReceiptItem PurchaseReceiptItem { get; set; }
 
         [ForeignKey("Pharmacy")]
@@ -31,6 +32,9 @@ namespace SafePharma.DAL
 
         public decimal SellingPrice { get; set; }
         public decimal PurchasePrice { get; set; }
+
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

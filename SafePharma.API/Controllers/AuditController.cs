@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SafePharma.BLL;
-using SafePharma.BLL.DTOs.Audit;
 
 namespace SafePharma.API.Controllers
 {
@@ -12,7 +11,7 @@ namespace SafePharma.API.Controllers
 
     public class AuditController : ControllerBase
     {
-        private IAuditManager _auditManager;
+        private readonly IAuditManager _auditManager;
 
         public AuditController(IAuditManager auditManager)
         {
@@ -23,9 +22,9 @@ namespace SafePharma.API.Controllers
         public async Task<ActionResult> GetAudit()
         {
 
-            var pharmacyId = User.GetPharmacyId();
-
-            var res =await  _auditManager.GetAllAudit( );
+            var res =await  _auditManager.GetAllAudit();
+            if (!res.Success)
+                return BadRequest(res);
             return Ok(res);
         }
         // GET api/Audit/recent?take=6 — short feed for the dashboard "Recent activity" widget.

@@ -11,8 +11,7 @@ namespace SafePharma.API.Controllers
 
     public class BatchController : ControllerBase
     {
-        private  IBatchManager _batchManager;
-
+        private readonly IBatchManager _batchManager;
         public BatchController(IBatchManager batchManager)
         {
             _batchManager = batchManager;
@@ -21,6 +20,8 @@ namespace SafePharma.API.Controllers
         public async Task<ActionResult> GetBatches()
         {
             var res = await _batchManager.GetAllBatches();
+            if (!res.Success)
+                return NotFound(res);
             return Ok(res);
 
         }
@@ -40,7 +41,7 @@ namespace SafePharma.API.Controllers
         [HttpPut]
         public async Task<ActionResult> UpdateBatchQuantity([FromBody] BatchQtyDto newStock)
         {
-            var result = await _batchManager.UpdateBatchQuantitiy(newStock);
+            var result = await _batchManager.UpdateBatchQuantity(newStock);
             if (!result.Success)
             {
                 return BadRequest(result);
