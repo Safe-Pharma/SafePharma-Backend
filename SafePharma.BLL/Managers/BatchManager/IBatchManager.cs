@@ -9,7 +9,6 @@ namespace SafePharma.BLL
         Task<GeneralResult<Batch>> CreateBatch(BatchCreateDto batchDto);
         Task<GeneralResult<IEnumerable<BatchReadDto>>> GetAllBatches();
         Task<GeneralResult> DeleteBatch(Guid id);
-        Task<GeneralResult> UpdateBatchQuantitiy(BatchQtyDto dto);
-
+        Task<GeneralResult> UpdateBatchQuantity(BatchQtyDto dto);
     }
 }

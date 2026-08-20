@@ -59,7 +59,7 @@ namespace SafePharma.BLL
 
             _unitOfWork.TaxRepository.Add(entity);
             await _unitOfWork.SaveAsync();
-            await _auditManager.CreateAudit(entity,null, ActionsEnum.Create);
+            await _auditManager.CreateAudit(entity,null, "Supplier",ActionsEnum.Create);
             return new TaxCreateResult { Tax = entity.ToDto() };
         }
 
@@ -90,7 +90,7 @@ namespace SafePharma.BLL
             new_entity.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveAsync();
-            await _auditManager.CreateAudit(new_entity, old_entity, ActionsEnum.Update);
+            await _auditManager.CreateAudit(new_entity, old_entity, "Supplier", ActionsEnum.Update);
             return new TaxUpdateResult { Tax = new_entity.ToDto() };
         }
 
@@ -104,7 +104,7 @@ namespace SafePharma.BLL
 
             _unitOfWork.TaxRepository.Delete(entity);
             await _unitOfWork.SaveAsync();
-           // await _auditManager.CreateAudit(null, entity, ActionsEnum.Delete);
+           // await _auditManager.CreateAudit(null, entity,"Tax" ,ActionsEnum.Delete);
             return true;
         }
 

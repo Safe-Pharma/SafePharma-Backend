@@ -525,6 +525,8 @@ namespace SafePharma.DAL
                 .WithMany()
                 .HasForeignKey(b => b.PharmacyId)
                 .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<Batch>()
+            .HasQueryFilter(b => !b.IsDeleted);
             modelBuilder.Entity<Audit>()
                .HasOne(b => b.Pharmacy)
                .WithMany()

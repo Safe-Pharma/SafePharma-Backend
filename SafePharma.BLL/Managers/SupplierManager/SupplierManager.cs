@@ -60,7 +60,7 @@ namespace SafePharma.BLL
             await _unitOfWork.SaveAsync();
 
             var saved = await _unitOfWork.SupplierRepository.GetByIdWithCountry(entity.Id);
-            await _auditManager.CreateAudit(saved, null, ActionsEnum.Create);
+            await _auditManager.CreateAudit(saved, null,"Supplier", ActionsEnum.Create);
             return new SupplierCreateResult { Supplier = saved!.ToDto() };
         }
 
@@ -95,7 +95,7 @@ namespace SafePharma.BLL
             await _unitOfWork.SaveAsync();
 
             var saved = await _unitOfWork.SupplierRepository.GetByIdWithCountry(entity.Id);
-            await _auditManager.CreateAudit(saved, oldEntity, ActionsEnum.Update);
+            await _auditManager.CreateAudit(saved, oldEntity,"Supplier", ActionsEnum.Update);
             return new SupplierUpdateResult { Supplier = saved!.ToDto() };
         }
 

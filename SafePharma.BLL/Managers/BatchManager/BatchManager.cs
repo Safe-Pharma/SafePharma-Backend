@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using SafePharma.BLL.DTOs;
 using SafePharma.Common;
 using SafePharma.DAL;
@@ -7,21 +8,26 @@ namespace SafePharma.BLL
 {
     public class BatchManager : IBatchManager
     {
-        public IUnitOfWork _unitOfWork;
-        public IAuditManager _auditManager;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditManager _auditManager;
         private readonly IValidator<BatchQtyDto> _updateBatchQtyValidator;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUserContext _currentUserContext;
 
-        public BatchManager(IUnitOfWork unitOfWork, IAuditManager auditManager , IValidator<BatchQtyDto> updateBatchQtyValidator)
+        public BatchManager(IUnitOfWork unitOfWork, IAuditManager auditManager, IValidator<BatchQtyDto> updateBatchQtyValidator, ICurrentUserContext currentUserContext, IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _auditManager = auditManager;
             _updateBatchQtyValidator = updateBatchQtyValidator;
+            _currentUserContext = currentUserContext;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<GeneralResult<IEnumerable<BatchReadDto>>> GetAllBatches()
         {
+            var pharmacyId = _currentUserContext.PharmacyId;
 
-            var batchList = await _unitOfWork._batchRepository.GetBatchesGroupByhMedicine();
+            var batchList = await _unitOfWork._batchRepository.GetBatchesGroupByMedicineAsync(pharmacyId);
             if(batchList is null)
             {
                 return GeneralResult<IEnumerable<BatchReadDto>>.NotFound("No Batches Founded");
@@ -37,7 +43,7 @@ namespace SafePharma.BLL
                 return new BatchReadDto
                 {
                     BatchesCount = group.Count(),
-                    MedeicineCategory = Med.Medicine.Medicine.Category,
+                    MedeicineCategory = Med.Medicine.Medicine!.Category,
                     MedeicineName = Med.Medicine.Medicine.TradeNameEn,
                     SKU = Med.Medicine.SKU,
                     MinStockLevel = minStock,
@@ -63,68 +69,110 @@ namespace SafePharma.BLL
             return GeneralResult<IEnumerable<BatchReadDto>>.SuccessResult(batchReadList);
         }
 
-        public async Task<GeneralResult<Batch>> CreateBatch(BatchCreateDto batchDto)
+        public async Task<GeneralResult<Batch>> CreateBatch(
+            BatchCreateDto batchDto)
         {
             if (batchDto is null)
             {
-                GeneralResult<BatchCreateDto>.NotFound();
+                return GeneralResult<Batch>.NotFound(
+                    "Batch data is required");
             }
-            // get medecine form medicine manager
-            var pharmacyMedicine = await _unitOfWork.PharmacyMedicineRepository.GetById(batchDto!.MedicineId);
-            var recieptItem = await _unitOfWork.PurchaseReceiptItemRepository.GetById(batchDto!.ReceiptItemId);
+
+            var pharmacyId = _currentUserContext.PharmacyId;
+
+            var pharmacyMedicine =
+                await _unitOfWork.PharmacyMedicineRepository
+                    .GetByMedicineAndPharmacy(
+                        batchDto.MedicineId,
+                        pharmacyId);
+
+            if (pharmacyMedicine is null)
+            {
+                return GeneralResult<Batch>.NotFound(
+                    $"Medicine with ID {batchDto.MedicineId} not found");
+            }
+
+            var receiptItem =
+                await _unitOfWork.PurchaseReceiptItemRepository
+                    .GetByIdForPharmacy(
+                        batchDto.ReceiptItemId,
+                        pharmacyId);
+
+            if (receiptItem is null)
+            {
+                return GeneralResult<Batch>.NotFound(
+                    $"Receipt item with ID {batchDto.ReceiptItemId} not found");
+            }
+
+             if (receiptItem.PharmacyMedicineId != pharmacyMedicine.Id)
+            {
+                return GeneralResult<Batch>.FailResult(
+                    "The receipt item does not belong to the selected medicine.");
+            }
+
             var batch = new Batch
             {
-                MedicineId = recieptItem.PharmacyMedicineId,
-                Medicine = pharmacyMedicine,
+                MedicineId = pharmacyMedicine.Id,
 
-                PurchaseReceiptItemId = batchDto.ReceiptItemId,
-                PurchaseReceiptItem = recieptItem,
+                PurchaseReceiptItemId = receiptItem.Id,
 
-                BatchNumber = recieptItem.BatchNumber,
-                ExpiryDate = recieptItem.ExpiryDate,
-                QuantityReceived = recieptItem.Quantity,
-                QuantityRemaining = recieptItem.Quantity,
+                PharmacyId = pharmacyId,
+
+                BatchNumber = receiptItem.BatchNumber,
+
+                ExpiryDate = receiptItem.ExpiryDate,
+
+                QuantityReceived = receiptItem.Quantity,
+
+                QuantityRemaining = receiptItem.Quantity,
 
                 SellingPrice = pharmacyMedicine.SellingPrice,
+
                 PurchasePrice = pharmacyMedicine.PurchasePrice,
 
-
-
+                CreatedAt = DateTime.UtcNow
             };
+
             _unitOfWork._batchRepository.Add(batch);
+
             await _unitOfWork.SaveAsync();
 
             return GeneralResult<Batch>.SuccessResult(batch);
         }
-
         public async Task<GeneralResult> DeleteBatch(Guid id)
         {
+            var batch = await _unitOfWork._batchRepository
+                .GetByIdForPharmacyAsync(id, _currentUserContext.PharmacyId);
 
-            var batch = await _unitOfWork._batchRepository.GetById(id);
             if (batch is null)
-            {
                 return GeneralResult.NotFound("Batch not found");
-            }
-            _unitOfWork._batchRepository.Delete(batch);
-            await _unitOfWork.SaveAsync();
 
+            
+                batch.IsDeleted = true;
+                batch.DeletedAt = DateTime.UtcNow;
+                batch.UpdatedAt = DateTime.UtcNow;
 
-            return GeneralResult.SuccessResult();
+                await _unitOfWork.SaveAsync();
+            return GeneralResult.SuccessResult("Batch deleted successfully");
         }
-        public async Task<GeneralResult> UpdateBatchQuantitiy(BatchQtyDto dto)
+        public async Task<GeneralResult> UpdateBatchQuantity(BatchQtyDto dto)
         {
-
-            var batch = await _unitOfWork._batchRepository.GetById(dto.BatchId);
-            if (batch is null)
-            {
-                return GeneralResult.NotFound("Batch not found");
-            }
             if (dto is null)
-            {
-                return GeneralResult.NotFound("Batch quantity is empty");
-            }
+                return GeneralResult.NotFound("Batch data is required");
 
-            var validationResult = await _updateBatchQtyValidator.ValidateAsync(dto);
+            var pharmacyId = _currentUserContext.PharmacyId;
+
+            var batch = await _unitOfWork._batchRepository
+                .GetByIdForPharmacyAsync(
+                    dto.BatchId,
+                    pharmacyId);
+
+            if (batch is null)
+                return GeneralResult.NotFound("Batch not found");
+
+            var validationResult =
+                await _updateBatchQtyValidator.ValidateAsync(dto);
+
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
@@ -138,32 +186,37 @@ namespace SafePharma.BLL
                         }).ToList()
                     );
 
-                return GeneralResult<TokenDto>.FailResult(errors, "Validation failed");
+                return GeneralResult<TokenDto>.FailResult(
+                    errors,
+                    "Validation failed");
             }
 
-            var tempObj = new Batch
+            var oldValues = new
             {
-                Id = batch.Id,
-                MedicineId = batch.MedicineId,
-                PurchaseReceiptItemId = batch.PurchaseReceiptItemId,
-                BatchNumber = batch.BatchNumber,
-                ExpiryDate = batch.ExpiryDate,
-                QuantityReceived = batch.QuantityReceived,
-                QuantityRemaining = batch.QuantityRemaining,
-                SellingPrice = batch.SellingPrice,
-                PurchasePrice = batch.PurchasePrice,
-                CreatedAt = batch.CreatedAt,
-                UpdatedAt = batch.UpdatedAt
+                batch.QuantityRemaining,
+                batch.UpdatedAt
             };
 
             batch.QuantityRemaining = dto.NewStock;
-            await _unitOfWork.SaveAsync();
-            await _auditManager.CreateAudit(batch, tempObj, ActionsEnum.Update);
+            batch.UpdatedAt = DateTime.UtcNow;
 
+
+            var newValues = new
+            {
+                batch.QuantityRemaining,
+                batch.UpdatedAt
+            };
+
+            await _auditManager.CreateAudit(
+                newValues,
+                oldValues,
+                "Batch",
+                ActionsEnum.Update);
+
+            await _unitOfWork.SaveAsync();
 
             return GeneralResult.SuccessResult();
         }
-
 
     }
 }
