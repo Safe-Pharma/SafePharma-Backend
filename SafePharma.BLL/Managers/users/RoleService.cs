@@ -16,7 +16,17 @@ public class RoleService : IRoleService
 
     public async Task<IReadOnlyList<RoleDto>> GetRolesAsync()
     {
-        var roles = await _roleManager.Roles.ToListAsync();
-        return roles.Select(r => new RoleDto { Id = r.Id, Name = r.Name ?? string.Empty, Description = r.Description }).ToList();
+        var roles = await _roleManager.Roles
+            .Where(r => r.Name != "Owner")
+            .ToListAsync();
+
+        return roles
+            .Select(r => new RoleDto
+            {
+                Id = r.Id,
+                Name = r.Name ?? string.Empty,
+                Description = r.Description
+            })
+            .ToList();
     }
 }
