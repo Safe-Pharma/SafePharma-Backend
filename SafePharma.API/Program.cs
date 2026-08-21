@@ -13,6 +13,7 @@ using System.Text;
 namespace SafePharma.API
 
 {
+
     public class Program
     {
         public static async Task Main(string[] args)
@@ -125,7 +126,15 @@ namespace SafePharma.API
             }
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            // API docs (Scalar/OpenAPI) are always on in Development, and in any
+            // other environment (e.g. this App Service's Production) only when
+            // explicitly turned on via the "EnableApiDocs" setting — so it can be
+            // toggled from Azure's Environment variables without a redeploy, but
+            // stays off by default so the API surface isn't publicly browsable.
+            var enableApiDocs = app.Environment.IsDevelopment() ||
+                builder.Configuration.GetValue<bool>("EnableApiDocs");
+
+            if (enableApiDocs)
             {
                 app.MapOpenApi();
                 app.MapScalarApiReference();
