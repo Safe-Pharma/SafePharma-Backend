@@ -158,6 +158,20 @@ namespace SafePharma.AI.Agent
             any claim about a drug's safety. Never invent warnings or interactions not
             supported by at least one tool's output.
 
+            The patient profile given to you is the ONLY source of truth about this
+            patient. Never assert, imply, or assume that the patient has an allergy,
+            chronic condition, organ impairment, or current medication that is not
+            explicitly listed in the profile — even if a drug's official evidence
+            mentions that condition/allergy in general (e.g. a label warning about
+            "patients with penicillin allergy"). A general warning in the evidence is
+            about the drug; it only becomes a "Drug-Allergy", "Drug-Disease", or
+            "Organ Function" issue for THIS patient if their profile explicitly lists
+            the matching allergy/condition/impairment. If the profile does not list it,
+            classify the same evidence as "General Warning" instead, and do not
+            describe it in Reason as something this patient has or has been diagnosed
+            with — describe it as a precaution relevant to the general population that
+            could not be confirmed against this patient's on-file profile.
+
             For every drug being checked, call BOTH LookupDrugEvidence and
             LookupDailyMedEvidence — do not rely on a single source. If the two
             sources agree, note that agreement strengthens confidence. If they
@@ -172,12 +186,15 @@ namespace SafePharma.AI.Agent
             Choose the score based on the highest-severity issue found, not an average.
 
             When there is more than one drug to check for the same patient (in
-            "Drugs to check" and/or "Current medications"), you MUST explicitly check
-            every pairwise combination for Drug-Drug interactions — not just each
-            drug individually against the patient's allergies/conditions. Look up
-            evidence for each drug separately, then reason about how they interact
-            with each other. Report each interaction found as its own Issue with
-            Type "Drug-Drug" and RelatedDrugRefs containing BOTH drugs involved.
+            "Drugs to check"), you MUST explicitly check every pairwise combination
+            for Drug-Drug interactions — not just each drug individually against the
+            patient's allergies/conditions. Look up evidence for each drug
+            separately, then reason about how they interact with each other. Report
+            each interaction found as its own Issue with Type "Drug-Drug" and
+            RelatedDrugRefs containing BOTH drugs involved. Only consider drugs
+            listed in "Drugs to check" for this — do not factor in any medication
+            history, since the patient profile you're given deliberately does not
+            include one.
 
             When classifying an Issue's Type, actively cross-check each piece of evidence
             against the patient's specific profile before defaulting to "General Warning":
@@ -185,9 +202,8 @@ namespace SafePharma.AI.Agent
               matching or related allergy, use "Drug-Allergy" (not General Warning).
             - If the evidence mentions organ-related toxicity (liver/kidney/heart) and the
               patient has a matching organ impairment, use "Organ Function".
-            - If the evidence mentions interaction with a drug class and the patient's
-              CurrentMedications or DrugsToCheck contains a drug from that class, use
-              "Drug-Drug".
+            - If the evidence mentions interaction with a drug class and "Drugs to
+              check" contains a drug from that class, use "Drug-Drug".
             Only use "General Warning" for evidence that does NOT match anything in this
             specific patient's profile.
 
@@ -229,6 +245,67 @@ namespace SafePharma.AI.Agent
             factors (allergies, conditions), and explicitly state in Recommendation
             that official evidence was unavailable for this specific drug name.
 
+            The rule above is about missing DRUG evidence — it is a completely
+            separate situation from a patient having no risk factors on file. When the
+            patient's profile shows no allergies, no chronic conditions, no organ
+            impairments, no current medications, and no drug-drug interaction is found
+            among the drugs being checked, AND official evidence WAS found for the
+            drug(s) (from either source) with nothing beyond routine, non-patient-specific
+            precautions (e.g. storage instructions, "keep out of reach of children",
+            generic label boilerplate), then set OverallDecision to "Approve", use a
+            low RiskScore, and state plainly in Recommendation that the medicine is
+            safe to dispense based on the information available — do not hedge or
+            recommend "verify" in this case just because the patient's history is short.
+            Only fall back to caution here if the evidence itself could not be
+            retrieved at all (see the paragraph above).
+
+            Keep every Issue's Reason concise — 1 to 2 short sentences, plain
+            language a pharmacist can read in a few seconds. Do not write
+            multi-sentence clinical essays explaining what evidence was or wasn't
+            found; just state the finding and why it matters for this dispensing
+            decision.
+
+            Do not create an Issue at all for evidence that is purely generic,
+            non-patient-specific boilerplate with no bearing on this dispensing
+            decision (e.g. "keep out of reach of children", storage/handling
+            instructions, flammability warnings for topical use, or other routine
+            label text that doesn't reflect an actual risk for this patient or this
+            drug's use here). Omit these from the Issues list entirely rather than
+            reporting them as a "General Warning" — a low-value warning clutters the
+            pharmacist's view and erodes trust in the real warnings. Only include an
+            Issue when it reflects either a genuine patient-specific match (per the
+            rules above) or a clinically significant general warning about the drug
+            (e.g. a boxed warning, a serious contraindication) that a pharmacist
+            would actually want to know about regardless of this specific patient's
+            profile. When nothing meets that bar, Issues should simply be an empty
+            list — an empty list is a normal, good outcome, not something to fill.
+
+            For a general (non-patient-specific) warning that describes a risk from
+            MISUSE or exceeding the recommended dose (e.g. a maximum daily dose
+            caution, an overdose threshold, "avoid combining with other products
+            containing the same ingredient") — this is routine safety counseling that
+            applies to essentially every sale of that drug, not a reason to escalate
+            risk on its own. Cap this kind of warning at Medium risk (31-65) with
+            OverallDecision "Warn" (dispense with counseling), UNLESS the patient's
+            own profile explicitly shows a factor that makes misuse more likely or
+            more dangerous for THIS patient specifically (e.g. a documented liver
+            condition, another product containing the same active ingredient already
+            in "Drugs to check", or documented heavy alcohol use in the profile) —
+            only then escalate toward High risk ("Block").
+
+            Reserve High risk / "Block" for: a real patient-specific contraindication
+            (a match against the profile per the classification rules above), or a
+            rare, severe, dose-independent risk described as a boxed warning or
+            serious contraindication in the evidence. Do not use "Block" for routine
+            dosing precautions that apply to normal, appropriately-dosed use of an
+            over-the-counter medicine — those belong at "Warn", not "Block".
+
+            Do not add "verify [condition/history] before proceeding" caveats about
+            anything that is not in the patient profile you were given. The profile
+            is the only source of truth for this patient (see the rule above) — if a
+            condition isn't listed there, you have no grounds to ask the pharmacist to
+            go re-check it; simply don't mention it.
+
             Before calling either evidence tool, always call NormalizeDrugName first
             to get the canonical US name — some drug names (e.g. international names)
             won't match US-based sources otherwise.
@@ -245,7 +322,7 @@ namespace SafePharma.AI.Agent
                 await throttle.WaitAsync(cancellationToken);
                 try
                 {
-                    return await CheckSinglePatientAsync(patient, cancellationToken);
+                    return await CheckSinglePatientAsync(patient, request.Language, cancellationToken);
                 }
                 finally
                 {
@@ -278,7 +355,7 @@ namespace SafePharma.AI.Agent
                             Message = "Checking drug safety..."
                         }, cancellationToken);
 
-                        var result = await CheckSinglePatientAsync(patient, cancellationToken);
+                        var result = await CheckSinglePatientAsync(patient, request.Language, cancellationToken);
 
                         await channel.Writer.WriteAsync(new PatientSafetyStreamEvent
                         {
@@ -307,6 +384,7 @@ namespace SafePharma.AI.Agent
 
         private async Task<PatientSafetyResult> CheckSinglePatientAsync(
             PatientCheckGroup patient,
+            string language,
             CancellationToken cancellationToken)
         {
             const int maxRetries = 2;
@@ -315,7 +393,7 @@ namespace SafePharma.AI.Agent
             {
                 try
                 {
-                    return await RunAgentForPatientAsync(patient, cancellationToken);
+                    return await RunAgentForPatientAsync(patient, language, cancellationToken);
                 }
                 catch (ClientResultException ex) when (ex.Status == 429 && attempt < maxRetries)
                 {
@@ -343,6 +421,7 @@ namespace SafePharma.AI.Agent
 
         private async Task<PatientSafetyResult> RunAgentForPatientAsync(
             PatientCheckGroup patient,
+            string language,
             CancellationToken cancellationToken)
         {
             var client = new OpenAIClient(
@@ -351,20 +430,79 @@ namespace SafePharma.AI.Agent
 
             var chatClient = client.GetChatClient(_settings.DeploymentName);
 
-            AIAgent agent = chatClient.AsAIAgent(
-                instructions: Instructions,
-                name: "PatientSafetyAgent",
-                tools:
-                [
-                    AIFunctionFactory.Create(LookupDrugEvidence),
-                    AIFunctionFactory.Create(LookupDailyMedEvidence),
-                    AIFunctionFactory.Create(NormalizeDrugName)
-                ]);
+            AIAgent agent = chatClient.AsAIAgent(new ChatClientAgentOptions
+            {
+                Name = "PatientSafetyAgent",
+                ChatOptions = new ChatOptions
+                {
+                    Instructions = Instructions,
+                    Tools =
+                    [
+                        AIFunctionFactory.Create(LookupDrugEvidence),
+                        AIFunctionFactory.Create(LookupDailyMedEvidence),
+                        AIFunctionFactory.Create(NormalizeDrugName)
+                    ]
+                    // NOTE: Temperature is intentionally NOT set here. This deployment
+                    // is a reasoning-family model (GPT-5 mini) which only supports the
+                    // default temperature (1) and rejects any other value with a 400
+                    // ("Unsupported value: 'temperature' does not support 0 with this
+                    // model"). Consistency across repeated checks has to come from the
+                    // Instructions being explicit enough to remove ambiguity (see the
+                    // risk-tier rules above), not from a temperature setting.
+                }
+            });
 
             var drugRefs = patient.DrugsToCheck.Select(d => $"{d.ClientRef}: {d.ScientificName}");
+
+            // Every list is rendered explicitly as "None known"/"None reported" when
+            // empty — never left blank — so the model can't read an empty section as
+            // "unknown/unconfirmed" and fill the gap with an assumption instead of a
+            // fact from this patient's actual profile.
+            var allergiesText = patient.Profile.Allergies.Count > 0
+                ? string.Join(", ", patient.Profile.Allergies)
+                : "None known";
+            var conditionsText = patient.Profile.ChronicConditions.Count > 0
+                ? string.Join(", ", patient.Profile.ChronicConditions)
+                : "None known";
+            var organText = patient.Profile.OrganImpairments.Count > 0
+                ? string.Join(", ", patient.Profile.OrganImpairments.Select(o => $"{o.OrganName}: {o.ImpairmentLevel}"))
+                : "None known";
+            var pregnancyText = patient.Profile.IsPregnant
+                ? $"Pregnant ({patient.Profile.PregnancyTrimester ?? "trimester unspecified"})"
+                : "Not pregnant";
+            var lactationText = patient.Profile.IsLactating ? "Lactating" : "Not lactating";
+
+            // Only the free-text fields (Reason, Recommendation) switch language —
+            // Type/Severity/OverallDecision must stay as the fixed English codes
+            // from the Instructions, since BLL/the client localize those by code,
+            // not by re-translating arbitrary text.
+            var languageInstruction = language == "ar"
+                ? "Arabic (Modern Standard Arabic, natural for a pharmacist to read)"
+                : "English";
+
             var prompt = $"""
-                Patient allergies: {string.Join(", ", patient.Profile.Allergies)}
+                Patient profile (this is the ONLY source of truth about this patient —
+                do not assume or infer any allergy, condition, medication, or history
+                beyond what is explicitly listed below). Medication history is
+                deliberately not included here — base the check only on allergies,
+                chronic conditions, and organ impairments, plus interactions among
+                the drugs listed in "Drugs to check" below:
+                Age: {patient.Profile.Age?.ToString() ?? "Unknown"}
+                Gender: {patient.Profile.Gender ?? "Unknown"}
+                Allergies: {allergiesText}
+                Chronic conditions: {conditionsText}
+                Organ impairments: {organText}
+                Pregnancy status: {pregnancyText}
+                Lactation status: {lactationText}
+
                 Drugs to check: {string.Join("; ", drugRefs)}
+
+                Write the free-text fields — SafetyIssueDto.Reason and
+                PatientSafetyResult.Recommendation — in {languageInstruction}. Keep
+                Type, Severity, and OverallDecision as the fixed English codes defined
+                in your instructions regardless of this language setting — do not
+                translate those.
+
                 Assess safety and respond in the required JSON structure.
                 """;
 
