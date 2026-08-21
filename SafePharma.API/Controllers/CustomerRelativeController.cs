@@ -22,6 +22,10 @@ namespace SafePharma.API.Controllers
 
         {
             var res = await _customerRelativesManager.CreateRelation(dto);
+            if (!res.Success)
+            {
+                return BadRequest(res);
+            }
             return Ok(res);
         }
 
@@ -30,6 +34,10 @@ namespace SafePharma.API.Controllers
 
         {
             var res = await _customerRelativesManager.GetRelations(id);
+            if (!res.Success)
+            {
+                return NotFound(res);
+            }
             return Ok(res);
         }
         [HttpGet("getChilds/{id:Guid}")]
@@ -37,6 +45,8 @@ namespace SafePharma.API.Controllers
 
         {
             var res = await _customerRelativesManager.GetChilds(id);
+            if (!res.Success)
+                return NotFound(res);
             return Ok(res);
         }
 
@@ -44,6 +54,9 @@ namespace SafePharma.API.Controllers
         public async Task<ActionResult> RemoveRelation([FromRoute] Guid id)
         {
             var res = await _customerRelativesManager.RemoveRelation(id);
+            if (!res.Success)
+                return NotFound(res);
+
             return Ok(res);
         }
     }

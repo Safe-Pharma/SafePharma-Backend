@@ -8,8 +8,6 @@ namespace SafePharma.DAL
 {
     public class CustomerRelativesRepository : GenircRepository<CustomerRelative>, ICustomerRelativesRepository
     {
-        private readonly AppDbContext d;
-
         public CustomerRelativesRepository(AppDbContext db) : base(db)
         {
         }
@@ -20,6 +18,15 @@ namespace SafePharma.DAL
                     cr.CustomerId == requesterId &&
                     cr.RelativeId == targetCustomerId &&
                     cr.HasAccessToRelative==true);
+        }
+
+        public async Task<bool> IsFound(Guid requesterId, Guid targetCustomerId)
+        {
+            return await _db.Set<CustomerRelative>()
+                .AnyAsync(cr =>
+                    cr.CustomerId == requesterId &&
+                    cr.RelativeId == targetCustomerId
+                    );
         }
     }
 }
