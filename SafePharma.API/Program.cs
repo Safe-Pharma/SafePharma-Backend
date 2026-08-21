@@ -99,14 +99,12 @@ namespace SafePharma.API
             // only because app.UseCors("AllowAll") already references that name.
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", policy =>
-                {
-                    policy.WithOrigins(
-                        "https://safepharma-app-cfbnewd5efhabvdz.switzerlandnorth-01.azurewebsites.net",
-                        "http://localhost:4200")
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-                });
+                    options.AddPolicy("AllowAll", policy =>
+                    {
+                        policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                    });
             });
             //Hangfire configuration
             builder.Services.AddHangfire(config =>
