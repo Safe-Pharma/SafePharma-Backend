@@ -28,8 +28,13 @@ namespace SafePharma.BLL
             var result = notifications.Select(n => new NotificationListDto
             {
                 Id = n.Id,
-                Title = n.Title,
-                Message = n.Message,
+
+                TitleEn = n.TitleEn,
+                TitleAr = n.TitleAr,
+
+                MessageEn = n.MessageEn,
+                MessageAr = n.MessageAr,
+
                 Type = n.Type,
                 Priority = n.Priority,
                 IsRead = n.IsRead,
@@ -87,11 +92,12 @@ namespace SafePharma.BLL
         }
 
         public async Task<GeneralResult<bool>> CreateBatchExpiryNotification(
-            Guid pharmacyId,
-            Guid batchId,
-            string medicineName,
-            string batchNumber,
-            int daysRemaining)
+        Guid pharmacyId,
+        Guid batchId,
+        string medicineNameEn,
+        string medicineNameAr,
+        string batchNumber,
+        int daysRemaining)
         {
             NotificationType type;
             NotificationPriority priority;
@@ -123,16 +129,21 @@ namespace SafePharma.BLL
                 priority,
                 batchId,
                 NotificationReferenceType.Batch,
+
                 $"Batch Expiry ({daysRemaining} Days)",
-                $"{medicineName} (Batch {batchNumber}) expires in {daysRemaining} day(s).");
+                $"انتهاء صلاحية الدفعة ({daysRemaining} يوم)",
+
+                $"{medicineNameEn} (Batch {batchNumber}) expires in {daysRemaining} day(s).",
+                $"{medicineNameAr} (الدفعة {batchNumber}) ستنتهي صلاحيتها خلال {daysRemaining} يوم.");
         }
 
         public async Task<GeneralResult<bool>> CreateLowStockNotification(
-            Guid pharmacyId,
-            Guid medicineId,
-            string medicineName,
-            int currentQuantity,
-            int minimumQuantity)
+        Guid pharmacyId,
+        Guid medicineId,
+        string medicineNameEn,
+        string medicineNameAr,
+        int currentQuantity,
+        int minimumQuantity)
         {
             return await CreateNotification(
                 pharmacyId,
@@ -140,8 +151,12 @@ namespace SafePharma.BLL
                 NotificationPriority.High,
                 medicineId,
                 NotificationReferenceType.Medicine,
+
                 "Low Stock",
-                $"{medicineName} stock is low. Current quantity: {currentQuantity}, Minimum quantity: {minimumQuantity}.");
+                "مخزون منخفض",
+
+                $"{medicineNameEn} stock is low. Current quantity: {currentQuantity}, Minimum quantity: {minimumQuantity}.",
+                $"مخزون {medicineNameAr} منخفض. الكمية الحالية: {currentQuantity}، والحد الأدنى: {minimumQuantity}.");
         }
 
         #endregion
@@ -149,13 +164,15 @@ namespace SafePharma.BLL
         #region Private Methods
 
         private async Task<GeneralResult<bool>> CreateNotification(
-            Guid pharmacyId,
-            NotificationType type,
-            NotificationPriority priority,
-            Guid referenceId,
-            NotificationReferenceType referenceType,
-            string title,
-            string message)
+        Guid pharmacyId,
+        NotificationType type,
+        NotificationPriority priority,
+        Guid referenceId,
+        NotificationReferenceType referenceType,
+        string titleEn,
+        string titleAr,
+        string messageEn,
+        string messageAr)
         {
             var exists = await _unitOfWork.Notifications.ExistsAsync(
                 pharmacyId,
@@ -169,8 +186,13 @@ namespace SafePharma.BLL
             {
                 Id = Guid.NewGuid(),
                 PharmacyId = pharmacyId,
-                Title = title,
-                Message = message,
+
+                TitleEn = titleEn,
+                TitleAr = titleAr,
+
+                MessageEn = messageEn,
+                MessageAr = messageAr,
+
                 Type = type,
                 Priority = priority,
                 ReferenceId = referenceId,

@@ -850,6 +850,7 @@ namespace SafePharma.BLL
                         pharmacyId,
                         pharmacyMedicineId,
                         pharmacyMedicine.TradeNameEn,
+                        pharmacyMedicine.TradeNameAr,
                         availableQuantity,
                         pharmacyMedicine.MinStockLevel);
                 }

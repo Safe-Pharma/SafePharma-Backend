@@ -30,18 +30,17 @@ namespace SafePharma.BLL.BackgroundJobs
             {
                 var daysRemaining = (batch.ExpiryDate.Date - today).Days;
 
-                if (daysRemaining == 90 ||
-                    daysRemaining == 60 ||
-                    daysRemaining == 30 ||
-                    daysRemaining <= 0)
-                {
-                    await _notificationManager.CreateBatchExpiryNotification(
-                        batch.PharmacyId,
-                        batch.Id,
-                        batch.Medicine.TradeNameEn,
-                        batch.BatchNumber,
-                        daysRemaining); 
-                }
+                
+                if (daysRemaining > 90)
+                    continue;
+
+                await _notificationManager.CreateBatchExpiryNotification(
+                    batch.PharmacyId,
+                    batch.Id,
+                    batch.Medicine.TradeNameEn,
+                    batch.Medicine.TradeNameAr,
+                    batch.BatchNumber,
+                    daysRemaining);
             }
         }
     }

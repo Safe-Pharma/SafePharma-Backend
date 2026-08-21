@@ -6,9 +6,11 @@ namespace SafePharma.BLL
     {
         public Guid Id { get; set; }
 
-        public string Title { get; set; } = default!;
+        public string TitleEn { get; set; } = string.Empty;
+        public string TitleAr { get; set; } = string.Empty;
 
-        public string Message { get; set; } = default!;
+        public string MessageEn { get; set; } = string.Empty;
+        public string MessageAr { get; set; } = string.Empty;
 
         public NotificationType Type { get; set; }
 
