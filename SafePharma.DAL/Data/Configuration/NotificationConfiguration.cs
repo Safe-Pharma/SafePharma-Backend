@@ -11,11 +11,19 @@ namespace SafePharma.DAL
 
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Title)
+            builder.Property(x => x.TitleAr)
                 .IsRequired()
                 .HasMaxLength(200);
 
-            builder.Property(x => x.Message)
+            builder.Property(x => x.MessageAr)
+                .IsRequired()
+                .HasMaxLength(1000);
+
+            builder.Property(x => x.TitleEn)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            builder.Property(x => x.MessageEn)
                 .IsRequired()
                 .HasMaxLength(1000);
 
