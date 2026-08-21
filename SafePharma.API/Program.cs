@@ -93,11 +93,17 @@ namespace SafePharma.API
                 builder.Configuration.GetSection("FrontendSettings"));
 
             // CORS
+            // Restricted to the actual deployed frontend + local dev server.
+            // Was AllowAnyOrigin() while we didn't have a real frontend URL yet —
+            // now that we do, lock it down. The policy is still called "AllowAll"
+            // only because app.UseCors("AllowAll") already references that name.
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", policy =>
                 {
-                    policy.AllowAnyOrigin()
+                    policy.WithOrigins(
+                        "https://safepharma-app-cfbnewd5efhabvdz.switzerlandnorth-01.azurewebsites.net",
+                        "http://localhost:4200")
                     .AllowAnyMethod()
                     .AllowAnyHeader();
                 });
@@ -160,4 +166,5 @@ namespace SafePharma.API
             app.Run();
         }
     }
+    ////////////
 }
