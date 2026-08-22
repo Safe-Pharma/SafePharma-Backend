@@ -102,8 +102,8 @@ namespace SafePharma.BLL
                 return GeneralResult<TokenDto>.FailResult("Invalid or expired code.");
             }
 
-            otp.IsUsed = false;
-            //otp.IsUsed = true;
+            //otp.IsUsed = false;
+            otp.IsUsed = true;
 
             await _unitOfWork.SaveAsync();
 
