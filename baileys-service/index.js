@@ -1,11 +1,15 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const express = require('express');
-const qrcode = require('qrcode-terminal');
+const QRCode = require('qrcode');
 
 const app = express();
 app.use(express.json());
 
+const PORT = process.env.PORT || 3001;
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'dev-only-key-change-me';
+
 let sock;
+let latestQr = null;
 
 async function startSock() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info');
@@ -17,8 +21,8 @@ async function startSock() {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
-            console.log('Scan this QR code with WhatsApp:');
-            qrcode.generate(qr, { small: true });
+            latestQr = qr;
+            console.log('QR updated — visit /qr to scan it');
         }
 
         if (connection === 'close') {
@@ -27,6 +31,7 @@ async function startSock() {
             console.log('Connection closed, reconnecting:', shouldReconnect);
             if (shouldReconnect) startSock();
         } else if (connection === 'open') {
+            latestQr = null;
             console.log('✅ WhatsApp connected successfully');
         }
     });
@@ -34,7 +39,24 @@ async function startSock() {
 
 startSock();
 
+app.get('/', (req, res) => {
+    res.status(200).send('Baileys OTP service is running.');
+});
+
+app.get('/qr', async (req, res) => {
+    if (!latestQr) {
+        return res.send('<h2>No QR available — already connected, or not generated yet. Refresh in a few seconds.</h2>');
+    }
+    const qrImage = await QRCode.toDataURL(latestQr);
+    res.send(`<img src="${qrImage}" />`);
+});
+
 app.post('/send-otp', async (req, res) => {
+    const providedKey = req.headers['x-internal-key'];
+    if (providedKey !== INTERNAL_API_KEY) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
     const { phone, otp } = req.body;
 
     if (!phone || !otp) {
@@ -53,6 +75,4 @@ app.post('/send-otp', async (req, res) => {
     }
 });
 
-app.listen(3001, () => console.log('Baileys OTP service running on http://localhost:3001'));
-
-//node index.js
+app.listen(PORT, () => console.log(`Baileys OTP service running on port ${PORT}`));

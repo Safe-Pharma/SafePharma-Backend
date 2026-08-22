@@ -94,11 +94,11 @@ namespace SafePharma.BLL
             services.AddScoped<IExpiryNotificationJob, ExpiryNotificationJob>();
             services.AddScoped<INotificationManager, NotificationManager>();
              services.AddScoped<IPatientSafetyManager, PatientSafetyManager>();
- 
-            // Otp
+
             services.AddHttpClient<IOtpDeliveryChannel, WhatsAppBaileysChannel>(client =>
             {
-                client.BaseAddress = new Uri(configuration["Baileys:BaseUrl"] ?? "http://localhost:3001");
+                client.BaseAddress = new Uri(configuration["Baileys:BaseUrl"]);
+                client.DefaultRequestHeaders.Add("X-Internal-Key", configuration["Baileys:InternalApiKey"]);
             });
 
             services.AddScoped<IOtpManager, OtpManager>();

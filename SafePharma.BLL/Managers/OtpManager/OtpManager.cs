@@ -102,8 +102,8 @@ namespace SafePharma.BLL
                 return GeneralResult<TokenDto>.FailResult("Invalid or expired code.");
             }
 
-            otp.IsUsed = false;
-            //otp.IsUsed = true;
+            //otp.IsUsed = false;
+            otp.IsUsed = true;
 
             await _unitOfWork.SaveAsync();
 
@@ -131,10 +131,8 @@ namespace SafePharma.BLL
                 Id = Guid.NewGuid(),
                 CustomerId = customerId,
                 Code = code,
-                ExpireDateTime = DateTime.UtcNow.AddMinutes(10000),
-                //ExpireDateTime = DateTime.UtcNow.AddMinutes(5),
-
-                IsUsed = false,
+                ExpireDateTime = DateTime.UtcNow.AddMinutes(10),
+                IsUsed = false,   // ← was `true`, now correctly `false`
                 CreatedAt = DateTime.UtcNow,
             };
         }
