@@ -131,10 +131,8 @@ namespace SafePharma.BLL
                 Id = Guid.NewGuid(),
                 CustomerId = customerId,
                 Code = code,
-                //ExpireDateTime = DateTime.UtcNow.AddMinutes(1000000000),
                 ExpireDateTime = DateTime.UtcNow.AddMinutes(10),
-
-                IsUsed = true,
+                IsUsed = false,   // ← was `true`, now correctly `false`
                 CreatedAt = DateTime.UtcNow,
             };
         }
