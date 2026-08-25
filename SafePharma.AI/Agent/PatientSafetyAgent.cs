@@ -509,14 +509,58 @@ namespace SafePharma.AI.Agent
             var result = await agent.RunAsync<AgentOutput>(prompt, cancellationToken: cancellationToken);
             var output = result.Result;
 
+            // --- Safety net (code-level, not just prompt instructions) ---
+            // The model doesn't always follow the "no patient-specific match →
+            // Approve/safe to dispense" instruction above with 100% reliability
+            // (a known limitation, especially for smaller/faster models under
+            // long instruction sets). If every Issue found is a "General
+            // Warning" (or there are none at all) — meaning nothing matched
+            // this patient's actual allergies/conditions/organs, and no
+            // drug-drug interaction was found among the drugs being checked —
+            // there is no real patient-specific basis to Warn or Block. Force
+            // the result to Approve/low-risk in code instead of hoping the
+            // model complies every time.
+            // "General Warning" and "Dosage" are both, in practice, routine label
+            // information (max daily dose, standard precautions) rather than a
+            // finding actually matched against this patient's own data — real
+            // patient-specific findings are Drug-Allergy, Drug-Disease, Organ
+            // Function, Drug-Drug, Pregnancy, and Lactation.
+            var nonSpecificIssueTypes = new[] { "General Warning", "Dosage" };
+            var hasPatientSpecificIssue = output.Issues.Any(i =>
+                !nonSpecificIssueTypes.Contains(i.Type, StringComparer.OrdinalIgnoreCase));
+
+            var riskScore = output.RiskScore;
+            var overallDecision = output.OverallDecision;
+            var recommendation = output.Recommendation;
+            var issues = output.Issues;
+
+            if (!hasPatientSpecificIssue && (overallDecision != "Approve" || riskScore > 30 || issues.Count > 0))
+            {
+                _logger.LogWarning(
+                    "[Safety net] Forcing a clean Approve for patient {PatientRef} " +
+                    "(was {OldDecision}/{OldScore} with {IssueCount} issue(s)) — no patient-specific " +
+                    "allergy, condition, organ, or drug-drug issue was found; suppressing any " +
+                    "non-specific General Warning noise along with it.",
+                    patient.Profile.PatientRef, overallDecision, riskScore, issues.Count);
+
+                overallDecision = "Approve";
+                riskScore = Math.Min(riskScore, 20);
+                issues = [];
+                // Replace the recommendation too — otherwise the text could still
+                // read like "Block... confirm X" while the decision now says Approve.
+                recommendation = language == "ar"
+                    ? "لم يتم العثور على مخاوف أمان تخص هذا المريض تحديدًا (بناءً على الحساسيات والأمراض المزمنة ووظائف الأعضاء المسجّلة). آمن للصرف."
+                    : "No patient-specific safety concerns found based on this patient's recorded allergies, chronic conditions, and organ function. Safe to dispense.";
+            }
+
             return new PatientSafetyResult
             {
                 PatientRef = patient.Profile.PatientRef,
                 CheckSucceeded = true,
-                OverallDecision = output.OverallDecision,
-                RiskScore = output.RiskScore,
-                Recommendation = output.Recommendation,
-                Issues = output.Issues.Select(i => new SafetyIssueDto
+                OverallDecision = overallDecision,
+                RiskScore = riskScore,
+                Recommendation = recommendation,
+                Issues = issues.Select(i => new SafetyIssueDto
                 {
                     Type = i.Type,
                     Severity = i.Severity,
